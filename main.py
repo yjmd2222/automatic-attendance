@@ -86,19 +86,13 @@ class SendEmail:
         smtp.quit()
     
     def run(self):
-        try: 
-            while True:
-                self.get_link()
-                # if self.link empty
-                if not self.link:
-                    print('QR 코드 없음. 이메일 발송 안 함')
-                    time.sleep(300) # 5분 wait
-                    continue
-                # otherwise send email
-                self.send_email()
-                time.sleep(300) # 5분 wait
-        except KeyboardInterrupt:
-            print('Interrupted')
+        self.get_link()
+        # if self.link empty
+        if not self.link:
+            print('QR 코드 없음. 이메일 발송 안 함')
+            return
+        # otherwise send email
+        self.send_email()
 
 if __name__ == '__main__':
     ImageGrab.grab = partial(ImageGrab.grab, all_screens=True) # multimonitor support
