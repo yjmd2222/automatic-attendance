@@ -1,6 +1,8 @@
 import pyautogui
 import pywinauto
 import pyperclip
+from PIL import ImageGrab
+from functools import partial
 
 import os
 import time
@@ -14,32 +16,36 @@ from info import *
 
 class SendEmail:
     def __init__(self):
-        # where to click
-        self.qr_extension_icon_pos = (1774, 56)         # qr reader icon extension
-        self.qr_zoom_pos = (1379, 281)                  # zoom window from selection in qr reader
-        self.qr_share_pos = (1565, 603)                 # share button on qr reader
-        self.chrome_link_pos = (572, 46)                # search bar link in chrome
-        self.chrome_exit_button_pos = (1898, 21)        # chrome exit button
-        self.prefix_text = 'asdfkjnzxcvlkjnsadfkjljnjk' # a meaningless text so nothing matches if nothing in searchbar
-
         self.chrome_path = r'C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Chrome.lnk'
+        self.images_base_path = os.path.join(os.getcwd(), 'images')
 
         self.link = ''
 
         self.pywinauto_app = pywinauto.Application()
 
+    def get_pos(self, image):
+        image_path = os.path.join(self.images_base_path, image+'.png')
+        return pyautogui.locateCenterOnScreen(image_path, confidence=0.7)
+
     def copy_clipboard(self):
         'copy highlighted text'
         pyautogui.hotkey('ctrl', 'a') # select all
-        time.sleep(.01)
+        time.sleep(0.01)
         pyautogui.hotkey('ctrl', 'c') # copy
-        time.sleep(.01)
+        time.sleep(0.01)
         return pyperclip.paste()
 
-    def click_and_sleep(seflf, pos:tuple):
+    def click_pos_and_sleep(self, pos:tuple):
         'make a click in given pos'
+        print(pos)
         pyautogui.click(pos)
-        time.sleep(1)
+        time.sleep(5)
+    
+    def click_image_and_sleep(self, image, offset=None):
+        pos = self.get_pos(image)
+        if offset: pos = (pos[0] + offset[0], pos[1] + offset[1])
+        print(image)
+        self.click_pos_and_sleep(pos)
 
     def get_link(self):
         # bring zoom meeting to front.
@@ -48,19 +54,18 @@ class SendEmail:
         # start chrome
         os.system('start "" "' + self.chrome_path)
         time.sleep(3)
-        self.click_and_sleep(self.qr_extension_icon_pos) # start extension
-        self.click_and_sleep(self.qr_zoom_pos)           # bring zoom conf to front
-        self.click_and_sleep(self.qr_share_pos)          # share(upload) QR image
+        self.click_image_and_sleep('qr_extension_icon')
+        self.click_image_and_sleep('qr_zoom')
+        self.click_image_and_sleep('qr_share')
 
         # search bar
-        # won't copy if non selected, so write meaningless text and copy everything then slice.
-        self.click_and_sleep(self.chrome_link_pos)
-        pyautogui.press('home')
-        pyautogui.write(self.prefix_text)
-        self.link = self.copy_clipboard()[len(self.prefix_text):]
-
+        if not self.get_pos('qr_fail_message'):
+            # self.click_image_and_sleep('chrome_bfr_icons', (100, 0))
+            self.link = self.copy_clipboard()
+        
         # close chrome
-        self.click_and_sleep(self.chrome_exit_button_pos)
+        pyautogui.hotkey('alt', 'f4')
+        time.sleep(0.01)
 
     def send_email(self):
         'send email with SMTP'
@@ -75,6 +80,8 @@ class SendEmail:
 
         smtp.sendmail(EMAIL_ADDRESS, EMAIL_ADDRESS, msg.as_string())
 
+        print('이메일 발송 성공')
+
         smtp.quit()
     
     def run(self):
@@ -86,9 +93,11 @@ class SendEmail:
                     time.sleep(300)
                     continue
                 self.send_email()
+                time.sleep(300)
         except KeyboardInterrupt:
             print('Interrupted')
 
 if __name__ == '__main__':
+    ImageGrab.grab = partial(ImageGrab.grab, all_screens=True) # multimonitor support
     program = SendEmail()
     program.run()
