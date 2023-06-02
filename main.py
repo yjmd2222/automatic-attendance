@@ -39,16 +39,17 @@ class SendEmail:
         'make a click in given pos'
         print(pos)
         pyautogui.click(pos)
-        time.sleep(5)
+        time.sleep(1)
     
     def click_image_and_sleep(self, image, offset=None):
         pos = self.get_pos(image)
+        # apply offset
         if offset: pos = (pos[0] + offset[0], pos[1] + offset[1])
         print(image)
         self.click_pos_and_sleep(pos)
 
     def get_link(self):
-        # bring zoom meeting to front.
+        # bring zoom meeting to front to make sure the meeting is on the list
         self.pywinauto_app.connect(best_match='Zoom 회의').top_window().set_focus()
 
         # start chrome
@@ -88,12 +89,14 @@ class SendEmail:
         try: 
             while True:
                 self.get_link()
+                # if self.link empty
                 if not self.link:
-                    print('No QR: Nothing to send')
-                    time.sleep(300)
+                    print('QR 코드 없음. 이메일 발송 안 함')
+                    time.sleep(300) # 5분 wait
                     continue
+                # otherwise send email
                 self.send_email()
-                time.sleep(300)
+                time.sleep(300) # 5분 wait
         except KeyboardInterrupt:
             print('Interrupted')
 
