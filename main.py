@@ -113,7 +113,7 @@ if __name__ == '__main__':
     ImageGrab.grab = partial(ImageGrab.grab, all_screens=True) # multimonitor support
 
     sched = BlockingScheduler(standalone=True)          # scheduler
-    program = FakeCheckIn()                               # app
+    program = FakeCheckIn()                             # app
     sched.add_job(program.run, 'interval', seconds=300) # will run app every 300 seconds
 
     try:
