@@ -20,7 +20,9 @@ jobs:
       working-directory: .
       run: |
         ls -a
-        mv info-template.py info.py
+        touch test
+        ls -a
+        # mv info-template.py info.py
     - name: Analysing the code with pylint
       run: |
         pylint $(git ls-files '*.py')
