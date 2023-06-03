@@ -16,6 +16,7 @@ jobs:
       run: |
         echo $CONDA/bin >> $GITHUB_PATH
         printf 'y' | conda create -n test python=3.11
+        conda init bash
         conda activate test
     - name: Install dependencies
       run: |
