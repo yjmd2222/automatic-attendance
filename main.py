@@ -7,17 +7,16 @@ import time
 from functools import partial
 
 import smtplib
+from email.mime.text import MIMEText
 
 from datetime import datetime
+
+from apscheduler.schedulers.background import BlockingScheduler
 
 import pyautogui
 import pywinauto
 import pyperclip
 from PIL import ImageGrab
-
-from apscheduler.schedulers.background import BlockingScheduler
-
-from email.mime.text import MIMEText
 
 from info import *
 
@@ -55,7 +54,8 @@ class FakeCheckIn:
         'make a click on the given image. Calls click_pos_and_sleep'
         pos = self.get_pos(image)
         # apply offset
-        if offset: pos = (pos[0] + offset[0], pos[1] + offset[1])
+        if offset:
+            pos = (pos[0] + offset[0], pos[1] + offset[1])
         print(image)
         self.click_pos_and_sleep(pos)
 
