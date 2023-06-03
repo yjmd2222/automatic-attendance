@@ -18,7 +18,7 @@ import pywinauto
 import pyperclip
 from PIL import ImageGrab
 
-from info import *
+from info import GMAIL_APP_PASSWORD, EMAIL_ADDRESS
 
 class FakeCheckIn:
     'A class for checking QR image and sending email with link'

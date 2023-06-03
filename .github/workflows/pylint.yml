@@ -20,6 +20,8 @@ jobs:
       working-directory: .
       run: |
         mv info-template.py info.py
+        git add .
+        git commit -m 'allowempty' --allow-empty
     - name: Analysing the code with pylint
       run: |
         pylint $(git ls-files '*.py')
