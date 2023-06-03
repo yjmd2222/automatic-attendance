@@ -19,10 +19,7 @@ jobs:
     - name: Rename info-template.py to info.py
       working-directory: .
       run: |
-        ls -a
-        touch test
-        ls -a
-        # mv info-template.py info.py
+        mv info-template.py info.py
     - name: Analysing the code with pylint
       run: |
         pylint $(git ls-files '*.py')
