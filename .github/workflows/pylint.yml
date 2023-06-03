@@ -1,0 +1,32 @@
+name: Pylint
+
+on: [push]
+
+jobs:
+  build:
+    runs-on: windows-latest
+      
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up Python 3.11
+      uses: actions/setup-python@v3
+      with:
+        python-version: '3.11'
+    - name: Install dependencies
+      run: |
+        pip install -r requirements.txt
+        pip install pylint
+    - name: Configure Git User and branch
+      run: |
+        git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
+        git config --local user.name "github-actions[bot]"
+        git checkout automation
+    - name: Rename info-template.py to info.py
+      working-directory: .
+      run: |
+        mv info-template.py info.py
+        git add .
+        git commit -m 'allowempty' --allow-empty
+    - name: Analysing the code with pylint
+      run: |
+        pylint $(git ls-files '*.py')
