@@ -17,6 +17,7 @@ jobs:
         # pip install -r requirements.txt
         pip install pylint
     - name: Rename info-template.py to info.py
+      working-directory: .
       run: |
         mv info-template.py info.py
     - name: Analysing the code with pylint
