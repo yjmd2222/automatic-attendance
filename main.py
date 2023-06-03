@@ -6,6 +6,7 @@ from functools import partial
 
 import os
 import time
+from apscheduler.schedulers.background import BlockingScheduler
 
 import smtplib
 from email.mime.text import MIMEText
@@ -63,8 +64,9 @@ class SendEmail:
         if not self.get_pos('qr_fail_message'):
             # self.click_image_and_sleep('chrome_bfr_icons', (100, 0))
             self.link = self.copy_clipboard()
-        
+
         # close chrome
+        pyautogui.click() # ensure chrome is selected
         pyautogui.hotkey('alt', 'f4')
         time.sleep(0.01)
 
@@ -93,8 +95,16 @@ class SendEmail:
             return
         # otherwise send email
         self.send_email()
+        return
 
 if __name__ == '__main__':
     ImageGrab.grab = partial(ImageGrab.grab, all_screens=True) # multimonitor support
-    program = SendEmail()
-    program.run()
+
+    sched = BlockingScheduler(standalone=True)          # scheduler
+    program = SendEmail()                               # app
+    sched.add_job(program.run, 'interval', seconds=300) # will run app every 300 seconds
+    
+    try:
+        sched.start()
+    except KeyboardInterrupt as e:
+        print('interrupted')
