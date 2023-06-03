@@ -1,22 +1,30 @@
+'''
+Script to automatically send link information in QR image on a Zoom meeting every five minutes
+'''
+
+import os
+import time
+from functools import partial
+
+import smtplib
+
+from datetime import datetime
+
 import pyautogui
 import pywinauto
 import pyperclip
 from PIL import ImageGrab
-from functools import partial
 
-import os
-import time
 from apscheduler.schedulers.background import BlockingScheduler
 
-import smtplib
 from email.mime.text import MIMEText
-
-from datetime import datetime
 
 from info import *
 
-class SendEmail:
+class FakeCheckIn:
+    'A class for checking QR image and sending email with link'
     def __init__(self):
+        'initialize'
         self.chrome_path = r'C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Chrome.lnk'
         self.images_base_path = os.path.join(os.getcwd(), 'images')
 
@@ -25,11 +33,12 @@ class SendEmail:
         self.pywinauto_app = pywinauto.Application()
 
     def get_pos(self, image):
+        'Gets position of image on screen'
         image_path = os.path.join(self.images_base_path, image+'.png')
         return pyautogui.locateCenterOnScreen(image_path, confidence=0.7)
 
     def copy_clipboard(self):
-        'copy highlighted text'
+        'Copy highlighted text'
         pyautogui.hotkey('ctrl', 'a') # select all
         time.sleep(0.01)
         pyautogui.hotkey('ctrl', 'c') # copy
@@ -41,8 +50,9 @@ class SendEmail:
         print(pos)
         pyautogui.click(pos)
         time.sleep(1)
-    
+
     def click_image_and_sleep(self, image, offset=None):
+        'make a click on the given image. Calls click_pos_and_sleep'
         pos = self.get_pos(image)
         # apply offset
         if offset: pos = (pos[0] + offset[0], pos[1] + offset[1])
@@ -50,6 +60,7 @@ class SendEmail:
         self.click_pos_and_sleep(pos)
 
     def get_link(self):
+        'method for getting link from Zoom'
         # bring zoom meeting to front to make sure the meeting is on the list
         self.pywinauto_app.connect(best_match='Zoom 회의').top_window().set_focus()
 
@@ -86,8 +97,9 @@ class SendEmail:
         print('이메일 발송 성공')
 
         smtp.quit()
-    
+
     def run(self):
+        'run once'
         self.get_link()
         # if self.link empty
         if not self.link:
@@ -101,9 +113,9 @@ if __name__ == '__main__':
     ImageGrab.grab = partial(ImageGrab.grab, all_screens=True) # multimonitor support
 
     sched = BlockingScheduler(standalone=True)          # scheduler
-    program = SendEmail()                               # app
+    program = FakeCheckIn()                               # app
     sched.add_job(program.run, 'interval', seconds=300) # will run app every 300 seconds
-    
+
     try:
         sched.start()
     except KeyboardInterrupt as e:
