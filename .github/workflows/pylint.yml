@@ -14,7 +14,7 @@ jobs:
         python-version: '3.11'
     - name: Install dependencies
       run: |
-        pip install -r requirements.txt
+        # pip install -r requirements.txt
         pip install pylint
     - name: Analysing the code with pylint
       run: |
