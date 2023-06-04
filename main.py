@@ -19,7 +19,7 @@ from info import GMAIL_APP_PASSWORD, EMAIL_ADDRESS, CHROME_EXTENSION_LINK
 class FakeCheckIn:
     'A class for checking QR image and sending email with link'
 
-    def decorator_three_times(func:function):
+    def decorator_three_times(func):
         'decorator for checking link three times'
         def wrapper(self, *args, **kwargs):
             'wrapper'
@@ -35,9 +35,9 @@ class FakeCheckIn:
 
     def __init__(self):
         'initialize'
-        self.driver = self.initialize_selenium()
+        self.options = self.create_selenium_options() # Selenium options
 
-    def initialize_selenium(self):
+    def create_selenium_options(self):
         'initialize selenium and return driver'
         options = Options()
         # Screen QR Reader source required
@@ -45,24 +45,25 @@ class FakeCheckIn:
         # automatically select Zoom meeting
         options.add_argument('--auto-select-desktop-capture-source=Zoom')
 
-        driver = webdriver.Chrome(options=options)
+        return options
 
-        return driver
+    def initialize_selenium(self):
+        return webdriver.Chrome(options=self.options)
 
     @decorator_three_times
-    def get_link(self):
+    def get_link(self, driver):
         'Get link from QR'
-        self.driver.get(CHROME_EXTENSION_LINK) # Screen QR Reader
+        driver.get(CHROME_EXTENSION_LINK) # Screen QR Reader
         time.sleep(5)
 
         # Selenium will automatically open the link in a new tab
         # if there is a QR image, so check tab count.
-        window_handles = self.driver.window_handles
+        window_handles = driver.window_handles
 
         link = ''
         if len(window_handles) > 1:
-            self.driver.switch_to.window(window_handles[1]) # force Selenium to be on the new tab
-            link = self.driver.current_url
+            driver.switch_to.window(window_handles[1]) # force Selenium to be on the new tab
+            link = driver.current_url
 
         return link
 
@@ -85,19 +86,23 @@ class FakeCheckIn:
 
     def run(self):
         'run once'
-        link = self.get_link()
+        driver = self.initialize_selenium()
+        link = self.get_link(driver)
         # if self.link empty
         if not link:
             print('QR 코드 없음. 이메일 발송 안 함')
         # otherwise send email
         else:
             self.send_email(link)
-        self.driver.quit()
+        driver.quit()
 
 if __name__ == '__main__':
-    sched = BlockingScheduler(standalone=True)          # scheduler
-    program = FakeCheckIn()                             # app
-    sched.add_job(program.run, 'interval', seconds=300) # will run app every 300 seconds
+    # scheduler
+    sched = BlockingScheduler(standalone=True)
+    # app
+    program = FakeCheckIn()
+    # will run app every 300 seconds
+    sched.add_job(program.run, 'interval', seconds=300)
 
     try:
         sched.start()
