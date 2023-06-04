@@ -38,7 +38,7 @@ class FakeCheckIn:
         self.options = self.create_selenium_options() # Selenium options
 
     def create_selenium_options(self):
-        'initialize selenium and return driver'
+        'declare options for Selenium driver'
         options = Options()
         # Screen QR Reader source required
         options.add_extension('./extension_0_1_2_0.crx')
@@ -48,6 +48,7 @@ class FakeCheckIn:
         return options
 
     def initialize_selenium(self):
+        'initialize Selenium and return driver'
         return webdriver.Chrome(options=self.options)
 
     @decorator_three_times
