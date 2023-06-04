@@ -3,7 +3,6 @@ Script to automatically send link information in QR image on a Zoom meeting ever
 '''
 
 import time
-from functools import partial
 
 import smtplib
 from email.mime.text import MIMEText
@@ -20,14 +19,14 @@ from info import GMAIL_APP_PASSWORD, EMAIL_ADDRESS, CHROME_EXTENSION_LINK
 class FakeCheckIn:
     'A class for checking QR image and sending email with link'
 
-    def decorator_three_times(func):
+    def decorator_three_times(func:function):
         'decorator for checking link three times'
-        def wrapper(*args, **kwargs):
+        def wrapper(self, *args, **kwargs):
             'wrapper'
             i = 3
             result = None
             while i > 0:
-                result = func(*args, **kwargs)
+                result = func(self, *args, **kwargs)
                 if result:
                     break
                 i -= 1
@@ -41,8 +40,10 @@ class FakeCheckIn:
     def initialize_selenium(self):
         'initialize selenium and return driver'
         options = Options()
-        options.add_extension('./extension_0_1_2_0.crx')                  # Screen QR Reader source required
-        options.add_argument('--auto-select-desktop-capture-source=Zoom') # automatically select Zoom meeting
+        # Screen QR Reader source required
+        options.add_extension('./extension_0_1_2_0.crx')
+        # automatically select Zoom meeting
+        options.add_argument('--auto-select-desktop-capture-source=Zoom')
 
         driver = webdriver.Chrome(options=options)
 
@@ -54,7 +55,8 @@ class FakeCheckIn:
         self.driver.get(CHROME_EXTENSION_LINK) # Screen QR Reader
         time.sleep(5)
 
-        # Selenium will automatically open the link in a new tab if there is a QR image, so check tab count.
+        # Selenium will automatically open the link in a new tab
+        # if there is a QR image, so check tab count.
         window_handles = self.driver.window_handles
 
         link = ''
