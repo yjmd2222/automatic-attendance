@@ -27,3 +27,8 @@ My online class requires I sit at the desk with Zoom from 9 AM to 6 PM (lunch ti
 The other day I learned Selenium and its RPA and APIs, so this is a little project of what I learned. The admins must be happy.
 
 This is all a joke :) Interpreting what I mean with 'this' is up to you, as in the whole script or the whole situation.
+
+# Credits
+- You-know-what admins and the overseers that gave me the idea for the script
+- tkobayashi0111 for [Screen QR Reader](https://chrome.google.com/webstore/detail/screen-qr-reader/ekoaehpknadfoaolagjfdefeopkhfhln)
+- yay me for this script
