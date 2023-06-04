@@ -2,7 +2,6 @@
 Script to automatically send link information in QR image on a Zoom meeting every five minutes
 '''
 
-import os
 import time
 from functools import partial
 
@@ -13,75 +12,59 @@ from datetime import datetime
 
 from apscheduler.schedulers.background import BlockingScheduler
 
-import pyautogui
-import pywinauto
-import pyperclip
-from PIL import ImageGrab
+from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
 
-from info import GMAIL_APP_PASSWORD, EMAIL_ADDRESS
+from info import GMAIL_APP_PASSWORD, EMAIL_ADDRESS, CHROME_EXTENSION_LINK
 
 class FakeCheckIn:
     'A class for checking QR image and sending email with link'
+
+    def decorator_three_times(func):
+        'decorator for checking link three times'
+        def wrapper(*args, **kwargs):
+            'wrapper'
+            i = 3
+            result = None
+            while i > 0:
+                result = func(*args, **kwargs)
+                if result:
+                    break
+                i -= 1
+            return result
+        return wrapper
+
     def __init__(self):
         'initialize'
-        self.chrome_path = r'C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Chrome.lnk'
-        self.images_base_path = os.path.join(os.getcwd(), 'images')
+        self.driver = self.initialize_selenium()
 
-        self.link = ''
+    def initialize_selenium(self):
+        'initialize selenium and return driver'
+        options = Options()
+        options.add_extension('./extension_0_1_2_0.crx')                  # Screen QR Reader source required
+        options.add_argument('--auto-select-desktop-capture-source=Zoom') # automatically select Zoom meeting
 
-        self.pywinauto_app = pywinauto.Application()
+        driver = webdriver.Chrome(options=options)
 
-    def get_pos(self, image):
-        'Gets position of image on screen'
-        image_path = os.path.join(self.images_base_path, image+'.png')
-        return pyautogui.locateCenterOnScreen(image_path, confidence=0.7)
+        return driver
 
-    def copy_clipboard(self):
-        'Copy highlighted text'
-        pyautogui.hotkey('ctrl', 'a') # select all
-        time.sleep(0.01)
-        pyautogui.hotkey('ctrl', 'c') # copy
-        time.sleep(0.01)
-        return pyperclip.paste()
-
-    def click_pos_and_sleep(self, pos:tuple):
-        'make a click in given pos'
-        print(pos)
-        pyautogui.click(pos)
-        time.sleep(1)
-
-    def click_image_and_sleep(self, image, offset=None):
-        'make a click on the given image. Calls click_pos_and_sleep'
-        pos = self.get_pos(image)
-        # apply offset
-        if offset:
-            pos = (pos[0] + offset[0], pos[1] + offset[1])
-        print(image)
-        self.click_pos_and_sleep(pos)
-
+    @decorator_three_times
     def get_link(self):
-        'method for getting link from Zoom'
-        # bring zoom meeting to front to make sure the meeting is on the list
-        self.pywinauto_app.connect(best_match='Zoom 회의').top_window().set_focus()
+        'Get link from QR'
+        self.driver.get(CHROME_EXTENSION_LINK) # Screen QR Reader
+        time.sleep(5)
 
-        # start chrome
-        os.system('start "" "' + self.chrome_path)
-        time.sleep(3)
-        self.click_image_and_sleep('qr_extension_icon')
-        self.click_image_and_sleep('qr_zoom')
-        self.click_image_and_sleep('qr_share')
+        # Selenium will automatically open the link in a new tab if there is a QR image, so check tab count.
+        window_handles = self.driver.window_handles
 
-        # search bar
-        if not self.get_pos('qr_fail_message'):
-            # self.click_image_and_sleep('chrome_bfr_icons', (100, 0))
-            self.link = self.copy_clipboard()
+        link = ''
+        if len(window_handles) > 1:
+            self.driver.switch_to.window(window_handles[1]) # force Selenium to be on the new tab
+            link = self.driver.current_url
 
-        # close chrome
-        pyautogui.click() # ensure chrome is selected
-        pyautogui.hotkey('alt', 'f4')
-        time.sleep(0.01)
+        return link
 
-    def send_email(self):
+    def send_email(self, link):
         'send email with SMTP'
         smtp = smtplib.SMTP('smtp.gmail.com', 587)
 
@@ -89,7 +72,7 @@ class FakeCheckIn:
         smtp.starttls()
         smtp.login(EMAIL_ADDRESS, GMAIL_APP_PASSWORD)
 
-        msg = MIMEText(self.link)
+        msg = MIMEText(link)
         msg['Subject'] = f'출석 링크 {datetime.now().strftime(r"%Y-%m-%d %H:%M")}'
 
         smtp.sendmail(EMAIL_ADDRESS, EMAIL_ADDRESS, msg.as_string())
@@ -100,18 +83,16 @@ class FakeCheckIn:
 
     def run(self):
         'run once'
-        self.get_link()
+        link = self.get_link()
         # if self.link empty
-        if not self.link:
+        if not link:
             print('QR 코드 없음. 이메일 발송 안 함')
-            return
         # otherwise send email
-        self.send_email()
-        return
+        else:
+            self.send_email(link)
+        self.driver.quit()
 
 if __name__ == '__main__':
-    ImageGrab.grab = partial(ImageGrab.grab, all_screens=True) # multimonitor support
-
     sched = BlockingScheduler(standalone=True)          # scheduler
     program = FakeCheckIn()                             # app
     sched.add_job(program.run, 'interval', seconds=300) # will run app every 300 seconds
