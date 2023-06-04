@@ -2,21 +2,19 @@
 For educational purposes only
 
 # Requirements
-Windows 10 or higher. If you want to use it as is, Windows 11 with default settings in Korean.
+Any OS should work, but only tested on Windows 11
 
 Run below in a Python 3 environment, 3.11.3 recommended.
 
 `pip install -r requirements.txt`
 
-Install the Chrome extension [Screen QR Reader](https://chrome.google.com/webstore/detail/screen-qr-reader/ekoaehpknadfoaolagjfdefeopkhfhln), and pin it to the browser.
+Install the Chrome extension [Screen QR Reader](https://chrome.google.com/webstore/detail/screen-qr-reader/ekoaehpknadfoaolagjfdefeopkhfhln).
 
 Install Zoom.
 
 Fill out the template `info-template.py` with your Gmail information or modify to match your email provider configuration. Rename the file to `info.py`
 
 Enter a Zoom conference.
-
-Customizing search images is most likely required for your own PC: Replace the images with those found on your screen. `win + shift + s` is a shortcut that allows you to capture a portion of the screen.
 
 # Run
 `python main.py`
