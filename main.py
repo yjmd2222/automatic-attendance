@@ -16,22 +16,22 @@ from selenium.webdriver.chrome.options import Options
 
 from info import GMAIL_APP_PASSWORD, EMAIL_ADDRESS, CHROME_EXTENSION_LINK
 
+def decorator_three_times(func):
+    'decorator for checking link three times'
+    def wrapper(*args, **kwargs):
+        'wrapper'
+        i = 3
+        result = None
+        while i > 0:
+            result = func(*args, **kwargs)
+            if result:
+                break
+            i -= 1
+        return result
+    return wrapper
+
 class FakeCheckIn:
     'A class for checking QR image and sending email with link'
-
-    def decorator_three_times(func):
-        'decorator for checking link three times'
-        def wrapper(self, *args, **kwargs):
-            'wrapper'
-            i = 3
-            result = None
-            while i > 0:
-                result = func(self, *args, **kwargs)
-                if result:
-                    break
-                i -= 1
-            return result
-        return wrapper
 
     def __init__(self):
         'initialize'
