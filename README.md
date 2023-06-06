@@ -10,8 +10,6 @@ Run below in a Python 3 environment, 3.11.3 recommended.
 
 Install the Chrome extension [Screen QR Reader](https://chrome.google.com/webstore/detail/screen-qr-reader/ekoaehpknadfoaolagjfdefeopkhfhln).
 
-Install Zoom.
-
 Fill out the template `info-template.py` with your Gmail information or modify to match your email provider configuration. Rename the file to `info.py`
 
 Enter a Zoom conference.
