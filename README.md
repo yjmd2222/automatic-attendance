@@ -27,7 +27,9 @@ The link is sent to the email provided (The sender and the receiver are the same
 
 Along with that, it also turns on Zoom Video on 1 PM, so make sure you have a recording of yourself pre-selected as the background.
 You may also need to look for a virtual camera so that the actual webcam feeds video into it on your command. A virtual camera without live video feed from the webcam works as a blackscreen,
-so you can only see the background image that you chose in Zoom settings. Switch on and off the webcam feed and the background image, so there is only one of you, not two.
+so you can only see the background image (video recording) that you chose in Zoom settings. Switch on and off the webcam feed and the background image (video), so there is only one of you, not two.
+
+You may also want to look into how to run two instances of Zoom. This is to record yourself in the morning and use it in the afternoon. Same background and resolution.
 
 So why this? My online class requires I sit at the desk on Zoom from 9 AM to 6 PM (lunch time from 12 to 1 is excluded) with camera on the entire time.
 This is ridiculous, and everyone must be thinking of putting on a fake recording of themself in the background. But the admins are going to send a QR image for us to check in every hour or two
