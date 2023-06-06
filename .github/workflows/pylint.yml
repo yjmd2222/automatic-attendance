@@ -28,4 +28,4 @@ jobs:
         git commit -m 'allowempty' --allow-empty
     - name: Analysing the code with pylint
       run: |
-        pylint $(git ls-files 'main.py' 'info.py')
+        pylint $(git ls-files '*.py' ':!:archive*.py')
