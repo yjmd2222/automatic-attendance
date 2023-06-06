@@ -11,7 +11,8 @@ from selenium.webdriver.common.by import By
 
 import pyautogui
 
-from info import (GET_CRX_LINK, IMAGE_CONTINUE, REGION,
+from helper import get_last_match
+from settings import (CONTINUE_IMAGE, GET_CRX_LINK,
                   SCREEN_QR_READER_SOURCE, SCREEN_QR_READER_WEBSTORE_LINK)
 
 class DownloadExtensionSource:
@@ -19,11 +20,11 @@ class DownloadExtensionSource:
 
     def __init__(self):
         'initialize'
-        self.image = os.path.join(os.getcwd(), 'images', IMAGE_CONTINUE)
+        self.image = CONTINUE_IMAGE
 
     def check_source_exists(self):
         'Check if source exists'
-        return os.path.isfile(os.path.join(os.getcwd(), SCREEN_QR_READER_SOURCE))
+        return os.path.isfile(SCREEN_QR_READER_SOURCE)
 
     def create_selenium_options(self):
         '''
@@ -58,22 +59,29 @@ class DownloadExtensionSource:
         button_ok.click()
         time.sleep(1)
 
-        # Recent Chrome does not allow bypassing 'harmful download'.
-        pos = pyautogui.locateOnScreen(self.image, region=REGION, confidence=0.7)
-        i = 0
-        while i < 4:
-            i += 1
-            if pos:
-                pyautogui.click(pos)
-                time.sleep(1)
-                break
+        # Recent Chrome does not allow bypassing 'harmful download', so use pyautogui.
+        pos = get_last_match(self.image)
+        if pos != (0,0,0,0):
+            print('다운로드 "계속" 버튼 확인')
+            pyautogui.click(pos) # must be on the bottom
+            time.sleep(5)
+        else:
+            print('다운로드 "계속" 버튼 찾을 수 없음')
 
     def run(self):
         'Run the download'
+        print('다운로드 스크립트 실행')
         if self.check_source_exists():
+            print('이미 디렉터리 안에 확장자 소스 파일 있음')
             return
         options = self.create_selenium_options()
         driver = self.initialize_selenium(options)
         self.download(driver)
         driver.quit()
+        if os.path.isfile(SCREEN_QR_READER_SOURCE):
+            print('다운로드한 확장자 소스 파일 확인 완료')
+        else:
+            print('다운로드된 파일 없음')
+            raise AssertionError
+        print('다운로드 스크립트 종료')
         return

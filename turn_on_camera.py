@@ -2,20 +2,20 @@
 Turn on Camera on Zoom
 '''
 
-import os
 import time
 
 import pyautogui
 import pywinauto
 
-from info import CONFERENCE_NAME, IMAGE_START
+from helper import get_last_match
+from settings import CONFERENCE_NAME, START_IMAGE
 
 class TurnOnCamera:
     'A class that turns on Camera on Zoom'
 
     def __init__(self):
         'initialize'
-        self.image = os.path.join(os.getcwd(), 'images', IMAGE_START)
+        self.image = START_IMAGE
         self.pywinauto_app = pywinauto.Application()
 
     def connect(self):
@@ -24,11 +24,11 @@ class TurnOnCamera:
 
     def get_start_video_button(self):
         'get pos of start video'
-        pos = pyautogui.locateOnScreen(self.image, confidence=0.7)
-        if not pos:
+        pos = get_last_match(self.image)
+        if pos == (0,0,0,0):
             pyautogui.press('alt')
             time.sleep(0.1)
-            pos = pyautogui.locateOnScreen(self.image, confidence=0.7)
+            pos = get_last_match(self.image)
 
         return pos
 
@@ -38,9 +38,11 @@ class TurnOnCamera:
 
     def run(self):
         'run the whole process'
+        print('비디오 시작 스크립트 실행')
         self.connect()
         pos = self.get_start_video_button()
-        if pos:
+        if pos != (0,0,0,0):
             self.press_start_video_button(pos)
+            print('비디오 시작')
         else:
-            print("can't find the button")
+            print('비디오 시작 버튼 찾을 수 없음')
