@@ -22,9 +22,8 @@ def get_last_match(image):
     for idx, pos in enumerate(all_locations):
         if idx == len(all_locations) - 1:
             break
-        else:
-            if abs(all_locations[idx][0] - positions[-1][0]) +\
-                abs(all_locations[idx][1] - positions[-1][1]) > threshhold:
-                positions.append(pos)
+        if abs(all_locations[idx][0] - positions[-1][0]) +\
+            abs(all_locations[idx][1] - positions[-1][1]) > threshhold:
+            positions.append(pos)
 
     return positions[-1]
