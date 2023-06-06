@@ -14,7 +14,7 @@ from apscheduler.schedulers.background import BlockingScheduler
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 
-from info import GMAIL_APP_PASSWORD, EMAIL_ADDRESS, CHROME_EXTENSION_LINK
+from info import GMAIL_APP_PASSWORD, EMAIL_ADDRESS, SCREEN_QR_READER_POPUP_LINK, SCREEN_QR_READER_SOURCE
 
 def decorator_three_times(func):
     'decorator for checking link three times'
@@ -41,7 +41,7 @@ class FakeCheckIn:
         'declare options for Selenium driver'
         options = Options()
         # Screen QR Reader source required
-        options.add_extension('./extension_0_1_2_0.crx')
+        options.add_extension(SCREEN_QR_READER_SOURCE)
         # automatically select Zoom meeting
         options.add_argument('--auto-select-desktop-capture-source=Zoom')
 
@@ -54,7 +54,7 @@ class FakeCheckIn:
     @decorator_three_times
     def get_link(self, driver):
         'Get link from QR'
-        driver.get(CHROME_EXTENSION_LINK) # Screen QR Reader
+        driver.get(SCREEN_QR_READER_POPUP_LINK) # Screen QR Reader
         time.sleep(5)
 
         # Selenium will automatically open the link in a new tab
@@ -103,7 +103,7 @@ if __name__ == '__main__':
     # app
     program = FakeCheckIn()
     # will run app every 300 seconds
-    sched.add_job(program.run, 'interval', seconds=300)
+    sched.add_job(program.run, 'interval', minutes=7)
 
     try:
         sched.start()
