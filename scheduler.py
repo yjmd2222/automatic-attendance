@@ -19,7 +19,8 @@ class MyScheduler:
         self.turn_on_camera = TurnOnCamera()
 
     def shutdown(self, event):
-        if self.sched.running:
+        'testing interrupt'
+        if self.sched.running and event:
             self.sched.shutdown(wait=False)
 
     def add_jobs(self):

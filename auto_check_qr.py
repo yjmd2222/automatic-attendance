@@ -9,12 +9,11 @@ from email.mime.text import MIMEText
 
 from datetime import datetime
 
-from apscheduler.schedulers.background import BlockingScheduler
-
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 
-from info import GMAIL_APP_PASSWORD, EMAIL_ADDRESS, SCREEN_QR_READER_POPUP_LINK, SCREEN_QR_READER_SOURCE, MINUTES
+from info import (GMAIL_APP_PASSWORD, EMAIL_ADDRESS,
+                  SCREEN_QR_READER_POPUP_LINK, SCREEN_QR_READER_SOURCE)
 
 def decorator_three_times(func):
     'decorator for checking link three times'

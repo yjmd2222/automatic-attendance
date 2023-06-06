@@ -31,7 +31,7 @@ class TurnOnCamera:
             pos = pyautogui.locateOnScreen(self.image, confidence=0.7)
 
         return pos
-        
+
     def press_start_video_button(self, pos):
         'press start video'
         pyautogui.click(pos)
