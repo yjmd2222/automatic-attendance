@@ -8,6 +8,7 @@ from selenium import webdriver
 
 import pyautogui
 import pywinauto
+from pywinauto.findwindows import ElementNotFoundError
 
 from settings import CONFERENCE_NAME, ZOOM_LINK
 
@@ -24,7 +25,7 @@ class LaunchZoom:
             self.pywinauto_app.connect(best_match=CONFERENCE_NAME)
             print('이미 Zoom 회의 입장중')
             return True
-        except Exception:
+        except ElementNotFoundError:
             print('Zoom 입장 안 함. 실행 필요')
             return False
 
