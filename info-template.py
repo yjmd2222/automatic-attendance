@@ -1,6 +1,6 @@
 '''
-Email login information
+Kakao login information
 '''
 
-EMAIL_ADDRESS = 'whatisit@gmail.com'
-GMAIL_APP_PASSWORD = 'password'
+ID = 'whatisit@gmail.com'
+PASSWORD = 'password'
