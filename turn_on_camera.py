@@ -1,5 +1,5 @@
 '''
-Turn on Camera on Zoom
+Turn on video on Zoom
 '''
 
 import time
@@ -11,7 +11,7 @@ from helper import get_last_match
 from settings import CONFERENCE_NAME, START_IMAGE
 
 class TurnOnCamera:
-    'A class that turns on Camera on Zoom'
+    'A class that turns on video on Zoom'
 
     def __init__(self):
         'initialize'
