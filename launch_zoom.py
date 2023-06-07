@@ -46,7 +46,7 @@ class LaunchZoom:
         pyautogui.press('tab')
         time.sleep(0.1)
         pyautogui.press('space')
-        time.sleep(0.1)
+        time.sleep(10)
 
     def check_result(self):
         'check the result'
