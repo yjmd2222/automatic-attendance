@@ -54,7 +54,7 @@ class FakeCheckIn:
         return webdriver.Chrome(options=self.options)
 
     @decorator_three_times
-    def get_link(self, driver, window_sizes):
+    def get_link(self, driver, window_sizes=None):
         'Get link from QR'
         # maximize Chrome window
         driver.maximize_window()
