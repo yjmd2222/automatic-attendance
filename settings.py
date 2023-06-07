@@ -15,9 +15,6 @@ SCREEN_QR_READER_WEBSTORE_LINK = \
     'https://chrome.google.com/webstore/detail/screen-qr-reader/ekoaehpknadfoaolagjfdefeopkhfhln'
 # SCREEN_QR_READER_SOURCE_PATH = get_file_path('extension_0_1_2_0.crx')
 
-# Launch zoom
-ZOOM_LINK = 'https://zoom.us/j/4151086241?pwd=Nm5LWHYvUEhhUC9NTVg4V2lNRG5LQT09'
-
 # PyAutoGUI
 # continue with download
 CONTINUE_IMAGE = get_file_path('continue_with_download.png', 'images')
