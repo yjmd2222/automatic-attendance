@@ -15,6 +15,9 @@ SCREEN_QR_READER_WEBSTORE_LINK = \
     'https://chrome.google.com/webstore/detail/screen-qr-reader/ekoaehpknadfoaolagjfdefeopkhfhln'
 # SCREEN_QR_READER_SOURCE_PATH = get_file_path('extension_0_1_2_0.crx')
 
+# Launch zoom
+ZOOM_LINK = 'https://zoom.us/j/4151086241?pwd=Nm5LWHYvUEhhUC9NTVg4V2lNRG5LQT09'
+
 # PyAutoGUI
 # continue with download
 CONTINUE_IMAGE = get_file_path('continue_with_download.png', 'images')
@@ -24,5 +27,14 @@ CONFERENCE_NAME = 'Zoom 회의'
 
 # APScheduler timings
 MINUTES = 7 # every 7 minutes
-HOUR = 13   # at hour 13
-MINUTE = 0  # at minute 0
+VIDEO_ON_HOUR = 13   # at hour 13
+VIDEO_ON_MINUTE = 0  # at minute 0
+ZOOM_ON_HOUR = 12    # at hour 12
+ZOOM_ON_MINUTE = 55  # at minute 55
+
+# misc
+ZOOM_RESIZE_PARAMETERS_LIST = [ # Reduce Zoom window size
+    (0, 0, 1000, 800),
+    (0, 0, 1600, 900),
+    (0, 0, 1920, 1080)
+    ]

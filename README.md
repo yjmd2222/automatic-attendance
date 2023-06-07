@@ -10,7 +10,7 @@ Run below in a Python 3 environment, 3.11.3 recommended.
 
 Install the Chrome extension [Screen QR Reader](https://chrome.google.com/webstore/detail/screen-qr-reader/ekoaehpknadfoaolagjfdefeopkhfhln).
 
-Fill out the template `info-template.py` with your Gmail information or modify to match your email provider configuration. Rename the file to `info.py`
+Fill out the template `info-template.py` with your Kakao login information. Rename the file to `info.py`
 
 Enter a Zoom conference.
 
@@ -23,9 +23,9 @@ Customizing search images is most likely required for your own PC: Replace the i
 The script assumes a Zoom meeting is live and checks if there is a QR image on the meeting screen. Screen QR Reader scans the QR image, and the output link is copied.
 The link is sent to the email provided (The sender and the receiver are the same). This is done every seven minutes.
 
-Along with that, it also turns on Zoom Video on 1 PM, so make sure you have a recording of yourself pre-selected as the background.
+Along with that, it also turns on Zoom video on 1 PM, so make sure you have a recording of yourself pre-selected as the background.
 You may also need to look for a virtual camera so that the actual webcam feeds video into it on your command. A virtual camera without live video feed from the webcam works as a blackscreen,
-so you can only see the background image (video recording) that you chose in Zoom settings. Switch on and off the webcam feed and the background image (video), so there is only one of you, not two.
+so you can only see the background image (video recording) that you chose in Zoom settings. Switch on and off the webcam feed and the background image/video, so there is only one of you, not two.
 
 You may also want to look into how to run two instances of Zoom. This is to record yourself in the morning and use it in the afternoon. Same background and resolution.
 
