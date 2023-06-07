@@ -4,32 +4,28 @@ Script to automatically send link information in QR image on a Zoom meeting ever
 
 import time
 
-import smtplib
-from email.mime.text import MIMEText
-
-from datetime import datetime
-
 import win32con
 import win32gui
 
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.common.by import By
 
-from info import EMAIL_ADDRESS, GMAIL_APP_PASSWORD
+from info import ID, PASSWORD
 from settings import (SCREEN_QR_READER_POPUP_LINK, SCREEN_QR_READER_SOURCE,
-                      ZOOM_RESIZE_PARAMETERS)
+                      ZOOM_RESIZE_PARAMETERS_LIST)
 
 def decorator_three_times(func):
     'decorator for checking link three times'
-    def wrapper(*args, **kwargs):
+    def wrapper(self, driver, window_size=ZOOM_RESIZE_PARAMETERS_LIST[0]):
         'wrapper'
-        i = 3
+        i = 0
         result = None
-        while i > 0:
-            result = func(*args, **kwargs)
+        while i < 3:
+            result = func(self, driver, ZOOM_RESIZE_PARAMETERS_LIST[i])
             if result:
                 break
-            i -= 1
+            i += 1
         return result
     return wrapper
 
@@ -56,12 +52,12 @@ class FakeCheckIn:
         return webdriver.Chrome(options=self.options)
 
     @decorator_three_times
-    def get_link(self, driver):
+    def get_link(self, driver, window_sizes):
         'Get link from QR'
         # maximize Chrome window
         driver.maximize_window()
         # reduce Zoom window size
-        win32gui.MoveWindow(self.zoom_window, *ZOOM_RESIZE_PARAMETERS, True)
+        win32gui.MoveWindow(self.zoom_window, *window_sizes, True)
         driver.get(SCREEN_QR_READER_POPUP_LINK) # Screen QR Reader
         time.sleep(5)
 
@@ -69,40 +65,57 @@ class FakeCheckIn:
         # if there is a QR image, so check tab count.
         window_handles = driver.window_handles
 
-        link = ''
         if len(window_handles) > 1:
             driver.switch_to.window(window_handles[1]) # force Selenium to be on the new tab
-            link = driver.current_url
+            return True
 
-        return link
+        return False
 
-    def send_email(self, link):
-        'send email with SMTP'
-        smtp = smtplib.SMTP('smtp.gmail.com', 587)
+    def check_in(self, driver):
+        'do the check-in'
+        with_kakao = driver.find_element(By.CLASS_NAME, 'login-form__button-title.css-caslt6')
+        with_kakao.click()
+        time.sleep(3)
 
-        smtp.ehlo()
-        smtp.starttls()
-        smtp.login(EMAIL_ADDRESS, GMAIL_APP_PASSWORD)
+        id_box = driver.find_element(By.ID, 'loginKey--1')
+        id_box.send_keys(ID)
+        time.sleep(1)
 
-        msg = MIMEText(link)
-        msg['Subject'] = f'출석 링크 {datetime.now().strftime(r"%Y-%m-%d %H:%M")}'
+        pw_box = driver.find_element(By.ID, 'password--2')
+        pw_box.send_keys(PASSWORD)
+        time.sleep(1)
 
-        smtp.sendmail(EMAIL_ADDRESS, EMAIL_ADDRESS, msg.as_string())
+        press_login = driver.find_element(By.CLASS_NAME, 'btn_g.highlight.submit')
+        press_login.click()
+        time.sleep(10)
 
-        print('이메일 발송 성공')
+        iframe = driver.find_element(By.TAG_NAME, 'iframe')
+        iframe_url = iframe.get_attribute('src')
+        driver.get(iframe_url)
+        time.sleep(10)
 
-        smtp.quit()
+        agree_button = driver.find_element(By.XPATH, "//*[text()='동의합니다.']")
+        agree_button.click()
+        time.sleep(3)
+
+        check_in_button = driver.find_element(By.XPATH, "//*[text()='출석']")
+        check_in_button.click()
+        time.sleep(3)
+
+        submit_button = driver.find_element(By.XPATH, "//*[text()='제출']")
+        # submit_button.click()
+        time.sleep(1)
 
     def run(self):
         'run once'
         driver = self.initialize_selenium()
-        link = self.get_link(driver)
-        # if self.link empty
-        if not link:
-            print('QR 코드 없음. 이메일 발송 안 함')
-        # otherwise send email
+        islink = self.get_link(driver)
+        # if there's no link
+        if not islink:
+            print('QR 코드 없음. 현 세션 완료')
+        # otherwise check in
         else:
-            self.send_email(link)
+            self.check_in(driver)
         driver.quit()
         # maximize Zoom window
         win32gui.ShowWindow(self.zoom_window, win32con.SW_MAXIMIZE)
