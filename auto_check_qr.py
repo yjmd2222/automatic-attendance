@@ -16,13 +16,15 @@ from settings import (SCREEN_QR_READER_POPUP_LINK, SCREEN_QR_READER_SOURCE,
                       ZOOM_RESIZE_PARAMETERS_LIST)
 
 def decorator_three_times(func):
-    'decorator for checking link three times'
-    def wrapper(self, driver, window_size=ZOOM_RESIZE_PARAMETERS_LIST[0]):
+    'decorator for checking link three times, with different Zoom window sizes'
+    def wrapper(*args):
         'wrapper'
         i = 0
         result = None
         while i < 3:
-            result = func(self, driver, ZOOM_RESIZE_PARAMETERS_LIST[i])
+            # replace last argument == window_size
+            args = args[:2] + (ZOOM_RESIZE_PARAMETERS_LIST[i],)
+            result = func(*args)
             if result:
                 break
             i += 1
@@ -103,7 +105,7 @@ class FakeCheckIn:
         time.sleep(3)
 
         submit_button = driver.find_element(By.XPATH, "//*[text()='제출']")
-        # submit_button.click()
+        submit_button.click()
         time.sleep(1)
 
     def run(self):
@@ -119,3 +121,4 @@ class FakeCheckIn:
         driver.quit()
         # maximize Zoom window
         win32gui.ShowWindow(self.zoom_window, win32con.SW_MAXIMIZE)
+FakeCheckIn().run()
