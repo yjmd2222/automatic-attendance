@@ -51,9 +51,9 @@ class LaunchZoom:
         try:
             self.pywinauto_app.connect(best_match=CONFERENCE_NAME)
             print('줌 실행 성공')
-        except Exception as e:
+        except Exception as exc:
             print('줌 실행 실패')
-            raise AssertionError from e
+            raise AssertionError from exc
 
     def run(self):
         'Run the launch'
