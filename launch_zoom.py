@@ -24,7 +24,7 @@ class LaunchZoom:
             self.pywinauto_app.connect(best_match=CONFERENCE_NAME)
             print('이미 Zoom 회의 입장중')
             return True
-        except:
+        except Exception:
             print('Zoom 입장 안 함. 실행 필요')
             return False
 
@@ -47,12 +47,13 @@ class LaunchZoom:
         time.sleep(0.1)
 
     def check_result(self):
+        'check the result'
         try:
             self.pywinauto_app.connect(best_match=CONFERENCE_NAME)
             print('줌 실행 성공')
-        except:
+        except Exception as e:
             print('줌 실행 실패')
-            raise AssertionError
+            raise AssertionError from e
 
     def run(self):
         'Run the launch'
@@ -60,7 +61,7 @@ class LaunchZoom:
 
         if self.connect():
             return
-        
+
         driver = self.initialize_selenium()
         self.launch_zoom(driver)
         self.check_result()
