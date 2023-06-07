@@ -31,3 +31,6 @@ VIDEO_ON_HOUR = 13   # at hour 13
 VIDEO_ON_MINUTE = 0  # at minute 0
 ZOOM_ON_HOUR = 12    # at hour 12
 ZOOM_ON_MINUTE = 55  # at minute 55
+
+# misc
+ZOOM_RESIZE_PARAMETERS = (0, 0, 1000, 800) # Reduce Zoom window size
