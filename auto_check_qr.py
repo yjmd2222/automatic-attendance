@@ -9,7 +9,8 @@ from email.mime.text import MIMEText
 
 from datetime import datetime
 
-import win32gui, win32con
+import win32con
+import win32gui
 
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
