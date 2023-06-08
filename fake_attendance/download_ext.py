@@ -7,12 +7,14 @@ import time
 
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
+from webdriver_manager.chrome import ChromeDriverManager
 
 import pyautogui
 
-from helper import get_last_match
-from settings import (CONTINUE_IMAGE, GET_CRX_LINK,
+from fake_attendance.helper import get_last_match
+from fake_attendance.settings import (CONTINUE_IMAGE, GET_CRX_LINK,
                   SCREEN_QR_READER_SOURCE, SCREEN_QR_READER_WEBSTORE_LINK)
 
 class DownloadExtensionSource:
@@ -43,7 +45,9 @@ class DownloadExtensionSource:
 
     def initialize_selenium(self, options):
         'Initialize Selenium and return driver'
-        return webdriver.Chrome(options=options)
+        auto_driver = Service(ChromeDriverManager().install())
+
+        return webdriver.Chrome(service=auto_driver, options=options)
 
     def download(self, driver):
         'Download the source'

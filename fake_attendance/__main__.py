@@ -2,8 +2,8 @@
 main file
 '''
 
-from download_ext import DownloadExtensionSource
-from scheduler import MyScheduler
+from fake_attendance.download_ext import DownloadExtensionSource
+from fake_attendance.scheduler import MyScheduler
 
 if __name__ == '__main__':
     download = DownloadExtensionSource()
