@@ -38,7 +38,6 @@ class FakeCheckIn:
 
     def __init__(self):
         'initialize'
-        self.options = self.create_selenium_options() # Selenium options
         self.zoom_window = win32gui.FindWindow(None, 'Zoom 회의')
 
     def create_selenium_options(self):
@@ -51,11 +50,11 @@ class FakeCheckIn:
 
         return options
 
-    def initialize_selenium(self):
+    def initialize_selenium(self, options):
         'initialize Selenium and return driver'
         auto_driver = Service(ChromeDriverManager().install())
 
-        return webdriver.Chrome(service=auto_driver, options=self.options)
+        return webdriver.Chrome(service=auto_driver, options=options)
 
     @decorator_three_times
     def get_link(self, driver, window_sizes=None):
@@ -114,7 +113,8 @@ class FakeCheckIn:
 
     def run(self):
         'run once'
-        driver = self.initialize_selenium()
+        options = self.create_selenium_options()
+        driver = self.initialize_selenium(options)
         islink = self.get_link(driver)
         # if there's no link
         if not islink:
