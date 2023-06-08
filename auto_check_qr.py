@@ -121,3 +121,6 @@ class FakeCheckIn:
         driver.quit()
         # maximize Zoom window
         win32gui.ShowWindow(self.zoom_window, win32con.SW_MAXIMIZE)
+
+if __name__ == '__main__':
+    FakeCheckIn().run()

@@ -29,3 +29,6 @@ class TurnOnCamera:
         self.connect()
         self.start_video_shortcut()
         print('비디오 시작 스크립트 완료')
+
+if __name__ == '__main__':
+    TurnOnCamera().run()

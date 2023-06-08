@@ -85,3 +85,6 @@ class DownloadExtensionSource:
             raise AssertionError
         print('다운로드 스크립트 종료')
         return
+
+if __name__ == '__main__':
+    DownloadExtensionSource().run()

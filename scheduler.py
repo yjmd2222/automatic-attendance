@@ -40,3 +40,6 @@ class MyScheduler:
             self.sched.start()
         except KeyboardInterrupt:
             print('interrupt')
+
+if __name__ == '__main__':
+    MyScheduler().run()
