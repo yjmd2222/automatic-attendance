@@ -9,10 +9,12 @@ import win32gui
 
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
+from webdriver_manager.chrome import ChromeDriverManager
 
-from info import ID, PASSWORD
-from settings import (SCREEN_QR_READER_POPUP_LINK, SCREEN_QR_READER_SOURCE,
+from fake_attendance.info import ID, PASSWORD
+from fake_attendance.settings import (SCREEN_QR_READER_POPUP_LINK, SCREEN_QR_READER_SOURCE,
                       ZOOM_RESIZE_PARAMETERS_LIST)
 
 def decorator_three_times(func):
@@ -36,7 +38,6 @@ class FakeCheckIn:
 
     def __init__(self):
         'initialize'
-        self.options = self.create_selenium_options() # Selenium options
         self.zoom_window = win32gui.FindWindow(None, 'Zoom 회의')
 
     def create_selenium_options(self):
@@ -49,9 +50,11 @@ class FakeCheckIn:
 
         return options
 
-    def initialize_selenium(self):
+    def initialize_selenium(self, options):
         'initialize Selenium and return driver'
-        return webdriver.Chrome(options=self.options)
+        auto_driver = Service(ChromeDriverManager().install())
+
+        return webdriver.Chrome(service=auto_driver, options=options)
 
     @decorator_three_times
     def get_link(self, driver, window_sizes=None):
@@ -77,7 +80,7 @@ class FakeCheckIn:
         'do the check-in'
         with_kakao = driver.find_element(By.CLASS_NAME, 'login-form__button-title.css-caslt6')
         with_kakao.click()
-        time.sleep(3)
+        time.sleep(10)
 
         id_box = driver.find_element(By.ID, 'loginKey--1')
         id_box.send_keys(ID)
@@ -106,11 +109,12 @@ class FakeCheckIn:
 
         submit_button = driver.find_element(By.XPATH, "//*[text()='제출']")
         submit_button.click()
-        time.sleep(1)
+        time.sleep(600) # to make sure same job does not run within 10 minutes
 
     def run(self):
         'run once'
-        driver = self.initialize_selenium()
+        options = self.create_selenium_options()
+        driver = self.initialize_selenium(options)
         islink = self.get_link(driver)
         # if there's no link
         if not islink:

@@ -23,9 +23,9 @@ jobs:
     - name: Rename info-template.py to info.py
       working-directory: .
       run: |
-        mv info-template.py info.py
+        mv ./fake_attendance/info-template.py ./fake_attendance/info.py
         git add .
         git commit -m 'allowempty' --allow-empty
     - name: Analysing the code with pylint
       run: |
-        pylint --extension-pkg-whitelist=win32gui $(git ls-files '*.py' ':!:archive*.py')
+        pylint --extension-pkg-whitelist=win32gui fake_attendance
