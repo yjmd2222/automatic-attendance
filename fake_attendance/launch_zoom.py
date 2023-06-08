@@ -5,13 +5,15 @@ Launch Zoom
 import time
 
 from selenium import webdriver
+from selenium.webdriver.chrome.service import Service
+from webdriver_manager.chrome import ChromeDriverManager
 
 import pyautogui
 import pywinauto
 from pywinauto.findwindows import ElementNotFoundError
 
-from info import ZOOM_LINK
-from settings import CONFERENCE_NAME
+from fake_attendance.info import ZOOM_LINK
+from fake_attendance.settings import CONFERENCE_NAME
 
 class LaunchZoom:
     'A class for launching Zoom'
@@ -23,7 +25,7 @@ class LaunchZoom:
     def connect(self):
         'connect to Zoom conference'
         try:
-            self.pywinauto_app.connect(best_match=CONFERENCE_NAME)
+            self.pywinauto_app.connect(title=CONFERENCE_NAME)
             print('이미 Zoom 회의 입장중')
             return True
         except ElementNotFoundError:
@@ -32,7 +34,9 @@ class LaunchZoom:
 
     def initialize_selenium(self):
         'Initialize Selenium and return driver'
-        return webdriver.Chrome()
+        auto_driver = Service(ChromeDriverManager().install())
+
+        return webdriver.Chrome(service=auto_driver)
 
     def launch_zoom(self, driver):
         'launch method'

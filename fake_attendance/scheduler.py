@@ -4,11 +4,9 @@ Scheduler that runs FakeCheckIn and TurnOnCamera
 
 from apscheduler.schedulers.background import BlockingScheduler
 
-from auto_check_qr import FakeCheckIn
-from turn_on_camera import TurnOnCamera
-from launch_zoom import LaunchZoom
-from settings import (MINUTES, VIDEO_ON_HOUR, VIDEO_ON_MINUTE,
-                      ZOOM_ON_HOUR, ZOOM_ON_MINUTE)
+from fake_attendance.fake_check_in import FakeCheckIn
+from fake_attendance.launch_zoom import LaunchZoom
+from fake_attendance.settings import (MINUTES, ZOOM_ON_HOUR, ZOOM_ON_MINUTE)
 
 class MyScheduler:
     'A class that manages the scheduler'
@@ -17,7 +15,6 @@ class MyScheduler:
         'initialize'
         self.sched = BlockingScheduler(standalone=True)
         self.fake_check_in = FakeCheckIn()
-        self.turn_on_camera = TurnOnCamera()
         self.launch_zoom = LaunchZoom()
 
     def shutdown(self, event):
@@ -33,8 +30,6 @@ class MyScheduler:
         self.sched.add_job(self.fake_check_in.run, 'interval', minutes=MINUTES)
         self.sched.add_job(self.launch_zoom.run, 'cron',\
                            hour=ZOOM_ON_HOUR, minute=ZOOM_ON_MINUTE)
-        self.sched.add_job(self.turn_on_camera.run, 'cron',\
-                           hour=VIDEO_ON_HOUR, minute=VIDEO_ON_MINUTE)
 
     def run(self):
         'run scheduler'
