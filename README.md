@@ -17,7 +17,7 @@ Enter a Zoom conference.
 Customizing search images is most likely required for your own PC: Replace the images with those found on your screen. `win + shift + s` is a shortcut that allows you to capture a portion of the screen.
 
 ## Run
-`python main.py`
+`python -m fake_attendance`
 
 ## How it works and why
 The script assumes a Zoom meeting is live and checks if there is a QR image on the meeting screen. Screen QR Reader scans the QR image, and the output link is copied.

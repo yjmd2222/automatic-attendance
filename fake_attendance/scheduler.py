@@ -4,9 +4,9 @@ Scheduler that runs FakeCheckIn and TurnOnCamera
 
 from apscheduler.schedulers.background import BlockingScheduler
 
-from fake_check_in import FakeCheckIn
-from launch_zoom import LaunchZoom
-from settings import (MINUTES, ZOOM_ON_HOUR, ZOOM_ON_MINUTE)
+from fake_attendance.fake_check_in import FakeCheckIn
+from fake_attendance.launch_zoom import LaunchZoom
+from fake_attendance.settings import (MINUTES, ZOOM_ON_HOUR, ZOOM_ON_MINUTE)
 
 class MyScheduler:
     'A class that manages the scheduler'

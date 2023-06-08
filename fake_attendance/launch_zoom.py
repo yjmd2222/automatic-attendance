@@ -12,8 +12,8 @@ import pyautogui
 import pywinauto
 from pywinauto.findwindows import ElementNotFoundError
 
-from info import ZOOM_LINK
-from settings import CONFERENCE_NAME
+from fake_attendance.info import ZOOM_LINK
+from fake_attendance.settings import CONFERENCE_NAME
 
 class LaunchZoom:
     'A class for launching Zoom'

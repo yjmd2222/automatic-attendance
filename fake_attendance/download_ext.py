@@ -13,8 +13,8 @@ from webdriver_manager.chrome import ChromeDriverManager
 
 import pyautogui
 
-from helper import get_last_match
-from settings import (CONTINUE_IMAGE, GET_CRX_LINK,
+from fake_attendance.helper import get_last_match
+from fake_attendance.settings import (CONTINUE_IMAGE, GET_CRX_LINK,
                   SCREEN_QR_READER_SOURCE, SCREEN_QR_READER_WEBSTORE_LINK)
 
 class DownloadExtensionSource:

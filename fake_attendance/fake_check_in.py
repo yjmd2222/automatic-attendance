@@ -13,8 +13,8 @@ from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
 from webdriver_manager.chrome import ChromeDriverManager
 
-from info import ID, PASSWORD
-from settings import (SCREEN_QR_READER_POPUP_LINK, SCREEN_QR_READER_SOURCE,
+from fake_attendance.info import ID, PASSWORD
+from fake_attendance.settings import (SCREEN_QR_READER_POPUP_LINK, SCREEN_QR_READER_SOURCE,
                       ZOOM_RESIZE_PARAMETERS_LIST)
 
 def decorator_three_times(func):

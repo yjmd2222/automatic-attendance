@@ -2,7 +2,7 @@
 Settings
 '''
 
-from helper import get_file_path
+from fake_attendance.helper import get_file_path
 
 # Screen QR Reader interaction
 SCREEN_QR_READER_POPUP_LINK = \
