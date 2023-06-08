@@ -5,6 +5,8 @@ Launch Zoom
 import time
 
 from selenium import webdriver
+from selenium.webdriver.chrome.service import Service
+from webdriver_manager.chrome import ChromeDriverManager
 
 import pyautogui
 import pywinauto
@@ -32,7 +34,9 @@ class LaunchZoom:
 
     def initialize_selenium(self):
         'Initialize Selenium and return driver'
-        return webdriver.Chrome()
+        auto_driver = Service(ChromeDriverManager().install())
+
+        return webdriver.Chrome(service=auto_driver)
 
     def launch_zoom(self, driver):
         'launch method'

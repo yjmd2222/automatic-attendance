@@ -9,7 +9,9 @@ import win32gui
 
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
+from webdriver_manager.chrome import ChromeDriverManager
 
 from info import ID, PASSWORD
 from settings import (SCREEN_QR_READER_POPUP_LINK, SCREEN_QR_READER_SOURCE,
@@ -51,7 +53,9 @@ class FakeCheckIn:
 
     def initialize_selenium(self):
         'initialize Selenium and return driver'
-        return webdriver.Chrome(options=self.options)
+        auto_driver = Service(ChromeDriverManager().install())
+
+        return webdriver.Chrome(service=auto_driver, options=self.options)
 
     @decorator_three_times
     def get_link(self, driver, window_sizes=None):
