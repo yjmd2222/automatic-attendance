@@ -6,9 +6,8 @@ from apscheduler.schedulers.background import BlockingScheduler
 
 from auto_check_qr import FakeCheckIn
 from turn_on_camera import TurnOnCamera
-from launch_zoom import LaunchZoom
-from settings import (MINUTES, VIDEO_ON_HOUR, VIDEO_ON_MINUTE,
-                      ZOOM_ON_HOUR, ZOOM_ON_MINUTE)
+from archive.launch_zoom import LaunchZoom
+from settings import (MINUTES, ZOOM_ON_HOUR, ZOOM_ON_MINUTE)
 
 class MyScheduler:
     'A class that manages the scheduler'
@@ -33,8 +32,6 @@ class MyScheduler:
         self.sched.add_job(self.fake_check_in.run, 'interval', minutes=MINUTES)
         self.sched.add_job(self.launch_zoom.run, 'cron',\
                            hour=ZOOM_ON_HOUR, minute=ZOOM_ON_MINUTE)
-        self.sched.add_job(self.turn_on_camera.run, 'cron',\
-                           hour=VIDEO_ON_HOUR, minute=VIDEO_ON_MINUTE)
 
     def run(self):
         'run scheduler'

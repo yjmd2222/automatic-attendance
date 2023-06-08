@@ -23,9 +23,8 @@ START_IMAGE = get_file_path('start_video.png', 'images')
 CONFERENCE_NAME = 'Zoom 회의'
 
 # APScheduler timings
+# 10:00, 11:20, 13:00, 14:30, 15:20, 17:00 if I got them all
 MINUTES = 7 # every 7 minutes
-VIDEO_ON_HOUR = 13   # at hour 13
-VIDEO_ON_MINUTE = 0  # at minute 0
 ZOOM_ON_HOUR = 12    # at hour 12
 ZOOM_ON_MINUTE = 55  # at minute 55
 
