@@ -74,6 +74,3 @@ class LaunchZoom:
         driver.quit()
         time.sleep(5)
         return
-
-if __name__ == '__main__':
-    LaunchZoom().run()
