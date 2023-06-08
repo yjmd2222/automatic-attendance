@@ -77,7 +77,7 @@ class FakeCheckIn:
         'do the check-in'
         with_kakao = driver.find_element(By.CLASS_NAME, 'login-form__button-title.css-caslt6')
         with_kakao.click()
-        time.sleep(3)
+        time.sleep(10)
 
         id_box = driver.find_element(By.ID, 'loginKey--1')
         id_box.send_keys(ID)
@@ -106,7 +106,7 @@ class FakeCheckIn:
 
         submit_button = driver.find_element(By.XPATH, "//*[text()='제출']")
         submit_button.click()
-        time.sleep(1)
+        time.sleep(600) # to make sure same job does not run within 10 minutes
 
     def run(self):
         'run once'

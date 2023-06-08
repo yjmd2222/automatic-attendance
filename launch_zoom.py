@@ -23,7 +23,7 @@ class LaunchZoom:
     def connect(self):
         'connect to Zoom conference'
         try:
-            self.pywinauto_app.connect(best_match=CONFERENCE_NAME)
+            self.pywinauto_app.connect(title=CONFERENCE_NAME)
             print('이미 Zoom 회의 입장중')
             return True
         except ElementNotFoundError:
