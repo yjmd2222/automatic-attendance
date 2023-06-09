@@ -3,6 +3,8 @@ Download Screen QR Reader source code
 '''
 
 import os
+import sys
+
 import time
 
 from selenium import webdriver
@@ -13,9 +15,13 @@ from webdriver_manager.chrome import ChromeDriverManager
 
 import pyautogui
 
+sys.path.append(os.getcwd())
+
+# pylint: disable=wrong-import-position
 from fake_attendance.helper import get_last_match
 from fake_attendance.settings import (CONTINUE_IMAGE, GET_CRX_LINK,
                   SCREEN_QR_READER_SOURCE, SCREEN_QR_READER_WEBSTORE_LINK)
+# pylint: enable=wrong-import-position
 
 class DownloadExtensionSource:
     'A class for downloading the source of Screen QR Reader'
@@ -89,3 +95,6 @@ class DownloadExtensionSource:
             raise AssertionError
         print('다운로드 스크립트 종료')
         return
+
+if __name__ == '__main__':
+    DownloadExtensionSource().run()
