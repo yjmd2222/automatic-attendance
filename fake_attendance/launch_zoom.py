@@ -2,6 +2,9 @@
 Launch Zoom
 '''
 
+import os
+import sys
+
 import time
 
 from selenium import webdriver
@@ -12,12 +15,16 @@ import pyautogui
 import pywinauto
 from pywinauto.findwindows import ElementNotFoundError
 
+sys.path.append(os.getcwd())
+
+# pylint: disable=wrong-import-position
 from fake_attendance.info import ZOOM_LINK
 from fake_attendance.settings import (
     AGREE_RECORDING_IMAGE,
     ZOOM_CLASSROOM_CLASS,
     ZOOM_AGREE_RECORDING_POPUP_CLASS)
 from fake_attendance.helper import get_last_match
+# pylint: enable=wrong-import-position
 
 class LaunchZoom:
     'A class for launching Zoom'
@@ -130,4 +137,6 @@ class LaunchZoom:
         driver.quit()
         time.sleep(5)
         return
-    
+
+if __name__ == '__main__':
+    LaunchZoom().run()

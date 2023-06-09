@@ -2,10 +2,14 @@
 Script to automatically send link information in QR image on a Zoom meeting every five minutes
 '''
 
-from datetime import datetime, timedelta
+import os
+import sys
+
 import time
 
+# pylint: disable=E0611
 from pywintypes import error
+# pylint: enable=E0611
 
 import win32con
 import win32gui
@@ -16,9 +20,11 @@ from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
 from webdriver_manager.chrome import ChromeDriverManager
 
+sys.path.append(os.getcwd())
+
+# pylint: disable=wrong-import-position
 from fake_attendance.info import ID, PASSWORD
 from fake_attendance.settings import (
-    MINUTES,
     SCREEN_QR_READER_POPUP_LINK,
     SCREEN_QR_READER_SOURCE,
     ZOOM_RESIZE_PARAMETERS_LIST,
@@ -29,6 +35,7 @@ from fake_attendance.settings import (
     AGREE,
     CHECK_IN,
     SUBMIT)
+# pylint: enable=wrong-import-position
 
 def decorator_four_times(func):
     'decorator for checking link four times, with different Zoom window sizes'
@@ -38,7 +45,7 @@ def decorator_four_times(func):
         result = None
         while i < 4:
             # replace last argument == window_size
-            args = args[:3] + (ZOOM_RESIZE_PARAMETERS_LIST[i],)
+            args = args[:2] + (ZOOM_RESIZE_PARAMETERS_LIST[i],)
             result = func(*args)
             if result:
                 break
@@ -70,7 +77,7 @@ class FakeCheckIn:
         return webdriver.Chrome(service=auto_driver, options=options)
 
     @decorator_four_times
-    def get_link(self, driver, next_time_strf, window_sizes=(0, 0, 1914, 751)):
+    def get_link(self, driver, window_sizes=(0, 0, 1914, 751)):
         'Get link from QR'
         # maximize Chrome window
         driver.maximize_window()
@@ -80,9 +87,8 @@ class FakeCheckIn:
             win32gui.MoveWindow(self.zoom_window, *window_sizes, True)
         except error:
             print('줌 실행중인지 확인 필요')
-            print('다음 출석 스크립트 실행 시각:', next_time_strf)
         driver.get(SCREEN_QR_READER_POPUP_LINK) # Screen QR Reader
-        time.sleep(5)
+        time.sleep(2)
 
         # Selenium will automatically open the link in a new tab
         # if there is a QR image, so check tab count.
@@ -130,15 +136,12 @@ class FakeCheckIn:
         # Element is not clickable at point (X,Y) error
         driver.execute_script('arguments[0].click();', submit_button)
         time.sleep(600) # to make sure same job does not run within 10 minutes
-      
+
     def run(self):
         'run once'
-        now = datetime.now()
-        next_time = now + timedelta(minutes=MINUTES)
-        next_time_strf = next_time.strftime("%H:%M:%S")
         options = self.create_selenium_options()
         driver = self.initialize_selenium(options)
-        islink = self.get_link(driver, next_time_strf)
+        islink = self.get_link(driver)
         # if there's no link
         if not islink:
             print('QR 코드 없음. 현 세션 완료')
@@ -149,5 +152,5 @@ class FakeCheckIn:
         # maximize Zoom window
         win32gui.ShowWindow(self.zoom_window, win32con.SW_MAXIMIZE)
 
-        next_time = now + timedelta(minutes=MINUTES)
-        print('다음 출석 스크립트 실행 시각:', next_time.strftime("%H:%M:%S"))
+if __name__ == '__main__':
+    FakeCheckIn().run()
