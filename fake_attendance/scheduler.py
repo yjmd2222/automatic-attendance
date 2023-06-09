@@ -37,6 +37,12 @@ class MyScheduler:
         'run scheduler'
         self.add_jobs()
         try:
+            # dirty, but works now
+            now = datetime.now()
+            next_time = now + timedelta(minutes=MINUTES)
+            next_time_strf = next_time.strftime("%H:%M:%S")
+            print('다음 출석 스크립트 실행 시각:', next_time_strf)
+
             self.sched.start()
         except KeyboardInterrupt:
             print('interrupt')

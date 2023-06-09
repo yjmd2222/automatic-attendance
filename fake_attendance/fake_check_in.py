@@ -71,7 +71,7 @@ class FakeCheckIn:
             win32gui.MoveWindow(self.zoom_window, *window_sizes, True)
         except error:
             print('줌 실행중인지 확인 필요')
-            print('다음 실행 시각:', next_time_strf)
+            print('다음 출석 스크립트 실행 시각:', next_time_strf)
         driver.get(SCREEN_QR_READER_POPUP_LINK) # Screen QR Reader
         time.sleep(5)
 
@@ -139,4 +139,4 @@ class FakeCheckIn:
         win32gui.ShowWindow(self.zoom_window, win32con.SW_MAXIMIZE)
 
         next_time = now + timedelta(minutes=MINUTES)
-        print('다음 실행 시각:', next_time.strftime("%H:%M:%S"))
+        print('다음 출석 스크립트 실행 시각:', next_time.strftime("%H:%M:%S"))
