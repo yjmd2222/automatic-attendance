@@ -4,6 +4,8 @@ Helper methods
 
 import os
 
+from datetime import datetime, timedelta
+
 import pyautogui
 
 def get_file_path(filename, sub=None):
@@ -27,3 +29,9 @@ def get_last_match(image):
             positions.append(pos)
 
     return positions[-1]
+
+def get_time_sets(hour, minute, diff_minute=5):
+    'return time sets diff_min and 2*diff_min minutes before and after given time'
+    input_time = datetime.now().replace(hour=hour, minute=minute)
+    time_list = [input_time + timedelta(minutes=diff_minute*i) for i in range(-2, 3)]
+    return [{'hour': time_set.hour, 'minute': time_set.minute} for time_set in time_list]
