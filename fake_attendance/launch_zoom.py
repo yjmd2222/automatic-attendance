@@ -13,20 +13,27 @@ import pywinauto
 from pywinauto.findwindows import ElementNotFoundError
 
 from fake_attendance.info import ZOOM_LINK
-from fake_attendance.settings import CONFERENCE_NAME
+from fake_attendance.settings import (
+    AGREE_RECORDING_IMAGE,
+    ZOOM_CLASSROOM_CLASS,
+    ZOOM_AGREE_RECORDING_POPUP_CLASS)
+from fake_attendance.helper import get_last_match
 
 class LaunchZoom:
     'A class for launching Zoom'
 
     def __init__(self):
         'initialize'
+        self.image = AGREE_RECORDING_IMAGE
         self.pywinauto_app = pywinauto.Application()
 
     def connect(self):
         'connect to Zoom conference'
         try:
-            self.pywinauto_app.connect(title=CONFERENCE_NAME)
+            self.pywinauto_app.connect(class_name=ZOOM_CLASSROOM_CLASS, found_index=0)
             print('이미 Zoom 회의 입장중')
+            # agree recording if there is popup
+            self.agree_recording()
             return True
         except ElementNotFoundError:
             print('Zoom 입장 안 함. 실행 필요')
@@ -52,26 +59,75 @@ class LaunchZoom:
         pyautogui.press('space')
         time.sleep(10)
 
-    def check_result(self):
+    def launch_check_result(self, driver):
         'check the result'
         try:
-            # Zoom's App class for conference. There are different classes in Zoom
-            pywinauto.findwindows.find_elements(class_name='ZPContentViewWndClass')
+            # Zoom's App class for conference.
+            pywinauto.findwindows.find_element(class_name=ZOOM_CLASSROOM_CLASS)
             print('줌 실행 성공')
-        except Exception as exc:
+
+        except ElementNotFoundError:
             print('줌 실행 실패')
-            raise AssertionError from exc
+            self.launch_zoom(driver)
+            return
+
+    def agree_recording(self, trial=1):
+        'agree recording'
+        try:
+            # focus on the agree popup
+            self.pywinauto_app.connect(
+                class_name=ZOOM_AGREE_RECORDING_POPUP_CLASS,
+                found_index=0).top_window().set_focus()
+            # find the agree button
+            pos = get_last_match(self.image)
+            # if agree button found
+            if pos != (0,0,0,0):
+                print('줌 녹화 동의 버튼 확인')
+                pyautogui.click(pos)
+                time.sleep(2)
+            # if not found
+            else:
+                trial += 1
+                print(f'중 녹화 동의 창 중에서 동의 버튼 확인 못 함.\
+                      재시도 횟수: {trial}')
+                # try again
+                self.agree_recording(trial)
+            # check if agree window is closed
+            try:
+                # if it is found
+                pywinauto.findwindows.find_element(
+                    class_name=ZOOM_AGREE_RECORDING_POPUP_CLASS)
+                print(f'줌 녹화 동의 창 건재함. 재시도 횟수: {trial}')
+                trial += 1
+                # try again
+                self.agree_recording(trial)
+            # if it is not found
+            except ElementNotFoundError:
+                # successfully agreed
+                print('줌 녹화 동의 완료')
+                return
+        # agree window not found
+        except ElementNotFoundError:
+            time.sleep(5)
+            print(f'줌 녹화 동의 창 발견 실패, 재시도 횟수: {trial}')
+            trial += 1
+            # try again
+            self.agree_recording(trial)
 
     def run(self):
         'Run the launch'
         print('줌 실행 스크립트 시작')
 
+        # if zoom already running, return
         if self.connect():
             return
 
+        # if not, launch Zoom
         driver = self.initialize_selenium()
         self.launch_zoom(driver)
-        self.check_result()
+        self.launch_check_result(driver)
+        self.agree_recording()
         driver.quit()
         time.sleep(5)
         return
+    
