@@ -28,4 +28,4 @@ jobs:
         git commit -m 'allowempty' --allow-empty
     - name: Analysing the code with pylint
       run: |
-        pylint --extension-pkg-whitelist=win32gui fake_attendance
+        pylint --extension-pkg-whitelist=win32gui,pywintypes fake_attendance
