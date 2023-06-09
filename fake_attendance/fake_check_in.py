@@ -17,9 +17,18 @@ from selenium.webdriver.common.by import By
 from webdriver_manager.chrome import ChromeDriverManager
 
 from fake_attendance.info import ID, PASSWORD
-from fake_attendance.settings import (MINUTES,
-                      SCREEN_QR_READER_POPUP_LINK, SCREEN_QR_READER_SOURCE,
-                      ZOOM_RESIZE_PARAMETERS_LIST)
+from fake_attendance.settings import (
+    MINUTES,
+    SCREEN_QR_READER_POPUP_LINK,
+    SCREEN_QR_READER_SOURCE,
+    ZOOM_RESIZE_PARAMETERS_LIST,
+    LOGIN_WITH_KAKAO_BUTTON,
+    ID_INPUT_BOX,
+    PASSWORD_INPUT_BOX,
+    LOGIN_BUTTON,
+    AGREE,
+    CHECK_IN,
+    SUBMIT)
 
 def decorator_four_times(func):
     'decorator for checking link four times, with different Zoom window sizes'
@@ -87,19 +96,19 @@ class FakeCheckIn:
 
     def check_in(self, driver):
         'do the check-in'
-        with_kakao = driver.find_element(By.CLASS_NAME, 'login-form__button-title.css-caslt6')
+        with_kakao = driver.find_element(By.CLASS_NAME, LOGIN_WITH_KAKAO_BUTTON)
         with_kakao.click()
         time.sleep(10)
 
-        id_box = driver.find_element(By.ID, 'loginKey--1')
+        id_box = driver.find_element(By.ID, ID_INPUT_BOX)
         id_box.send_keys(ID)
         time.sleep(1)
 
-        pw_box = driver.find_element(By.ID, 'password--2')
+        pw_box = driver.find_element(By.ID, PASSWORD_INPUT_BOX)
         pw_box.send_keys(PASSWORD)
         time.sleep(1)
 
-        press_login = driver.find_element(By.CLASS_NAME, 'btn_g.highlight.submit')
+        press_login = driver.find_element(By.CLASS_NAME, LOGIN_BUTTON)
         press_login.click()
         time.sleep(10)
 
@@ -108,16 +117,18 @@ class FakeCheckIn:
         driver.get(iframe_url)
         time.sleep(10)
 
-        agree_button = driver.find_element(By.XPATH, "//*[text()='동의합니다.']")
+        agree_button = driver.find_element(By.XPATH, AGREE)
         agree_button.click()
         time.sleep(3)
 
-        check_in_button = driver.find_element(By.XPATH, "//*[text()='출석']")
+        check_in_button = driver.find_element(By.XPATH, CHECK_IN)
         check_in_button.click()
         time.sleep(3)
 
-        submit_button = driver.find_element(By.XPATH, "//*[text()='제출']")
-        submit_button.click()
+        submit_button = driver.find_element(By.XPATH, SUBMIT)
+        # submit_button.click()
+        # Element is not clickable at point (X,Y) error
+        driver.execute_script('arguments[0].click();', submit_button)
         time.sleep(600) # to make sure same job does not run within 10 minutes
       
     def run(self):

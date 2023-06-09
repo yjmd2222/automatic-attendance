@@ -20,7 +20,8 @@ SCREEN_QR_READER_WEBSTORE_LINK = \
 CONTINUE_IMAGE = get_file_path('continue_with_download.png', 'images')
 # start video
 START_IMAGE = get_file_path('start_video.png', 'images')
-CONFERENCE_NAME = 'Zoom 회의'
+# agree recording
+AGREE_RECORDING_IMAGE = get_file_path('agree_recording.png', 'images')
 
 # APScheduler timings
 # 10:00, 11:20, 13:00, 14:30, 15:20, 17:00 if I got them all
@@ -28,10 +29,21 @@ MINUTES = 7 # every 7 minutes
 ZOOM_ON_HOUR = 12    # at hour 12
 ZOOM_ON_MINUTE = 59  # at minute 55
 
-# misc
+# Zoom props
 ZOOM_RESIZE_PARAMETERS_LIST = [ # Change Zoom window size
     (0, 0, 1000, 800),
     (0, 0, 1600, 900),
     (0, 0, 1920, 1080),
     (0, 0, 1914, 751)
     ]
+ZOOM_AGREE_RECORDING_POPUP_CLASS = 'ZoomShadowFrameClass'
+ZOOM_CLASSROOM_CLASS = 'ZPContentViewWndClass'
+
+# Check-in props
+LOGIN_WITH_KAKAO_BUTTON = 'login-form__button-title.css-caslt6'
+ID_INPUT_BOX = 'loginKey--1'
+PASSWORD_INPUT_BOX = 'password--2'
+LOGIN_BUTTON = 'btn_g.highlight.submit'
+AGREE = "//*[text()='동의합니다.']"
+CHECK_IN = "//*[text()='출석']"
+SUBMIT = "//*[text()='제출']"
