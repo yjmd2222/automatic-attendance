@@ -10,7 +10,7 @@ Run below in a Python 3 environment, 3.11.3 recommended.
 
 Install the Chrome extension [Screen QR Reader](https://chrome.google.com/webstore/detail/screen-qr-reader/ekoaehpknadfoaolagjfdefeopkhfhln).
 
-Fill out the template `info-template.py` with your Kakao login information. Rename the file to `info.py`
+Fill out the template `info-template.py` with your Kakao login information and the zoom link without the `#success`. Rename the file to `info.py`
 
 Enter a Zoom conference.
 
@@ -28,7 +28,7 @@ This is ridiculous, and everyone must be thinking of putting on a fake recording
 which is on another level of shit. So I made a little script that scans the QR image on the Zoom meeting. They said they would give 10 minutes to check in,
 so the script checks every seven minutes, but that may change, not so hard.
 
-But then they changed the rules to allow turning off the Zoom camera, so it is removed. You can look at the archived code in [turn_on_video.py](archive/turn_on_video.py)
+But then they changed the rules to allow turning off the Zoom camera, so this part is removed. You can look at the archived code in [turn_on_video.py](archive/turn_on_video.py)
 
 The other day I learned Selenium and its RPA and APIs, so this is a little project of what I learned. The admins must be happy.
 
