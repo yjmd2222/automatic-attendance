@@ -2,6 +2,8 @@
 Scheduler that runs FakeCheckIn and TurnOnCamera
 '''
 
+from datetime import datetime, timedelta
+
 from apscheduler.schedulers.background import BlockingScheduler
 
 from fake_attendance.fake_check_in import FakeCheckIn
