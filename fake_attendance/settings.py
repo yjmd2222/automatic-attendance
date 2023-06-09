@@ -2,7 +2,13 @@
 Settings
 '''
 
-from fake_attendance.helper import get_file_path
+import os
+import sys
+sys.path.append(os.getcwd())
+
+# pylint: disable=wrong-import-position
+from fake_attendance.helper import get_file_path, get_time_sets
+# pylint: enable=wrong-import-position
 
 # Screen QR Reader interaction
 SCREEN_QR_READER_POPUP_LINK = \
@@ -25,9 +31,12 @@ AGREE_RECORDING_IMAGE = get_file_path('agree_recording.png', 'images')
 
 # APScheduler timings
 # 10:00, 11:20, 13:00, 14:30, 15:20, 17:00 if I got them all
-MINUTES = 7 # every 7 minutes
-ZOOM_ON_HOUR = 12    # at hour 12
-ZOOM_ON_MINUTE = 59  # at minute 55
+DIFF_MINUTE = 5
+CHECK_IN_TIMES = [get_time_sets(*TIME_SET, DIFF_MINUTE) for TIME_SET in\
+                  [(10,0), (11,20), (13,0), (14,30), (15,20), (17,0)]]
+CHECK_IN_TIMES = [TIME_SET for TIME_SETS in CHECK_IN_TIMES for TIME_SET in TIME_SETS]
+ZOOM_ON_HOUR = 13    # at hour 13
+ZOOM_ON_MINUTE = '0, 1, 2, 3, 4'  # at minutes 0,1,2,3,4
 
 # Zoom props
 ZOOM_RESIZE_PARAMETERS_LIST = [ # Change Zoom window size
