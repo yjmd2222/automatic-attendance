@@ -56,7 +56,7 @@ class LaunchZoom:
         'check the result'
         try:
             # Zoom's App class for conference. There are different classes in Zoom
-            pyautowin.findwindows.find_elements(class_name='ZPContentViewWndClass')
+            pywinauto.findwindows.find_elements(class_name='ZPContentViewWndClass')
             print('줌 실행 성공')
         except Exception as exc:
             print('줌 실행 실패')
