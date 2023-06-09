@@ -7,7 +7,9 @@ import sys
 
 import time
 
+# pylint: disable=E0611
 from pywintypes import error
+# pylint: enable=E0611
 
 import win32con
 import win32gui
