@@ -26,7 +26,7 @@ CONFERENCE_NAME = 'Zoom 회의'
 # 10:00, 11:20, 13:00, 14:30, 15:20, 17:00 if I got them all
 MINUTES = 7 # every 7 minutes
 ZOOM_ON_HOUR = 12    # at hour 12
-ZOOM_ON_MINUTE = 55  # at minute 55
+ZOOM_ON_MINUTE = 59  # at minute 55
 
 # misc
 ZOOM_RESIZE_PARAMETERS_LIST = [ # Reduce Zoom window size
