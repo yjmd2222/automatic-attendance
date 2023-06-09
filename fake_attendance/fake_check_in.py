@@ -2,7 +2,10 @@
 Script to automatically send link information in QR image on a Zoom meeting every five minutes
 '''
 
+from datetime import datetime, timedelta
 import time
+
+from pywintypes import error
 
 import win32con
 import win32gui
@@ -14,18 +17,19 @@ from selenium.webdriver.common.by import By
 from webdriver_manager.chrome import ChromeDriverManager
 
 from fake_attendance.info import ID, PASSWORD
-from fake_attendance.settings import (SCREEN_QR_READER_POPUP_LINK, SCREEN_QR_READER_SOURCE,
+from fake_attendance.settings import (MINUTES,
+                      SCREEN_QR_READER_POPUP_LINK, SCREEN_QR_READER_SOURCE,
                       ZOOM_RESIZE_PARAMETERS_LIST)
 
-def decorator_three_times(func):
-    'decorator for checking link three times, with different Zoom window sizes'
+def decorator_four_times(func):
+    'decorator for checking link four times, with different Zoom window sizes'
     def wrapper(*args):
         'wrapper'
         i = 0
         result = None
-        while i < 3:
+        while i < 4:
             # replace last argument == window_size
-            args = args[:2] + (ZOOM_RESIZE_PARAMETERS_LIST[i],)
+            args = args[:3] + (ZOOM_RESIZE_PARAMETERS_LIST[i],)
             result = func(*args)
             if result:
                 break
@@ -56,13 +60,18 @@ class FakeCheckIn:
 
         return webdriver.Chrome(service=auto_driver, options=options)
 
-    @decorator_three_times
-    def get_link(self, driver, window_sizes=None):
+    @decorator_four_times
+    def get_link(self, driver, next_time_strf, window_sizes=(0, 0, 1914, 751)):
         'Get link from QR'
         # maximize Chrome window
         driver.maximize_window()
+        time.sleep(1)
         # reduce Zoom window size
-        win32gui.MoveWindow(self.zoom_window, *window_sizes, True)
+        try:
+            win32gui.MoveWindow(self.zoom_window, *window_sizes, True)
+        except error:
+            print('줌 실행중인지 확인 필요')
+            print('다음 실행 시각:', next_time_strf)
         driver.get(SCREEN_QR_READER_POPUP_LINK) # Screen QR Reader
         time.sleep(5)
 
@@ -110,12 +119,15 @@ class FakeCheckIn:
         submit_button = driver.find_element(By.XPATH, "//*[text()='제출']")
         submit_button.click()
         time.sleep(600) # to make sure same job does not run within 10 minutes
-
+      
     def run(self):
         'run once'
+        now = datetime.now()
+        next_time = now + timedelta(minutes=MINUTES)
+        next_time_strf = next_time.strftime("%H:%M:%S")
         options = self.create_selenium_options()
         driver = self.initialize_selenium(options)
-        islink = self.get_link(driver)
+        islink = self.get_link(driver, next_time_strf)
         # if there's no link
         if not islink:
             print('QR 코드 없음. 현 세션 완료')
@@ -125,3 +137,6 @@ class FakeCheckIn:
         driver.quit()
         # maximize Zoom window
         win32gui.ShowWindow(self.zoom_window, win32con.SW_MAXIMIZE)
+
+        next_time = now + timedelta(minutes=MINUTES)
+        print('다음 실행 시각:', next_time.strftime("%H:%M:%S"))

@@ -29,8 +29,9 @@ ZOOM_ON_HOUR = 12    # at hour 12
 ZOOM_ON_MINUTE = 59  # at minute 55
 
 # misc
-ZOOM_RESIZE_PARAMETERS_LIST = [ # Reduce Zoom window size
+ZOOM_RESIZE_PARAMETERS_LIST = [ # Change Zoom window size
     (0, 0, 1000, 800),
     (0, 0, 1600, 900),
-    (0, 0, 1920, 1080)
+    (0, 0, 1920, 1080),
+    (0, 0, 1914, 751)
     ]
