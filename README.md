@@ -10,7 +10,7 @@ Run below in a Python 3 environment, 3.11.3 recommended.
 
 Install the Chrome extension [Screen QR Reader](https://chrome.google.com/webstore/detail/screen-qr-reader/ekoaehpknadfoaolagjfdefeopkhfhln).
 
-Fill out the template `info-template.py` with your Kakao login information and the zoom link without the `#success`. Rename the file to `info.py`
+Fill out the template [info-template.py](fake_attendance/info-template.py) with your Kakao login information and the zoom link without the `#success`. Rename the file to `info.py`
 
 Enter a Zoom conference.
 
