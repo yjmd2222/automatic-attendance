@@ -6,9 +6,12 @@ import os
 import sys
 
 import smtplib
+from smtplib import SMTPAuthenticationError
 from email.mime.text import MIMEText
 
 from datetime import datetime
+
+from socket import gaierror
 
 sys.path.append(os.getcwd())
 
@@ -48,11 +51,22 @@ class SendEmail:
 
     def send_email(self):
         'send email'
-        smtp = smtplib.SMTP(SMTP_HOST, SMTP_PORT)
+        try:
+            smtp = smtplib.SMTP(SMTP_HOST, SMTP_PORT)
+        except gaierror:
+            print('SMTP 호스트 이름 확인 필요')
+            return
+        except TimeoutError:
+            print('SMTP 포트 번호 확인 필요')
+            return
 
         smtp.ehlo()
         smtp.starttls()
-        smtp.login(EMAIL_ADDRESS, EMAIL_PASSWORD)
+        try:
+            smtp.login(EMAIL_ADDRESS, EMAIL_PASSWORD)
+        except SMTPAuthenticationError:
+            print('이메일 로그인 정보 확인 필요')
+            return
 
         msg = MIMEText(self.body)
         msg['Subject'] = f'!!fake-attendance {datetime.now().strftime(r"%Y-%m-%d %H:%M")}!!'
