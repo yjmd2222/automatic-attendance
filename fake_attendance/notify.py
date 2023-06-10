@@ -29,11 +29,11 @@ class SendEmail:
         self.body = ''
 
     def get_link(self, link):
-        'get link from fake_check_in'
+        'get link from FakeCheckIn'
         self.link = link
 
     def get_result(self, result):
-        'get result from fake_check_in'
+        'get result from FakeCheckIn'
         self.result = result
 
     def write_body(self):
