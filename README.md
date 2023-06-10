@@ -17,7 +17,12 @@ Enter a Zoom conference.
 If the module fails to download the Chrome extension source, you can try downloading it manually. Put it in the root of the repository. See [this](https://crx-downloader.com/how-it-works).
 
 ## Run
-`python -m fake_attendance`
+Run `python -m fake_attendance` for download, launch Zoom, and check_in. Read [How it works and why](#how-it-works-and-why) for explanation.
+
+You can also run `python test_scheduler.py YOUR-ARGUMENT-HERE` with `YOUR-ARGUMENT-HERE` as either:
+- A text file that contains a 24-hour format time sets such as [test_times.txt](test_times.txt)
+- A json-like format such as `'[{"hour": int, "minute": int},...]'`
+- Leaving it blank to run scheduler at default times: See [settings.py](fake_attendance/settings.py)
 
 ## How it works and why
 The script checks if there is a QR image on the Zoom meeting screen. Screen QR Reader scans the QR image and automatically completes the check-in process.

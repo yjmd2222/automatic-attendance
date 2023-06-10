@@ -1,5 +1,0 @@
-<First line ignored. You need to specify time as hour:minute in 24 hour format.>
-9:00
-12:00
-15:00
-21:37
