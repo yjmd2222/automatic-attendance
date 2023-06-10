@@ -5,9 +5,6 @@ Scheduler that runs FakeCheckIn and TurnOnCamera
 import os
 import sys
 
-from datetime import datetime
-import json
-
 from apscheduler.events import EVENT_JOB_EXECUTED
 from apscheduler.schedulers.background import BlockingScheduler
 from apscheduler.triggers.cron import CronTrigger
@@ -73,19 +70,4 @@ class MyScheduler:
             print('interrupt')
 
 if __name__ == '__main__':
-    times = None
-    # argument passed
-    if len(sys.argv) > 1:
-        # argument as text file
-        if sys.argv[1][-4:] == '.txt':
-            filename = sys.argv[1]
-            with open (filename, 'r', encoding='utf-8') as file:
-                times = [line.strip() for line in file][1:]
-                times = [datetime.strptime(i, '%H:%M') for i in times]
-                times = [{'hour': i.hour, 'minute': i.minute} for i in times]
-        # argument as list of time
-        else:
-            times = json.loads(sys.argv[1])
-
-    scheduler = MyScheduler(times) if times else MyScheduler()
-    scheduler.run()
+    MyScheduler().run()
