@@ -5,6 +5,9 @@ Scheduler that runs FakeCheckIn and TurnOnCamera
 import os
 import sys
 
+from datetime import datetime
+import json
+
 from apscheduler.events import EVENT_JOB_EXECUTED
 from apscheduler.schedulers.background import BlockingScheduler
 from apscheduler.triggers.cron import CronTrigger
@@ -24,14 +27,17 @@ from fake_attendance.settings import (
 class MyScheduler:
     'A class that manages the scheduler'
 
-    def __init__(self):
-        'initialize'
+    def __init__(self, time_sets=CHECK_IN_TIMES):
+        '''
+        initialize
+        time_sets = [{'hour': int, 'minute': int},...]
+        '''
         self.sched = BlockingScheduler(standalone=True)
         self.fake_check_in = FakeCheckIn()
         self.launch_zoom = LaunchZoom()
         self.check_in_trigger = OrTrigger([
             CronTrigger(hour=TIME_SET['hour'], minute=TIME_SET['minute'])\
-            for TIME_SET in CHECK_IN_TIMES
+            for TIME_SET in time_sets
         ])
 
     def shutdown(self, event):
@@ -45,20 +51,21 @@ class MyScheduler:
             2. launch Zoom
             3. print next trigger time for next QR check
         '''
-        self.sched.add_job(self.fake_check_in.run, self.check_in_trigger)
+        self.sched.add_job(self.fake_check_in.run, self.check_in_trigger, id='fake_check_in')
         self.sched.add_job(self.launch_zoom.run, 'cron',\
-                           hour=ZOOM_ON_HOUR, minute=ZOOM_ON_MINUTE)
+                           hour=ZOOM_ON_HOUR, minute=ZOOM_ON_MINUTE, id='lauch_zoom')
         self.sched.add_listener(
             callback = lambda event: self.print_next_time(),
             mask = EVENT_JOB_EXECUTED)
 
     def print_next_time(self):
         'print next trigger for next QR check'
-        next_time = self.sched.get_jobs()[0].next_run_time
+        next_time = self.sched.get_job('fake_check_in').next_run_time
         print('다음 출석 스크립트 실행 시각:', next_time.strftime(('%H:%M')))
 
     def run(self):
         'run scheduler'
+        print('스케줄러 실행')
         self.add_jobs()
         try:
             self.sched.start()
@@ -66,4 +73,19 @@ class MyScheduler:
             print('interrupt')
 
 if __name__ == '__main__':
-    MyScheduler().run()
+    times = None
+    # argument passed
+    if len(sys.argv) > 1:
+        # argument as text file
+        if sys.argv[1][-4:] == '.txt':
+            filename = sys.argv[1]
+            with open (filename, 'r', encoding='utf-8') as file:
+                times = [line.strip() for line in file][1:]
+                times = [datetime.strptime(i, '%H:%M') for i in times]
+                times = [{'hour': i.hour, 'minute': i.minute} for i in times]
+        # argument as list of time
+        else:
+            times = json.loads(sys.argv[1])
+
+    scheduler = MyScheduler(times) if times else MyScheduler()
+    scheduler.run()
