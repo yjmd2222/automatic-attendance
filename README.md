@@ -19,19 +19,19 @@ If the module fails to download the Chrome extension source, you can try downloa
 ## Run
 Run `python -m fake_attendance` for download, launch Zoom, and check_in. Read [How it works and why](#how-it-works-and-why) for explanation.
 
-You can also run `python test_scheduler.py YOUR-ARGUMENT-HERE` with `YOUR-ARGUMENT-HERE` as either:
+For testing QR recognition, you can run `python test_scheduler.py YOUR-ARGUMENT-HERE` with `YOUR-ARGUMENT-HERE` as either:
 - A text file that contains a 24-hour format time sets such as [test_times.txt](test_times.txt)
 - A json-like format such as `'[{"hour": int, "minute": int},...]'`
 - Leaving it blank to run scheduler at default times: See [settings.py](fake_attendance/settings.py)
 
 ## How it works and why
 The script checks if there is a QR image on the Zoom meeting screen. Screen QR Reader scans the QR image and automatically completes the check-in process.
-This check is done every seven minutes. Along with that, it also turns launches Zoom at 1 PM.
+This check is done throughout the day. See [settings.py](fake_attendance/settings.py) for the actual timings. Along with that, it also launches Zoom at 1 PM.
 
 So why this? My online class used to require I sit at the desk on Zoom from 9 AM to 6 PM (lunch time from 12 to 1 is excluded) with camera on the entire time.
 This is ridiculous, and everyone must be thinking of putting on a fake recording of themself in the background. But the admins are going to send a QR image for us to check in every hour or two
 which is on another level of shit. So I made a little script that scans the QR image on the Zoom meeting. They said they would give 10 minutes to check in,
-so the script checks every seven minutes, but that may change, not so hard.
+so the script checks multiple times around the check-in hour.
 
 But then they changed the rules to allow turning off the Zoom camera, so this part is removed. You can look at the archived code in [turn_on_video.py](archive/turn_on_video.py)
 
