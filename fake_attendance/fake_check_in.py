@@ -135,7 +135,8 @@ class FakeCheckIn:
         # submit_button.click()
         # Element is not clickable at point (X,Y) error
         driver.execute_script('arguments[0].click();', submit_button)
-        time.sleep(600) # to make sure same job does not run within 10 minutes
+        # make sure same job does not run within 15 minutes upon completion
+        time.sleep(900)
 
     def run(self):
         'run once'
