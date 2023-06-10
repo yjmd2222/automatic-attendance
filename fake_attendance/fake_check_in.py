@@ -15,6 +15,7 @@ import win32con
 import win32gui
 
 from selenium import webdriver
+from selenium.common.exceptions import ElementClickInterceptedException
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
@@ -23,7 +24,7 @@ from webdriver_manager.chrome import ChromeDriverManager
 sys.path.append(os.getcwd())
 
 # pylint: disable=wrong-import-position
-from fake_attendance.info import ID, PASSWORD
+from fake_attendance.info import KAKAO_ID, KAKAO_PASSWORD
 from fake_attendance.settings import (
     SCREEN_QR_READER_POPUP_LINK,
     SCREEN_QR_READER_SOURCE,
@@ -35,6 +36,7 @@ from fake_attendance.settings import (
     AGREE,
     CHECK_IN,
     SUBMIT)
+from fake_attendance.notify import SendEmail
 # pylint: enable=wrong-import-position
 
 def decorator_four_times(func):
@@ -59,6 +61,7 @@ class FakeCheckIn:
     def __init__(self):
         'initialize'
         self.zoom_window = win32gui.FindWindow(None, 'Zoom 회의')
+        self.send_email = SendEmail()
 
     def create_selenium_options(self):
         'declare options for Selenium driver'
@@ -102,41 +105,58 @@ class FakeCheckIn:
 
     def check_in(self, driver):
         'do the check-in'
+        # login type
         with_kakao = driver.find_element(By.CLASS_NAME, LOGIN_WITH_KAKAO_BUTTON)
         with_kakao.click()
         time.sleep(10)
 
+        # insert Kakao id
         id_box = driver.find_element(By.ID, ID_INPUT_BOX)
-        id_box.send_keys(ID)
+        id_box.send_keys(KAKAO_ID)
         time.sleep(1)
 
+        # insert Kakao password
         pw_box = driver.find_element(By.ID, PASSWORD_INPUT_BOX)
-        pw_box.send_keys(PASSWORD)
+        pw_box.send_keys(KAKAO_PASSWORD)
         time.sleep(1)
 
+        # log in
         press_login = driver.find_element(By.CLASS_NAME, LOGIN_BUTTON)
         press_login.click()
         time.sleep(10)
 
+        # Should have successfully logged in. Now pass link to SendEmail
+        link = driver.current_url
+        self.send_email.get_link(link)
+        time.sleep(5)
+
+        # get inner document link
         iframe = driver.find_element(By.TAG_NAME, 'iframe')
         iframe_url = iframe.get_attribute('src')
         driver.get(iframe_url)
         time.sleep(10)
 
+        # agree to check in
         agree_button = driver.find_element(By.XPATH, AGREE)
         agree_button.click()
         time.sleep(3)
 
+        # select check-in
         check_in_button = driver.find_element(By.XPATH, CHECK_IN)
         check_in_button.click()
         time.sleep(3)
 
+        # submit
         submit_button = driver.find_element(By.XPATH, SUBMIT)
         # submit_button.click()
         # Element is not clickable at point (X,Y) error
-        driver.execute_script('arguments[0].click();', submit_button)
-        # make sure same job does not run within 15 minutes upon completion
-        time.sleep(900)
+        try:
+            driver.execute_script('arguments[0].click();', submit_button)
+            self.send_email.get_result('성공')
+            # make sure same job does not run within 15 minutes upon completion
+            time.sleep(900)
+        except ElementClickInterceptedException:
+            self.send_email.get_result('실패')
 
     def run(self):
         'run once'
@@ -150,6 +170,8 @@ class FakeCheckIn:
         else:
             self.check_in(driver)
         driver.quit()
+        # send email
+        self.send_email.send_email()
         # maximize Zoom window
         win32gui.ShowWindow(self.zoom_window, win32con.SW_MAXIMIZE)
 
