@@ -39,12 +39,7 @@ ZOOM_ON_HOUR = 13    # at hour 13
 ZOOM_ON_MINUTE = '0, 1, 2, 3, 4'  # at minutes 0,1,2,3,4
 
 # Zoom props
-ZOOM_RESIZE_PARAMETERS_LIST = [ # Change Zoom window size
-    (0, 0, 1000, 800),
-    (0, 0, 1600, 900),
-    (0, 0, 1920, 1080),
-    (0, 0, 1914, 751)
-    ]
+ZOOM_RESIZE_PARAMETERS_LIST = [i/10 for i in range(3,11)] # Change Zoom window size
 ZOOM_AGREE_RECORDING_POPUP_CLASS = 'ZoomShadowFrameClass'
 ZOOM_CLASSROOM_CLASS = 'ZPContentViewWndClass'
 

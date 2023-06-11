@@ -5,11 +5,9 @@ Script to automatically send link information in QR image on a Zoom meeting ever
 import os
 import sys
 
-import time
+from functools import wraps
 
-# pylint: disable=E0611
-from pywintypes import error
-# pylint: enable=E0611
+import time
 
 import win32con
 import win32gui
@@ -39,16 +37,17 @@ from fake_attendance.settings import (
 from fake_attendance.notify import SendEmail
 # pylint: enable=wrong-import-position
 
-def decorator_four_times(func):
-    'decorator for checking link four times, with different Zoom window sizes'
-    def wrapper(*args):
+def decorator_repeat_diff_sizes(func):
+    'decorator for checking link multiple times, with different Zoom window sizes'
+    @wraps(func) # needed for wrapping class methods with *args
+    def wrapper(self, *args):
         'wrapper'
         i = 0
         result = None
-        while i < 4:
-            # replace last argument == window_size
-            args = args[:2] + (ZOOM_RESIZE_PARAMETERS_LIST[i],)
-            result = func(*args)
+        while i < len(ZOOM_RESIZE_PARAMETERS_LIST):
+            # replace last argument == ratio
+            args = args[:-1] + (ZOOM_RESIZE_PARAMETERS_LIST[i],)
+            result = func(self, *args)
             if result:
                 break
             i += 1
@@ -60,8 +59,51 @@ class FakeCheckIn:
 
     def __init__(self):
         'initialize'
-        self.zoom_window = win32gui.FindWindow(None, 'Zoom 회의')
+        self.is_window = False
+        self.zoom_window = self.check_window()
+        self.rect = self.get_max_window_size() if self.is_window else []
         self.send_email = SendEmail()
+
+    def check_window(self):
+        'check and return window'
+        window = win32gui.FindWindow(None, 'Zoom 회의')
+        self.is_window = bool(window) # True if window not 0 else False
+
+        return window
+
+    def get_max_window_size(self):
+        'get max window size'
+        # force normal size from possible out-of-size maximized window
+        win32gui.ShowWindow(self.zoom_window, win32con.SW_NORMAL)
+        # maximize window
+        win32gui.ShowWindow(self.zoom_window, win32con.SW_MAXIMIZE)
+
+        return list(win32gui.GetWindowRect(self.zoom_window))
+    
+    @decorator_repeat_diff_sizes
+    def get_link(self, driver, ratio):
+        'Get link from QR'
+        # maximize Chrome window
+        driver.maximize_window()
+        time.sleep(1)
+        # calculate new window size
+        rect_resized = self.rect.copy()
+        for idx, _ in enumerate(self.rect[2:]):
+            rect_resized[idx+2] = int(self.rect[idx+2]*ratio)
+        # apply new window size
+        win32gui.MoveWindow(self.zoom_window, *rect_resized, True)
+        driver.get(SCREEN_QR_READER_POPUP_LINK) # Screen QR Reader
+        time.sleep(2)
+
+        # Selenium will automatically open the link in a new tab
+        # if there is a QR image, so check tab count.
+        window_handles = driver.window_handles
+
+        if len(window_handles) > 1:
+            driver.switch_to.window(window_handles[1]) # force Selenium to be on the new tab
+            return True
+
+        return False
 
     def create_selenium_options(self):
         'declare options for Selenium driver'
@@ -78,30 +120,6 @@ class FakeCheckIn:
         auto_driver = Service(ChromeDriverManager().install())
 
         return webdriver.Chrome(service=auto_driver, options=options)
-
-    @decorator_four_times
-    def get_link(self, driver, window_sizes=(0, 0, 1914, 751)):
-        'Get link from QR'
-        # maximize Chrome window
-        driver.maximize_window()
-        time.sleep(1)
-        # reduce Zoom window size
-        try:
-            win32gui.MoveWindow(self.zoom_window, *window_sizes, True)
-        except error:
-            print('줌 실행중인지 확인 필요')
-        driver.get(SCREEN_QR_READER_POPUP_LINK) # Screen QR Reader
-        time.sleep(2)
-
-        # Selenium will automatically open the link in a new tab
-        # if there is a QR image, so check tab count.
-        window_handles = driver.window_handles
-
-        if len(window_handles) > 1:
-            driver.switch_to.window(window_handles[1]) # force Selenium to be on the new tab
-            return True
-
-        return False
 
     def check_in(self, driver):
         'do the check-in'
@@ -160,20 +178,23 @@ class FakeCheckIn:
 
     def run(self):
         'run once'
-        options = self.create_selenium_options()
-        driver = self.initialize_selenium(options)
-        islink = self.get_link(driver)
+        if self.is_window:
+            options = self.create_selenium_options()
+            driver = self.initialize_selenium(options)
+        else:
+            print('줌 실행중인지 확인 필요')
+            return
+        is_link = self.get_link(driver, 0)
         # if there's no link
-        if not islink:
+        if not is_link:
             print('QR 코드 없음. 현 세션 완료')
         # otherwise check in
         else:
             self.check_in(driver)
+            # send email
+            self.send_email.send_email()
         driver.quit()
-        # send email
-        self.send_email.send_email()
-        # maximize Zoom window
-        win32gui.ShowWindow(self.zoom_window, win32con.SW_MAXIMIZE)
+        return
 
 if __name__ == '__main__':
     FakeCheckIn().run()
