@@ -33,17 +33,21 @@ class LaunchZoom:
         'initialize'
         self.image = AGREE_RECORDING_IMAGE
         self.pywinauto_app = pywinauto.Application()
+        self.driver = None
 
     def connect(self):
         'connect to Zoom conference'
+        # check presence of Zoom conference
         try:
+            pywinauto.findwindows.find_element(class_name=ZOOM_CLASSROOM_CLASS)
             self.pywinauto_app.connect(class_name=ZOOM_CLASSROOM_CLASS, found_index=0)
-            print('이미 Zoom 회의 입장중')
+            print('이미 줌 회의 입장중')
             # agree recording if there is popup
             self.agree_recording()
             return True
+        # if there isn't
         except ElementNotFoundError:
-            print('Zoom 입장 안 함. 실행 필요')
+            print('줌 입장 안 함. 실행 필요')
             return False
 
     def initialize_selenium(self):
@@ -52,10 +56,13 @@ class LaunchZoom:
 
         return webdriver.Chrome(service=auto_driver)
 
-    def launch_zoom(self, driver):
+    def launch_zoom(self):
         'launch method'
-        driver.get(ZOOM_LINK)
-        driver.maximize_window()
+        # driver init if Zoom shut down in middle
+        if not self.driver:
+            self.driver = self.initialize_selenium()
+        self.driver.get(ZOOM_LINK)
+        self.driver.maximize_window()
         time.sleep(5)
 
         # accept zoom launch message
@@ -66,21 +73,22 @@ class LaunchZoom:
         pyautogui.press('space')
         time.sleep(10)
 
-    def launch_check_result(self, driver):
+    def check_launch_result(self):
         'check the result'
         try:
             # Zoom's App class for conference.
             pywinauto.findwindows.find_element(class_name=ZOOM_CLASSROOM_CLASS)
-            print('줌 실행 성공')
-
+            print('줌 회의 실행/발견 성공')
+            return True
         except ElementNotFoundError:
-            print('줌 실행 실패')
-            self.launch_zoom(driver)
-            return
+            print('줌 회의 실행/발견 실패')
+            self.launch_zoom()
+            return False
 
     def agree_recording(self, trial=1):
         'agree recording'
         try:
+            pywinauto.findwindows.find_element(class_name=ZOOM_AGREE_RECORDING_POPUP_CLASS)
             # focus on the agree popup
             self.pywinauto_app.connect(
                 class_name=ZOOM_AGREE_RECORDING_POPUP_CLASS,
@@ -119,6 +127,9 @@ class LaunchZoom:
             print(f'줌 녹화 동의 창 발견 실패, 재시도 횟수: {trial}')
             trial += 1
             # try again
+            if not self.check_launch_result():
+                print('줌 회의 중단됨')
+                return
             self.agree_recording(trial)
 
     def run(self):
@@ -130,11 +141,12 @@ class LaunchZoom:
             return
 
         # if not, launch Zoom
-        driver = self.initialize_selenium()
-        self.launch_zoom(driver)
-        self.launch_check_result(driver)
-        self.agree_recording()
-        driver.quit()
+        self.driver = self.initialize_selenium()
+        self.launch_zoom()
+        # check launch result and agree recording if success
+        if self.check_launch_result():
+            self.agree_recording()
+        self.driver.quit()
         time.sleep(5)
         return
 
