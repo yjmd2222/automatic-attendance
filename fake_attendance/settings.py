@@ -41,12 +41,7 @@ ZOOM_QUIT_HOUR = 12
 ZOOM_QUIT_MINUTE = 0
 
 # Zoom props
-ZOOM_RESIZE_PARAMETERS_LIST = [ # Change Zoom window size
-    (0, 0, 1000, 800),
-    (0, 0, 1600, 900),
-    (0, 0, 1920, 1080),
-    (0, 0, 1914, 751)
-    ]
+ZOOM_RESIZE_PARAMETERS_LIST = [i/10 for i in range(3,11)] # Change Zoom window size
 ZOOM_AGREE_RECORDING_POPUP_CLASS = 'ZoomShadowFrameClass'
 ZOOM_CLASSROOM_CLASS = 'ZPContentViewWndClass'
 
