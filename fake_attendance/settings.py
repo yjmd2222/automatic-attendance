@@ -37,6 +37,8 @@ CHECK_IN_TIMES = [get_time_sets(*TIME_SET, DIFF_MINUTE) for TIME_SET in\
 CHECK_IN_TIMES = [TIME_SET for TIME_SETS in CHECK_IN_TIMES for TIME_SET in TIME_SETS]
 ZOOM_ON_HOUR = 13    # at hour 13
 ZOOM_ON_MINUTE = '0, 1, 2, 3, 4'  # at minutes 0,1,2,3,4
+ZOOM_QUIT_HOUR = 12
+ZOOM_QUIT_MINUTE = '0, 1, 2, 3, 4'
 
 # Zoom props
 ZOOM_RESIZE_PARAMETERS_LIST = [ # Change Zoom window size
