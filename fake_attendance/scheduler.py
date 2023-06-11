@@ -15,10 +15,11 @@ sys.path.append(os.getcwd())
 # pylint: disable=wrong-import-position
 from fake_attendance.fake_check_in import FakeCheckIn
 from fake_attendance.launch_zoom import LaunchZoom
+from fake_attendance.quit_zoom import QuitZoom
 from fake_attendance.settings import (
     CHECK_IN_TIMES,
-    ZOOM_ON_HOUR,
-    ZOOM_ON_MINUTE)
+    ZOOM_ON_HOUR, ZOOM_ON_MINUTE,
+    ZOOM_QUIT_HOUR, ZOOM_QUIT_MINUTE)
 # pylint: enable=wrong-import-position
 
 class MyScheduler:
@@ -32,6 +33,7 @@ class MyScheduler:
         self.sched = BlockingScheduler(standalone=True)
         self.fake_check_in = FakeCheckIn()
         self.launch_zoom = LaunchZoom()
+        self.quit_zoom = QuitZoom()
         self.check_in_trigger = OrTrigger([
             CronTrigger(hour=TIME_SET['hour'], minute=TIME_SET['minute'])\
             for TIME_SET in time_sets
@@ -51,6 +53,8 @@ class MyScheduler:
         self.sched.add_job(self.fake_check_in.run, self.check_in_trigger, id='fake_check_in')
         self.sched.add_job(self.launch_zoom.run, 'cron',\
                            hour=ZOOM_ON_HOUR, minute=ZOOM_ON_MINUTE, id='lauch_zoom')
+        self.sched.add_job(self.quit_zoom.run, 'cron',\
+                           hour=ZOOM_QUIT_HOUR, minute=ZOOM_QUIT_MINUTE, id='quit_zoom')
         self.sched.add_listener(
             callback = lambda event: self.print_next_time(),
             mask = EVENT_JOB_EXECUTED)
