@@ -79,7 +79,7 @@ class FakeCheckIn:
         win32gui.ShowWindow(self.zoom_window, win32con.SW_MAXIMIZE)
 
         return list(win32gui.GetWindowRect(self.zoom_window))
-    
+
     @decorator_repeat_diff_sizes
     def get_link(self, driver, ratio):
         'Get link from QR'
