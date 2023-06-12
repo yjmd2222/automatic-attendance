@@ -68,6 +68,7 @@ class SendEmail:
             print('이메일 로그인 정보 확인 필요')
             return
 
+        self.write_body()
         msg = MIMEText(self.body)
         msg['Subject'] = f'!!fake-attendance {datetime.now().strftime(r"%Y-%m-%d %H:%M")}!!'
 
