@@ -75,7 +75,6 @@ class MyScheduler:
             keyboard.wait('ctrl+c')
         except KeyboardInterrupt:
             print('키보드로 중단 요청')
-            pass
         self.sched.shutdown()
 
 
