@@ -74,6 +74,7 @@ class LaunchZoom:
         time.sleep(5)
 
         # connect to automated Chrome browser
+        # because recent Chrome does not allow bypassing this popup
         self.pywinauto_app.connect(title=ZOOM_LAUNCHING_CHROME).top_window().set_focus()
 
         # accept zoom launch message
