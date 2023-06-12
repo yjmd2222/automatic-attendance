@@ -6,9 +6,11 @@ import os
 import sys
 
 from apscheduler.events import EVENT_JOB_EXECUTED
-from apscheduler.schedulers.background import BlockingScheduler
+from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
 from apscheduler.triggers.combining import OrTrigger
+
+import keyboard
 
 sys.path.append(os.getcwd())
 
@@ -30,7 +32,7 @@ class MyScheduler:
         initialize
         time_sets = [{'hour': int, 'minute': int},...]
         '''
-        self.sched = BlockingScheduler(standalone=True)
+        self.sched = BackgroundScheduler()
         self.fake_check_in = FakeCheckIn()
         self.launch_zoom = LaunchZoom()
         self.quit_zoom = QuitZoom()
@@ -68,10 +70,13 @@ class MyScheduler:
         'run scheduler'
         print('스케줄러 실행')
         self.add_jobs()
+        self.sched.start()
         try:
-            self.sched.start()
+            keyboard.wait('ctrl+c')
         except KeyboardInterrupt:
-            print('interrupt')
+            print('키보드로 중단 요청')
+        self.sched.shutdown()
+
 
 if __name__ == '__main__':
     MyScheduler().run()
