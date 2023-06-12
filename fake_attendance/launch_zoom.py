@@ -35,6 +35,11 @@ class LaunchZoom:
         self.pywinauto_app = pywinauto.Application()
         self.driver = None
 
+    def reset_attributes(self):
+        'reset attributes for next run'
+        self.pywinauto_app = pywinauto.Application()
+        self.driver = None
+
     def connect(self):
         'connect to Zoom conference'
         # check presence of Zoom conference
@@ -138,6 +143,7 @@ class LaunchZoom:
 
         # if zoom already running, return
         if self.connect():
+            self.reset_attributes()
             return
 
         # if not, launch Zoom
@@ -148,6 +154,7 @@ class LaunchZoom:
             self.agree_recording()
         self.driver.quit()
         time.sleep(5)
+        self.reset_attributes()
         return
 
 if __name__ == '__main__':

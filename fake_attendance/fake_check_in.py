@@ -65,6 +65,14 @@ class FakeCheckIn:
         self.is_wait = False
         self.send_email = SendEmail()
 
+    def reset_attributes(self):
+        'reset attributes for next run'
+        self.is_window = False
+        self.zoom_window = self.check_window()
+        self.rect = self.get_max_window_size() if self.is_window else []
+        self.is_wait = False
+        self.send_email = SendEmail()
+
     def check_window(self):
         'check and return window'
         window = win32gui.FindWindow(None, 'Zoom 회의')
@@ -182,6 +190,7 @@ class FakeCheckIn:
             driver = self.initialize_selenium(options)
         else:
             print('줌 실행중인지 확인 필요')
+            self.reset_attributes()
             return
         is_link = self.get_link(driver, 0)
         # if there's no link
@@ -198,6 +207,7 @@ class FakeCheckIn:
         # make sure same job does not run within 15 minutes upon completion
         if self.is_wait:
             time.sleep(900)
+        self.reset_attributes()
         return
 
 if __name__ == '__main__':
