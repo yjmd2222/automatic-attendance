@@ -44,6 +44,7 @@ ZOOM_QUIT_MINUTE = 0
 ZOOM_RESIZE_PARAMETERS_LIST = [i/10 for i in range(3,11)] # Change Zoom window size
 ZOOM_AGREE_RECORDING_POPUP_CLASS = 'ZoomShadowFrameClass'
 ZOOM_CLASSROOM_CLASS = 'ZPContentViewWndClass'
+ZOOM_LAUNCHING_CHROME = '회의 시작 - Zoom - Chrome'
 
 # Check-in props
 LOGIN_WITH_KAKAO_BUTTON = 'login-form__button-title.css-caslt6'
