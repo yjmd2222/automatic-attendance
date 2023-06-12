@@ -167,8 +167,6 @@ class FakeCheckIn:
 
         # submit
         submit_button = driver.find_element(By.XPATH, SUBMIT)
-        # submit_button.click()
-        # Element is not clickable at point (X,Y) error
         try:
             driver.execute_script('arguments[0].click();', submit_button)
             self.send_email.get_result('성공')
