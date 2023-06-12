@@ -33,7 +33,7 @@ AGREE_RECORDING_IMAGE = get_file_path('agree_recording.png', 'images')
 # 10:00, 11:20, 13:00, 14:30, 15:20, 17:00 if I got them all
 DIFF_MINUTE = 5
 CHECK_IN_TIMES = [get_time_sets(*TIME_SET, DIFF_MINUTE) for TIME_SET in\
-                  [(10,0), (11,20), (13,0), (14,30), (15,20), (17,0)]]
+                  [(10,0), (11,20), (13,11), (14,30), (15,20), (17,0)]]
 CHECK_IN_TIMES = [TIME_SET for TIME_SETS in CHECK_IN_TIMES for TIME_SET in TIME_SETS]
 ZOOM_ON_HOUR = 13    # at hour 13
 ZOOM_ON_MINUTE = '0, 1, 2, 3, 4'  # at minutes 0,1,2,3,4
@@ -44,6 +44,7 @@ ZOOM_QUIT_MINUTE = 0
 ZOOM_RESIZE_PARAMETERS_LIST = [i/10 for i in range(3,11)] # Change Zoom window size
 ZOOM_AGREE_RECORDING_POPUP_CLASS = 'ZoomShadowFrameClass'
 ZOOM_CLASSROOM_CLASS = 'ZPContentViewWndClass'
+ZOOM_LAUNCHING_CHROME = '회의 시작 - Zoom - Chrome'
 
 # Check-in props
 LOGIN_WITH_KAKAO_BUTTON = 'login-form__button-title.css-caslt6'

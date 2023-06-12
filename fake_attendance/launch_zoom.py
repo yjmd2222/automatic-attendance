@@ -21,8 +21,9 @@ sys.path.append(os.getcwd())
 from fake_attendance.info import ZOOM_LINK
 from fake_attendance.settings import (
     AGREE_RECORDING_IMAGE,
+    ZOOM_AGREE_RECORDING_POPUP_CLASS,
     ZOOM_CLASSROOM_CLASS,
-    ZOOM_AGREE_RECORDING_POPUP_CLASS)
+    ZOOM_LAUNCHING_CHROME)
 from fake_attendance.helper import get_last_match
 # pylint: enable=wrong-import-position
 
@@ -66,9 +67,15 @@ class LaunchZoom:
         # driver init if Zoom shut down in middle
         if not self.driver:
             self.driver = self.initialize_selenium()
+
+        # launch Zoom link
         self.driver.get(ZOOM_LINK)
         self.driver.maximize_window()
         time.sleep(5)
+
+        # connect to automated Chrome browser
+        # because recent Chrome does not allow bypassing this popup
+        self.pywinauto_app.connect(title=ZOOM_LAUNCHING_CHROME).top_window().set_focus()
 
         # accept zoom launch message
         pyautogui.press('tab')
