@@ -62,6 +62,7 @@ class FakeCheckIn:
         self.is_window = False
         self.zoom_window = self.check_window()
         self.rect = self.get_max_window_size() if self.is_window else []
+        self.is_wait = False
         self.send_email = SendEmail()
 
     def check_window(self):
@@ -171,10 +172,10 @@ class FakeCheckIn:
         try:
             driver.execute_script('arguments[0].click();', submit_button)
             self.send_email.get_result('성공')
-            # make sure same job does not run within 15 minutes upon completion
-            time.sleep(900)
+            self.is_wait = True
         except ElementClickInterceptedException:
             self.send_email.get_result('실패')
+            self.is_wait = False
 
     def run(self):
         'run once'
@@ -194,6 +195,11 @@ class FakeCheckIn:
             # send email
             self.send_email.send_email()
         driver.quit()
+        # maximize Zoom window
+        win32gui.MoveWindow(self.zoom_window, *self.rect, True)
+        # make sure same job does not run within 15 minutes upon completion
+        if self.is_wait:
+            time.sleep(900)
         return
 
 if __name__ == '__main__':
