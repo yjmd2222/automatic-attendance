@@ -31,7 +31,8 @@ AGREE_RECORDING_IMAGE = get_file_path('agree_recording.png', 'images')
 
 # APScheduler timings
 # 10:00, 11:20, 13:00, 14:30, 15:20, 17:00 normal
-# 11L50, 13:00, 14:30 sprint challenge
+# 11:50, 13:00, 14:30 sprint challenge
+# 11:00, 13:00, 15:30 project day 1 - ?
 DIFF_MINUTE = 5
 CHECK_IN_TIMES = [get_time_sets(*TIME_SET, DIFF_MINUTE) for TIME_SET in\
                   [(10,0), (11,20), (13,11), (14,30), (15,20), (17,0)]]
