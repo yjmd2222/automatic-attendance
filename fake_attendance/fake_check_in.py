@@ -59,16 +59,14 @@ class FakeCheckIn:
 
     def __init__(self):
         'initialize'
-        self.is_window = False
-        self.zoom_window = self.check_window()
+        self.is_window, self.zoom_window = self.check_window()
         self.rect = self.get_max_window_size() if self.is_window else []
         self.is_wait = False
         self.send_email = SendEmail()
 
     def reset_attributes(self):
         'reset attributes for next run'
-        self.is_window = False
-        self.zoom_window = self.check_window()
+        self.is_window, self.zoom_window = self.check_window()
         self.rect = self.get_max_window_size() if self.is_window else []
         self.is_wait = False
         self.send_email = SendEmail()
@@ -78,7 +76,7 @@ class FakeCheckIn:
         window = win32gui.FindWindow(None, 'Zoom 회의')
         self.is_window = bool(window) # True if window not 0 else False
 
-        return window
+        return bool(window), window
 
     def get_max_window_size(self):
         'get max window size'
