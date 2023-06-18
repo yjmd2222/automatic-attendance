@@ -1,4 +1,4 @@
-<First line ignored. You need to specify time as hour:minute in 24-hour format.>
+<First line always ignored, so leave this line just like this. You need to specify time as hour:minute in 24-hour format.>
 9:00
 12:00
 15:00
