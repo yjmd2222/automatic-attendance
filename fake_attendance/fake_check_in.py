@@ -47,6 +47,7 @@ def decorator_repeat_diff_sizes(func):
         while i < len(ZOOM_RESIZE_PARAMETERS_LIST):
             # replace last argument == ratio
             args = args[:-1] + (ZOOM_RESIZE_PARAMETERS_LIST[i],)
+            print(args)
             result = func(self, *args)
             if result:
                 break
@@ -59,8 +60,9 @@ class FakeCheckIn:
 
     def __init__(self):
         'initialize'
-        self.is_window, self.zoom_window = self.check_window()
-        self.rect = self.get_max_window_size() if self.is_window else []
+        self.is_window = False
+        self.zoom_window = 0
+        self.rect = [100,100,100,100]
         self.is_wait = False
         self.send_email = SendEmail()
 
@@ -183,6 +185,8 @@ class FakeCheckIn:
 
     def run(self):
         'run once'
+        self.is_window, self.zoom_window = self.check_window()
+        self.rect = self.get_max_window_size()
         if self.is_window:
             options = self.create_selenium_options()
             driver = self.initialize_selenium(options)
