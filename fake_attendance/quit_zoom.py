@@ -23,6 +23,7 @@ class QuitZoom:
     def connect_and_kill(self):
         'connect to Zoom conference and kill'
         try:
+            pywinauto.findwindows.find_element(class_name=ZOOM_CLASSROOM_CLASS)
             self.pywinauto_app.connect(class_name=ZOOM_CLASSROOM_CLASS, found_index=0)\
                 .kill(soft=True)
             print('Zoom 회의 입장 확인 후 종료함')
