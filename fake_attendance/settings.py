@@ -30,15 +30,15 @@ START_IMAGE = get_file_path('start_video.png', 'images')
 AGREE_RECORDING_IMAGE = get_file_path('agree_recording.png', 'images')
 
 # APScheduler timings
-# 10:00, 11:20, 13:00, 14:30, 15:20, 17:00 if I got them all
+# 10:00, 11:20, 13:00, 14:30, 15:20, 17:00 normal
+# 11:50, 13:00, 14:30 sprint challenge
+# 11:00, 13:00, 15:30 project day 1 - ?
 DIFF_MINUTE = 5
 CHECK_IN_TIMES = [get_time_sets(*TIME_SET, DIFF_MINUTE) for TIME_SET in\
                   [(10,0), (11,20), (13,11), (14,30), (15,20), (17,0)]]
 CHECK_IN_TIMES = [TIME_SET for TIME_SETS in CHECK_IN_TIMES for TIME_SET in TIME_SETS]
-ZOOM_ON_HOUR = 13    # at hour 13
-ZOOM_ON_MINUTE = '0, 1, 2, 3, 4'  # at minutes 0,1,2,3,4
+ZOOM_ON_HOUR = 13
 ZOOM_QUIT_HOUR = 12
-ZOOM_QUIT_MINUTE = 0
 
 # Zoom props
 ZOOM_RESIZE_PARAMETERS_LIST = [i/10 for i in range(3,11)] # Change Zoom window size
