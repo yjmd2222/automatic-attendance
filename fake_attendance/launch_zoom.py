@@ -120,16 +120,15 @@ class LaunchZoom:
                 # try again
                 self.agree_recording(trial)
             # check if agree window is closed
-            try:
-                # if it is found
-                pywinauto.findwindows.find_element(
-                    class_name=ZOOM_AGREE_RECORDING_POPUP_CLASS)
+            pos = get_last_match(self.image)
+            # if the agree button is found
+            if pos != (0,0,0,0):
                 print(f'줌 녹화 동의 창 건재함. 재시도 횟수: {trial}')
                 trial += 1
                 # try again
                 self.agree_recording(trial)
             # if it is not found
-            except ElementNotFoundError:
+            else:
                 # successfully agreed
                 print('줌 녹화 동의 완료')
                 return
