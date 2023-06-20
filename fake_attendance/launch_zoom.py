@@ -12,8 +12,8 @@ from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
 
 import pyautogui
-import pywinauto
-from pywinauto.findwindows import ElementNotFoundError
+
+import win32gui
 
 sys.path.append(os.getcwd())
 
@@ -33,26 +33,31 @@ class LaunchZoom:
     def __init__(self):
         'initialize'
         self.image = AGREE_RECORDING_IMAGE
-        self.pywinauto_app = pywinauto.Application()
+        self.hwnd_zoom_classroom = 0
+        self.hwnd_zoom_popup = 0
+        self.hwnd_zoom_launching_chrome = 0
         self.driver = None
 
     def reset_attributes(self):
         'reset attributes for next run'
-        self.pywinauto_app = pywinauto.Application()
+        self.hwnd_zoom_classroom = 0
+        self.hwnd_zoom_popup = 0
+        self.hwnd_zoom_launching_chrome = 0
         self.driver = None
 
     def connect(self):
         'connect to Zoom conference'
         # check presence of Zoom conference
-        try:
-            pywinauto.findwindows.find_element(class_name=ZOOM_CLASSROOM_CLASS)
-            self.pywinauto_app.connect(class_name=ZOOM_CLASSROOM_CLASS, found_index=0)
+        self.hwnd_zoom_classroom = win32gui.FindWindow(ZOOM_CLASSROOM_CLASS, None)
+        # if visible
+        if win32gui.IsWindowVisible(self.hwnd_zoom_classroom):
+            win32gui.SetForegroundWindow(self.hwnd_zoom_classroom)
             print('이미 줌 회의 입장중')
             # agree recording if there is popup
             self.agree_recording()
             return True
-        # if there isn't
-        except ElementNotFoundError:
+        # if not visible
+        else:
             print('줌 입장 안 함. 실행 필요')
             return False
 
@@ -75,7 +80,8 @@ class LaunchZoom:
 
         # connect to automated Chrome browser
         # because recent Chrome does not allow bypassing this popup
-        self.pywinauto_app.connect(title=ZOOM_LAUNCHING_CHROME).top_window().set_focus()
+        self.hwnd_zoom_launching_chrome = win32gui.FindWindow(None, ZOOM_LAUNCHING_CHROME)
+        win32gui.SetForegroundWindow(self.hwnd_zoom_launching_chrome)
 
         # accept zoom launch message
         pyautogui.press('tab')
@@ -87,24 +93,22 @@ class LaunchZoom:
 
     def check_launch_result(self):
         'check the result'
-        try:
-            # Zoom's App class for conference.
-            pywinauto.findwindows.find_element(class_name=ZOOM_CLASSROOM_CLASS)
+        # Zoom's App hwnd for conference.
+        if win32gui.IsWindowVisible(self.hwnd_zoom_classroom):
             print('줌 회의 실행/발견 성공')
             return True
-        except ElementNotFoundError:
+        else:
             print('줌 회의 실행/발견 실패')
             self.launch_zoom()
             return False
 
     def agree_recording(self, trial=1):
         'agree recording'
-        try:
-            pywinauto.findwindows.find_element(class_name=ZOOM_AGREE_RECORDING_POPUP_CLASS)
+        # hwnd of agree recording popup
+        hwnd_zoom_popup = win32gui.FindWindow(ZOOM_AGREE_RECORDING_POPUP_CLASS, None)
+        if win32gui.IsWindowVisible(hwnd_zoom_popup):
             # focus on the agree popup
-            self.pywinauto_app.connect(
-                class_name=ZOOM_AGREE_RECORDING_POPUP_CLASS,
-                found_index=0).top_window().set_focus()
+            win32gui.SetForegroundWindow(hwnd_zoom_popup)
             # find the agree button
             pos = get_last_match(self.image)
             # if agree button found
@@ -116,7 +120,7 @@ class LaunchZoom:
             else:
                 trial += 1
                 print(f'중 녹화 동의 창 중에서 동의 버튼 확인 못 함.\
-                      재시도 횟수: {trial}')
+                    재시도 횟수: {trial}')
                 # try again
                 self.agree_recording(trial)
             # check if agree window is closed
@@ -133,7 +137,7 @@ class LaunchZoom:
                 print('줌 녹화 동의 완료')
                 return
         # agree window not found
-        except ElementNotFoundError:
+        else:
             time.sleep(5)
             print(f'줌 녹화 동의 창 발견 실패, 재시도 횟수: {trial}')
             trial += 1

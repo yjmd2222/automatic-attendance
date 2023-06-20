@@ -5,7 +5,7 @@ Quit Zoom
 import os
 import sys
 import pywinauto
-from pywinauto.findwindows import ElementNotFoundError
+import win32gui
 
 sys.path.append(os.getcwd())
 
@@ -22,12 +22,12 @@ class QuitZoom:
 
     def connect_and_kill(self):
         'connect to Zoom conference and kill'
-        try:
-            pywinauto.findwindows.find_element(class_name=ZOOM_CLASSROOM_CLASS)
+        hwnd_zoom_class_classroom = win32gui.FindWindow(ZOOM_CLASSROOM_CLASS, None)
+        if win32gui.IsWindowVisible(hwnd_zoom_class_classroom):
             self.pywinauto_app.connect(class_name=ZOOM_CLASSROOM_CLASS, found_index=0)\
                 .kill(soft=True)
             print('Zoom 회의 입장 확인 후 종료함')
-        except ElementNotFoundError:
+        else:
             print('Zoom 회의 입장 안 함')
 
     def run(self):
