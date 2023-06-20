@@ -212,9 +212,9 @@ class FakeCheckIn:
         driver.quit()
         # maximize Zoom window
         win32gui.MoveWindow(self.zoom_window, *self.rect, True)
-        # make sure same job does not run within 15 minutes upon completion
+        # make sure same job does not run within 30 minutes upon completion
         if self.is_wait:
-            time.sleep(900)
+            time.sleep(1800)
         self.reset_attributes()
         return
 
