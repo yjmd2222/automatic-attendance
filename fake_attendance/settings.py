@@ -42,6 +42,7 @@ ZOOM_QUIT_HOUR = 12
 
 # Zoom props
 ZOOM_RESIZE_PARAMETERS_LIST = [i/10 for i in range(3,11)] # Change Zoom window size
+# 이 회의는 호스트 또는 참가자가 기록 중입니다
 ZOOM_AGREE_RECORDING_POPUP_CLASS = 'ZPRecordingConsentClass'
 ZOOM_CLASSROOM_CLASS = 'ZPContentViewWndClass'
 ZOOM_LAUNCHING_CHROME = '회의 시작 - Zoom - Chrome'

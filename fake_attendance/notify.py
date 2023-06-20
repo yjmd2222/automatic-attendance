@@ -16,6 +16,7 @@ from socket import gaierror
 sys.path.append(os.getcwd())
 
 # pylint: disable=wrong-import-position
+from fake_attendance.helper import print_with_time
 from fake_attendance.info import (
     EMAIL_ADDRESS,
     EMAIL_PASSWORD,
@@ -54,10 +55,10 @@ class SendEmail:
         try:
             smtp = smtplib.SMTP(SMTP_HOST, SMTP_PORT)
         except gaierror:
-            print('SMTP 호스트 이름 확인 필요')
+            print_with_time('SMTP 호스트 이름 확인 필요')
             return
         except TimeoutError:
-            print('SMTP 포트 번호 확인 필요')
+            print_with_time('SMTP 포트 번호 확인 필요')
             return
 
         smtp.ehlo()
@@ -65,7 +66,7 @@ class SendEmail:
         try:
             smtp.login(EMAIL_ADDRESS, EMAIL_PASSWORD)
         except SMTPAuthenticationError:
-            print('이메일 로그인 정보 확인 필요')
+            print_with_time('이메일 로그인 정보 확인 필요')
             return
 
         self.write_body()
@@ -74,7 +75,7 @@ class SendEmail:
 
         smtp.sendmail(EMAIL_ADDRESS, EMAIL_ADDRESS, msg.as_string())
 
-        print('이메일 발송 성공')
+        print_with_time('이메일 발송 성공')
 
         smtp.quit()
 

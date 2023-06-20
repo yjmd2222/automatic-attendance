@@ -19,6 +19,7 @@ sys.path.append(os.getcwd())
 
 # pylint: disable=wrong-import-position
 from fake_attendance.info import ZOOM_LINK
+from fake_attendance.helper import print_with_time
 from fake_attendance.settings import (
     AGREE_RECORDING_IMAGE,
     ZOOM_AGREE_RECORDING_POPUP_CLASS,
@@ -52,12 +53,12 @@ class LaunchZoom:
         # if visible
         if win32gui.IsWindowVisible(self.hwnd_zoom_classroom):
             win32gui.SetForegroundWindow(self.hwnd_zoom_classroom)
-            print('이미 줌 회의 입장중')
+            print_with_time('이미 줌 회의 입장중')
             # agree recording if there is popup
             self.agree_recording()
             return True
         # if not visible
-        print('줌 입장 안 함. 실행 필요')
+        print_with_time('줌 입장 안 함. 실행 필요')
         return False
 
     def initialize_selenium(self):
@@ -94,10 +95,10 @@ class LaunchZoom:
         'check the result'
         # if Zoom classroom visible
         if win32gui.IsWindowVisible(self.hwnd_zoom_classroom):
-            print('줌 회의 실행/발견 성공')
+            print_with_time('줌 회의 실행/발견 성공')
             return True
         # if not
-        print('줌 회의 실행/발견 실패')
+        print_with_time('줌 회의 실행/발견 실패')
         self.launch_zoom()
         return False
 
@@ -112,13 +113,13 @@ class LaunchZoom:
             pos = get_last_match(self.image)
             # if agree button found
             if pos != (0,0,0,0):
-                print('줌 녹화 동의 버튼 확인')
+                print_with_time('줌 녹화 동의 버튼 확인')
                 pyautogui.click(pos)
                 time.sleep(2)
             # if not found
             else:
                 trial += 1
-                print(f'중 녹화 동의 창 중에서 동의 버튼 확인 못 함.\
+                print_with_time(f'중 녹화 동의 창 중에서 동의 버튼 확인 못 함.\
                     재시도 횟수: {trial}')
                 # try again
                 self.agree_recording(trial)
@@ -126,29 +127,29 @@ class LaunchZoom:
             pos = get_last_match(self.image)
             # if the agree button is found
             if pos != (0,0,0,0):
-                print(f'줌 녹화 동의 창 건재함. 재시도 횟수: {trial}')
+                print_with_time(f'줌 녹화 동의 창 건재함. 재시도 횟수: {trial}')
                 trial += 1
                 # try again
                 self.agree_recording(trial)
             # if it is not found
             else:
                 # successfully agreed
-                print('줌 녹화 동의 완료')
+                print_with_time('줌 녹화 동의 완료')
                 return
         # agree window not found
         else:
             time.sleep(5)
-            print(f'줌 녹화 동의 창 발견 실패, 재시도 횟수: {trial}')
+            print_with_time(f'줌 녹화 동의 창 발견 실패, 재시도 횟수: {trial}')
             trial += 1
             # try again
             if not self.check_launch_result():
-                print('줌 회의 중단됨')
+                print_with_time('줌 회의 중단됨')
                 return
             self.agree_recording(trial)
 
     def run(self):
         'Run the launch'
-        print('줌 실행 스크립트 시작')
+        print_with_time('줌 실행 스크립트 시작')
 
         # if zoom already running, return
         if self.connect():

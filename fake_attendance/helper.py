@@ -35,3 +35,8 @@ def get_time_sets(hour, minute, diff_minute=5):
     input_time = datetime.now().replace(hour=hour, minute=minute)
     time_list = [input_time + timedelta(minutes=diff_minute*i) for i in range(-2, 3)]
     return [{'hour': time_set.hour, 'minute': time_set.minute} for time_set in time_list]
+
+def print_with_time(*args):
+    'print with time in %H:%M:%S format'
+    now = datetime.strftime(datetime.now(), '%H:%M:%S')
+    print(now, *args)

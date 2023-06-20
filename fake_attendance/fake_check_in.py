@@ -23,6 +23,7 @@ sys.path.append(os.getcwd())
 
 # pylint: disable=wrong-import-position
 from fake_attendance.info import KAKAO_ID, KAKAO_PASSWORD
+from fake_attendance.helper import print_with_time
 from fake_attendance.settings import (
     SCREEN_QR_READER_POPUP_LINK,
     SCREEN_QR_READER_SOURCE,
@@ -47,7 +48,6 @@ def decorator_repeat_diff_sizes(func):
         while i < len(ZOOM_RESIZE_PARAMETERS_LIST):
             # replace last argument == ratio
             args = args[:-1] + (ZOOM_RESIZE_PARAMETERS_LIST[i],)
-            print(args)
             result = func(self, *args)
             if result:
                 break
@@ -108,9 +108,12 @@ class FakeCheckIn:
         # if there is a QR image, so check tab count.
         window_handles = driver.window_handles
 
-        if len(window_handles) > 1:
+        # Screen QR Reader may open 'about:blank' when there is not a valid QR image.
+        if len(window_handles) > 1: # if there are two tabs
             driver.switch_to.window(window_handles[1]) # force Selenium to be on the new tab
-            return True
+            if driver.current_url == 'about:blank': # check if the url is fake then return False
+                return False
+            return True # return True if url is valid
 
         return False
 
@@ -191,15 +194,16 @@ class FakeCheckIn:
             options = self.create_selenium_options()
             driver = self.initialize_selenium(options)
         else:
-            print('줌 실행중인지 확인 필요')
+            print_with_time('줌 실행중인지 확인 필요')
             self.reset_attributes()
             return
         is_link = self.get_link(driver, 0)
         # if there's no link
         if not is_link:
-            print('QR 코드 없음. 현 세션 완료')
+            print_with_time('QR 코드 없음. 현 세션 완료')
         # otherwise check in
         else:
+            print_with_time('QR 코드 확인. 출석 체크 진행')
             self.check_in(driver)
             # send email
             self.send_email.send_email()
