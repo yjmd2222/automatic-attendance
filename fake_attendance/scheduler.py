@@ -16,6 +16,7 @@ sys.path.append(os.getcwd())
 
 # pylint: disable=wrong-import-position
 from fake_attendance.fake_check_in import FakeCheckIn
+from fake_attendance.helper import print_with_time
 from fake_attendance.launch_zoom import LaunchZoom
 from fake_attendance.quit_zoom import QuitZoom
 from fake_attendance.settings import (
@@ -64,17 +65,17 @@ class MyScheduler:
     def print_next_time(self):
         'print next trigger for next QR check'
         next_time = self.sched.get_job('fake_check_in').next_run_time
-        print('다음 출석 스크립트 실행 시각:', next_time.strftime(('%H:%M')))
+        print_with_time('다음 출석 스크립트 실행 시각:', next_time.strftime(('%H:%M')))
 
     def run(self):
         'run scheduler'
-        print('스케줄러 실행')
+        print_with_time('스케줄러 실행')
         self.add_jobs()
         self.sched.start()
         try:
             keyboard.wait('ctrl+c')
         except KeyboardInterrupt:
-            print('키보드로 중단 요청')
+            print_with_time('키보드로 중단 요청')
         self.sched.shutdown()
 
 
