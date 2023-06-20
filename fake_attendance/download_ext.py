@@ -18,7 +18,7 @@ import pyautogui
 sys.path.append(os.getcwd())
 
 # pylint: disable=wrong-import-position
-from fake_attendance.helper import get_last_match
+from fake_attendance.helper import get_last_match, print_with_time
 from fake_attendance.settings import (CONTINUE_IMAGE, GET_CRX_LINK,
                   SCREEN_QR_READER_SOURCE, SCREEN_QR_READER_WEBSTORE_LINK)
 # pylint: enable=wrong-import-position
@@ -72,28 +72,28 @@ class DownloadExtensionSource:
         # Recent Chrome does not allow bypassing 'harmful download', so use pyautogui.
         pos = get_last_match(self.image)
         if pos != (0,0,0,0):
-            print('다운로드 "계속" 버튼 확인')
+            print_with_time('다운로드 "계속" 버튼 확인')
             pyautogui.click(pos) # must be on the bottom
             time.sleep(5)
         else:
-            print('다운로드 "계속" 버튼 찾을 수 없음')
+            print_with_time('다운로드 "계속" 버튼 찾을 수 없음')
 
     def run(self):
         'Run the download'
-        print('다운로드 스크립트 실행')
+        print_with_time('다운로드 스크립트 실행')
         if self.check_source_exists():
-            print('이미 디렉터리 안에 확장자 소스 파일 있음')
+            print_with_time('이미 디렉터리 안에 확장자 소스 파일 있음')
             return
         options = self.create_selenium_options()
         driver = self.initialize_selenium(options)
         self.download(driver)
         driver.quit()
         if os.path.isfile(SCREEN_QR_READER_SOURCE):
-            print('다운로드한 확장자 소스 파일 확인 완료')
+            print_with_time('다운로드한 확장자 소스 파일 확인 완료')
         else:
-            print('다운로드된 파일 없음')
+            print_with_time('다운로드된 파일 없음')
             raise AssertionError
-        print('다운로드 스크립트 종료')
+        print_with_time('다운로드 스크립트 종료')
         return
 
 if __name__ == '__main__':
