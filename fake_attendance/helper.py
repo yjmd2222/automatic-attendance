@@ -14,7 +14,6 @@ def get_file_path(filename, sub=None):
         return os.path.join(os.getcwd(), sub, filename)
     return os.path.join(os.getcwd(), filename)
 
-
 def get_last_match(image):
     'For checking distinct elements. Nothing found if (0,0,0,0) returned'
     positions = [(0,0,0,0)]
@@ -35,3 +34,8 @@ def get_time_sets(hour, minute, diff_minute=5):
     input_time = datetime.now().replace(hour=hour, minute=minute)
     time_list = [input_time + timedelta(minutes=diff_minute*i) for i in range(-2, 3)]
     return [{'hour': time_set.hour, 'minute': time_set.minute} for time_set in time_list]
+
+def print_with_time(*args):
+    'print with time in %H:%M:%S format'
+    now = datetime.strftime(datetime.now(), '%H:%M:%S')
+    print(now, *args)

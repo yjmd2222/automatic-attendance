@@ -10,16 +10,16 @@ sys.path.append(os.getcwd())
 from fake_attendance.helper import get_file_path, get_time_sets
 # pylint: enable=wrong-import-position
 
-# Screen QR Reader interaction
-SCREEN_QR_READER_POPUP_LINK = \
-    'chrome-extension://ekoaehpknadfoaolagjfdefeopkhfhln/src/popup/popup.html'
-SCREEN_QR_READER_SOURCE = get_file_path('extension_0_1_2_0.crx')
-
 # Screen QR Reader download
 GET_CRX_LINK = 'https://crx-downloader.com/'
 SCREEN_QR_READER_WEBSTORE_LINK = \
     'https://chrome.google.com/webstore/detail/screen-qr-reader/ekoaehpknadfoaolagjfdefeopkhfhln'
-# SCREEN_QR_READER_SOURCE_PATH = get_file_path('extension_0_1_2_0.crx')
+
+# Screen QR Reader interaction
+SCREEN_QR_READER_POPUP_LINK = \
+    'chrome-extension://ekoaehpknadfoaolagjfdefeopkhfhln/src/popup/popup.html'
+SCREEN_QR_READER_BLANK = 'about:blank'
+SCREEN_QR_READER_SOURCE = get_file_path('extension_0_1_2_0.crx')
 
 # PyAutoGUI
 # continue with download
@@ -42,9 +42,9 @@ ZOOM_QUIT_HOUR = 12
 
 # Zoom props
 ZOOM_RESIZE_PARAMETERS_LIST = [i/10 for i in range(3,11)] # Change Zoom window size
-ZOOM_AGREE_RECORDING_POPUP_CLASS = 'ZPRecordingConsentClass'
-ZOOM_CLASSROOM_CLASS = 'ZPContentViewWndClass'
-ZOOM_LAUNCHING_CHROME = '회의 시작 - Zoom - Chrome'
+ZOOM_AGREE_RECORDING_POPUP_CLASS = 'ZPRecordingConsentClass' # '이 회의는 호스트 또는 참가자가 기록 중입니다'
+ZOOM_CLASSROOM_CLASS = 'ZPContentViewWndClass' # 'Zoom 회의'
+ZOOM_LAUNCHING_CHROME_TITLE = '회의 시작 - Zoom - Chrome'
 
 # Check-in props
 LOGIN_WITH_KAKAO_BUTTON = 'login-form__button-title.css-caslt6'
