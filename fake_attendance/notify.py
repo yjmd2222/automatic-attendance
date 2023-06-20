@@ -13,6 +13,8 @@ from datetime import datetime
 
 from socket import gaierror
 
+from textwrap import dedent
+
 sys.path.append(os.getcwd())
 
 # pylint: disable=wrong-import-position
@@ -48,7 +50,7 @@ class SendEmail:
 
         credit: yjmd2222's fake-attendance project https://github.com/yjmd2222/fake-attendance
         '''
-        self.body = body
+        self.body = dedent(body).strip()
 
     def send_email(self):
         'send email'
