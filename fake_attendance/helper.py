@@ -14,7 +14,6 @@ def get_file_path(filename, sub=None):
         return os.path.join(os.getcwd(), sub, filename)
     return os.path.join(os.getcwd(), filename)
 
-
 def get_last_match(image):
     'For checking distinct elements. Nothing found if (0,0,0,0) returned'
     positions = [(0,0,0,0)]

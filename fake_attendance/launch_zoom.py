@@ -11,8 +11,7 @@ from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
 
-import pyautogui
-
+import keyboard
 import win32gui
 
 sys.path.append(os.getcwd())
@@ -24,8 +23,7 @@ from fake_attendance.settings import (
     AGREE_RECORDING_IMAGE,
     ZOOM_AGREE_RECORDING_POPUP_CLASS,
     ZOOM_CLASSROOM_CLASS,
-    ZOOM_LAUNCHING_CHROME)
-from fake_attendance.helper import get_last_match
+    ZOOM_LAUNCHING_CHROME_TITLE)
 # pylint: enable=wrong-import-position
 
 class LaunchZoom:
@@ -38,6 +36,7 @@ class LaunchZoom:
         self.hwnd_zoom_popup = 0
         self.hwnd_zoom_launching_chrome = 0
         self.driver = None
+        self.is_agreed = False
 
     def reset_attributes(self):
         'reset attributes for next run'
@@ -45,6 +44,7 @@ class LaunchZoom:
         self.hwnd_zoom_popup = 0
         self.hwnd_zoom_launching_chrome = 0
         self.driver = None
+        self.is_agreed = False
 
     def connect(self):
         'connect to Zoom conference'
@@ -80,15 +80,15 @@ class LaunchZoom:
 
         # connect to automated Chrome browser
         # because recent Chrome does not allow bypassing this popup
-        self.hwnd_zoom_launching_chrome = win32gui.FindWindow(None, ZOOM_LAUNCHING_CHROME)
+        self.hwnd_zoom_launching_chrome = win32gui.FindWindow(None, ZOOM_LAUNCHING_CHROME_TITLE)
         win32gui.SetForegroundWindow(self.hwnd_zoom_launching_chrome)
 
         # accept zoom launch message
-        pyautogui.press('tab')
+        keyboard.press_and_release('tab')
         time.sleep(0.1)
-        pyautogui.press('tab')
+        keyboard.press_and_release('tab')
         time.sleep(0.1)
-        pyautogui.press('space')
+        keyboard.press_and_release('space')
         time.sleep(10)
 
     def check_launch_result(self):
@@ -102,50 +102,25 @@ class LaunchZoom:
         self.launch_zoom()
         return False
 
-    def agree_recording(self, trial=1):
+    def agree_recording(self):
         'agree recording'
         # hwnd of agree recording popup
         hwnd_zoom_popup = win32gui.FindWindow(ZOOM_AGREE_RECORDING_POPUP_CLASS, None)
+        # agree window visible
         if win32gui.IsWindowVisible(hwnd_zoom_popup):
+            print_with_time(self.is_agreed)
             # focus on the agree popup
             win32gui.SetForegroundWindow(hwnd_zoom_popup)
-            # find the agree button
-            pos = get_last_match(self.image)
-            # if agree button found
-            if pos != (0,0,0,0):
-                print_with_time('줌 녹화 동의 버튼 확인')
-                pyautogui.click(pos)
-                time.sleep(2)
-            # if not found
-            else:
-                trial += 1
-                print_with_time(f'중 녹화 동의 창 중에서 동의 버튼 확인 못 함.\
-                    재시도 횟수: {trial}')
-                # try again
-                self.agree_recording(trial)
-            # check if agree window is closed
-            pos = get_last_match(self.image)
-            # if the agree button is found
-            if pos != (0,0,0,0):
-                print_with_time(f'줌 녹화 동의 창 건재함. 재시도 횟수: {trial}')
-                trial += 1
-                # try again
-                self.agree_recording(trial)
-            # if it is not found
-            else:
-                # successfully agreed
-                print_with_time('줌 녹화 동의 완료')
-                return
-        # agree window not found
+            # press tab 4 times and hit space to agree
+            for _ in range(4):
+                keyboard.press_and_release('tab')
+                time.sleep(0.1)
+            keyboard.press_and_release('space')
+            self.is_agreed = True
+        # agree window not visible
         else:
-            time.sleep(5)
-            print_with_time(f'줌 녹화 동의 창 발견 실패, 재시도 횟수: {trial}')
-            trial += 1
-            # try again
-            if not self.check_launch_result():
-                print_with_time('줌 회의 중단됨')
-                return
-            self.agree_recording(trial)
+            if self.is_agreed:
+                print_with_time('줌 녹화 동의 완료')
 
     def run(self):
         'Run the launch'
@@ -161,6 +136,9 @@ class LaunchZoom:
         self.launch_zoom()
         # check launch result and agree recording if success
         if self.check_launch_result():
+            # double check
+            self.agree_recording()
+            time.sleep(5)
             self.agree_recording()
         self.driver.quit()
         time.sleep(5)

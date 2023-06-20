@@ -45,7 +45,7 @@ ZOOM_QUIT_HOUR = 12
 ZOOM_RESIZE_PARAMETERS_LIST = [i/10 for i in range(3,11)] # Change Zoom window size
 ZOOM_AGREE_RECORDING_POPUP_CLASS = 'ZPRecordingConsentClass' # '이 회의는 호스트 또는 참가자가 기록 중입니다'
 ZOOM_CLASSROOM_CLASS = 'ZPContentViewWndClass' # 'Zoom 회의'
-ZOOM_LAUNCHING_CHROME = '회의 시작 - Zoom - Chrome'
+ZOOM_LAUNCHING_CHROME_TITLE = '회의 시작 - Zoom - Chrome'
 
 # Check-in props
 LOGIN_WITH_KAKAO_BUTTON = 'login-form__button-title.css-caslt6'
