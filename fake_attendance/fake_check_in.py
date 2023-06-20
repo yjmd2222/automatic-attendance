@@ -25,6 +25,7 @@ sys.path.append(os.getcwd())
 from fake_attendance.info import KAKAO_ID, KAKAO_PASSWORD
 from fake_attendance.helper import print_with_time
 from fake_attendance.settings import (
+    SCREEN_QR_READER_BLANK,
     SCREEN_QR_READER_POPUP_LINK,
     SCREEN_QR_READER_SOURCE,
     ZOOM_RESIZE_PARAMETERS_LIST,
@@ -110,8 +111,9 @@ class FakeCheckIn:
 
         # Screen QR Reader may open 'about:blank' when there is not a valid QR image.
         if len(window_handles) > 1: # if there are two tabs
-            driver.switch_to.window(window_handles[1]) # force Selenium to be on the new tab
-            if driver.current_url == 'about:blank': # check if the url is fake then return False
+            driver.switch_to.window(window_handles[-1]) # force Selenium to be on the new tab
+            # check if the url is fake then return False
+            if driver.current_url in (SCREEN_QR_READER_BLANK, SCREEN_QR_READER_POPUP_LINK):
                 return False
             return True # return True if url is valid
 

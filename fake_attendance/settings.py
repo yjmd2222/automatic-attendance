@@ -13,6 +13,7 @@ from fake_attendance.helper import get_file_path, get_time_sets
 # Screen QR Reader interaction
 SCREEN_QR_READER_POPUP_LINK = \
     'chrome-extension://ekoaehpknadfoaolagjfdefeopkhfhln/src/popup/popup.html'
+SCREEN_QR_READER_BLANK = 'about:blank'
 SCREEN_QR_READER_SOURCE = get_file_path('extension_0_1_2_0.crx')
 
 # Screen QR Reader download
@@ -42,9 +43,8 @@ ZOOM_QUIT_HOUR = 12
 
 # Zoom props
 ZOOM_RESIZE_PARAMETERS_LIST = [i/10 for i in range(3,11)] # Change Zoom window size
-# 이 회의는 호스트 또는 참가자가 기록 중입니다
-ZOOM_AGREE_RECORDING_POPUP_CLASS = 'ZPRecordingConsentClass'
-ZOOM_CLASSROOM_CLASS = 'ZPContentViewWndClass'
+ZOOM_AGREE_RECORDING_POPUP_CLASS = 'ZPRecordingConsentClass' # '이 회의는 호스트 또는 참가자가 기록 중입니다'
+ZOOM_CLASSROOM_CLASS = 'ZPContentViewWndClass' # 'Zoom 회의'
 ZOOM_LAUNCHING_CHROME = '회의 시작 - Zoom - Chrome'
 
 # Check-in props
