@@ -7,6 +7,7 @@ import sys
 
 from functools import wraps
 
+from datetime import datetime, timedelta
 import time
 
 import win32con
@@ -214,6 +215,8 @@ class FakeCheckIn:
         win32gui.MoveWindow(self.zoom_window, *self.rect, True)
         # make sure same job does not run within 30 minutes upon completion
         if self.is_wait:
+            print_with_time(f'''출석 체크 완료. 30분 동안 출석 체크 실행 안 함({
+                datetime.strftime(datetime.now() + timedelta(minutes=30), "%H:%M")}까지)''')
             time.sleep(1800)
         self.reset_attributes()
         return
