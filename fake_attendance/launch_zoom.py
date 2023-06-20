@@ -57,9 +57,8 @@ class LaunchZoom:
             self.agree_recording()
             return True
         # if not visible
-        else:
-            print('줌 입장 안 함. 실행 필요')
-            return False
+        print('줌 입장 안 함. 실행 필요')
+        return False
 
     def initialize_selenium(self):
         'Initialize Selenium and return driver'
@@ -93,14 +92,14 @@ class LaunchZoom:
 
     def check_launch_result(self):
         'check the result'
-        # Zoom's App hwnd for conference.
+        # if Zoom classroom visible
         if win32gui.IsWindowVisible(self.hwnd_zoom_classroom):
             print('줌 회의 실행/발견 성공')
             return True
-        else:
-            print('줌 회의 실행/발견 실패')
-            self.launch_zoom()
-            return False
+        # if not
+        print('줌 회의 실행/발견 실패')
+        self.launch_zoom()
+        return False
 
     def agree_recording(self, trial=1):
         'agree recording'
