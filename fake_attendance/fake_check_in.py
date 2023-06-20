@@ -66,6 +66,7 @@ class FakeCheckIn:
         self.zoom_window = 0
         self.rect = [100,100,100,100]
         self.is_wait = False
+        self.until = None
         self.send_email = SendEmail()
 
     def reset_attributes(self):
@@ -191,6 +192,10 @@ class FakeCheckIn:
 
     def run(self):
         'run once'
+        # make sure same job does not run within 30 minutes upon completion
+        if self.until and datetime.now() < self.until: # self.until is set towards the end
+            print_with_time(f'기존 출석 확인. {datetime.strftime(self.until, "%H:%M")}까지 출석 체크 실행 안 함')
+            return
         self.is_window, self.zoom_window = self.check_window()
         self.rect = self.get_max_window_size()
         if self.is_window:
@@ -215,9 +220,8 @@ class FakeCheckIn:
         win32gui.MoveWindow(self.zoom_window, *self.rect, True)
         # make sure same job does not run within 30 minutes upon completion
         if self.is_wait:
-            print_with_time(f'''출석 체크 완료. 30분 동안 출석 체크 실행 안 함({
-                datetime.strftime(datetime.now() + timedelta(minutes=30), "%H:%M")}까지)''')
-            time.sleep(1800)
+            self.until = datetime.now() + timedelta(minutes=30)
+            print_with_time(f'출석 체크 완료. {datetime.strftime(self.until, "%H:%M")}까지 출석 체크 실행 안 함')
         self.reset_attributes()
         return
 
