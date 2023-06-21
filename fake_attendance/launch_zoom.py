@@ -20,7 +20,6 @@ sys.path.append(os.getcwd())
 from fake_attendance.info import ZOOM_LINK
 from fake_attendance.helper import print_with_time, send_alt_key_and_set_foreground
 from fake_attendance.settings import (
-    AGREE_RECORDING_IMAGE,
     ZOOM_AGREE_RECORDING_POPUP_CLASS,
     ZOOM_CLASSROOM_CLASS,
     ZOOM_LAUNCHING_CHROME_TITLE)
@@ -31,7 +30,6 @@ class LaunchZoom:
 
     def __init__(self):
         'initialize'
-        self.image = AGREE_RECORDING_IMAGE
         self.hwnd_zoom_classroom = 0
         self.hwnd_zoom_popup = 0
         self.hwnd_zoom_launching_chrome = 0
