@@ -7,6 +7,8 @@ import os
 from datetime import datetime, timedelta
 
 import pyautogui
+from win32com.client import Dispatch
+import win32gui
 
 def get_file_path(filename, sub=None):
     'return full file path'
@@ -39,3 +41,11 @@ def print_with_time(*args):
     'print with time in %H:%M:%S format'
     now = datetime.strftime(datetime.now(), '%H:%M:%S')
     print(now, *args)
+
+def send_alt_key_and_set_foreground(hwnd):
+    '''
+    send alt key to shell before setting foreground with win32gui to workaround
+    error: (0, 'SetForegroundWindow', 'No error message is available')
+    '''
+    Dispatch('WScript.Shell').SendKeys('%')
+    win32gui.SetForegroundWindow(hwnd)

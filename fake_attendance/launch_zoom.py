@@ -18,7 +18,7 @@ sys.path.append(os.getcwd())
 
 # pylint: disable=wrong-import-position
 from fake_attendance.info import ZOOM_LINK
-from fake_attendance.helper import print_with_time
+from fake_attendance.helper import print_with_time, send_alt_key_and_set_foreground
 from fake_attendance.settings import (
     AGREE_RECORDING_IMAGE,
     ZOOM_AGREE_RECORDING_POPUP_CLASS,
@@ -52,7 +52,7 @@ class LaunchZoom:
         self.hwnd_zoom_classroom = win32gui.FindWindow(ZOOM_CLASSROOM_CLASS, None)
         # if visible
         if win32gui.IsWindowVisible(self.hwnd_zoom_classroom):
-            win32gui.SetForegroundWindow(self.hwnd_zoom_classroom)
+            send_alt_key_and_set_foreground(self.hwnd_zoom_classroom)
             print_with_time('이미 줌 회의 입장중')
             # agree recording if there is popup
             self.agree_recording()
@@ -81,7 +81,7 @@ class LaunchZoom:
         # connect to automated Chrome browser
         # because recent Chrome does not allow bypassing this popup
         self.hwnd_zoom_launching_chrome = win32gui.FindWindow(None, ZOOM_LAUNCHING_CHROME_TITLE)
-        win32gui.SetForegroundWindow(self.hwnd_zoom_launching_chrome)
+        send_alt_key_and_set_foreground(self.hwnd_zoom_launching_chrome)
 
         # accept zoom launch message
         keyboard.press_and_release('tab')
@@ -110,7 +110,7 @@ class LaunchZoom:
         if win32gui.IsWindowVisible(hwnd_zoom_popup):
             print_with_time(self.is_agreed)
             # focus on the agree popup
-            win32gui.SetForegroundWindow(hwnd_zoom_popup)
+            send_alt_key_and_set_foreground(hwnd_zoom_popup)
             # press tab 4 times and hit space to agree
             for _ in range(4):
                 keyboard.press_and_release('tab')
