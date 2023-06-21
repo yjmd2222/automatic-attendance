@@ -17,15 +17,11 @@ from fake_attendance.settings import ZOOM_CLASSROOM_CLASS
 class QuitZoom:
     'A class for quitting Zoom'
 
-    def __init__(self):
-        'initialize'
-        self.pywinauto_app = pywinauto.Application()
-
-    def connect_and_kill(self):
+    def connect_and_kill(self, pywinauto_app):
         'connect to Zoom conference and kill'
         hwnd_zoom_class_classroom = win32gui.FindWindow(ZOOM_CLASSROOM_CLASS, None)
         if win32gui.IsWindowVisible(hwnd_zoom_class_classroom):
-            self.pywinauto_app.connect(class_name=ZOOM_CLASSROOM_CLASS, found_index=0)\
+            pywinauto_app.connect(class_name=ZOOM_CLASSROOM_CLASS, found_index=0)\
                 .kill(soft=True)
             print_with_time('Zoom 회의 입장 확인 후 종료함')
         else:
@@ -33,8 +29,9 @@ class QuitZoom:
 
     def run(self):
         'Run the launch'
+        pywinauto_app = pywinauto.Application()
         print_with_time('줌 종료 스크립트 시작')
-        self.connect_and_kill()
+        self.connect_and_kill(pywinauto_app)
 
 if __name__ == '__main__':
     QuitZoom().run()
