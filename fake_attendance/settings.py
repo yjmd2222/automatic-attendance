@@ -26,8 +26,6 @@ SCREEN_QR_READER_SOURCE = get_file_path('extension_0_1_2_0.crx')
 CONTINUE_IMAGE = get_file_path('continue_with_download.png', 'images')
 # start video
 START_IMAGE = get_file_path('start_video.png', 'images')
-# agree recording
-AGREE_RECORDING_IMAGE = get_file_path('agree_recording.png', 'images')
 
 # APScheduler timings
 # 10:00, 11:20, 13:00, 14:30, 15:20, 17:00 normal
