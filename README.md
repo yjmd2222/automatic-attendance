@@ -25,13 +25,15 @@ For testing QR recognition, you can run `python test_scheduler.py YOUR-ARGUMENT-
 - Leaving it blank to run scheduler at default times: See [settings.py](fake_attendance/settings.py)
 
 ## How it works and why
-The script checks if there is a QR image on the Zoom meeting screen. Screen QR Reader scans the QR image and automatically completes the check-in process.
-This check is done throughout the day. See [settings.py](fake_attendance/settings.py) for the actual timings. Along with that, it also launches Zoom at 1 PM.
+Last updated 2023-06-21
+
+This module automates all check-ins for you-know-what: launch and quit Zoom at corresponding times and read the QR code in Zoom to complete the check-in form.
+This check is done throughout the day. See [settings.py](fake_attendance/settings.py) for the actual timings.
 
 So why this? My online class used to require I sit at the desk on Zoom from 9 AM to 6 PM (lunch time from 12 to 1 is excluded) with camera on the entire time.
 This is ridiculous, and everyone must be thinking of putting on a fake recording of themself in the background. But the admins are going to send a QR image for us to check in every hour or two
 which is on another level of shit. So I made a little script that scans the QR image on the Zoom meeting. They said they would give 10 minutes to check in,
-so the script checks multiple times around the check-in hour.
+so the script checks multiple times around the check-in time.
 
 But then they changed the rules to allow turning off the Zoom camera, so this part is removed. You can look at the archived code in [turn_on_video.py](archive/turn_on_video.py)
 
