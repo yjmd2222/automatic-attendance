@@ -51,9 +51,10 @@ class LaunchZoom:
         # if visible
         if win32gui.IsWindowVisible(self.hwnd_zoom_classroom):
             send_alt_key_and_set_foreground(self.hwnd_zoom_classroom)
-            print_with_time('이미 줌 회의 입장중')
+            print_with_time('줌 회의 입장 확인')
             # agree recording if there is popup
             self.agree_recording()
+            time.sleep(5)
             return True
         # if not visible
         print_with_time('줌 입장 안 함. 실행 필요')
@@ -72,6 +73,7 @@ class LaunchZoom:
             self.driver = self.initialize_selenium()
 
         # launch Zoom link
+        print_with_time('줌 입장 시작')
         self.driver.get(ZOOM_LINK)
         self.driver.maximize_window()
         time.sleep(5)
@@ -91,12 +93,14 @@ class LaunchZoom:
 
     def check_launch_result(self):
         'check the result'
+        # check Zoom classroom
+        self.hwnd_zoom_classroom = win32gui.FindWindow(ZOOM_CLASSROOM_CLASS, None)
         # if Zoom classroom visible
         if win32gui.IsWindowVisible(self.hwnd_zoom_classroom):
             print_with_time('줌 회의 실행/발견 성공')
             return True
         # if not
-        print_with_time('줌 회의 실행/발견 실패')
+        print_with_time('줌 회의 실행/발견 실패. 재실행')
         self.launch_zoom()
         return False
 
@@ -106,7 +110,6 @@ class LaunchZoom:
         hwnd_zoom_popup = win32gui.FindWindow(ZOOM_AGREE_RECORDING_POPUP_CLASS, None)
         # agree window visible
         if win32gui.IsWindowVisible(hwnd_zoom_popup):
-            print_with_time(self.is_agreed)
             # focus on the agree popup
             send_alt_key_and_set_foreground(hwnd_zoom_popup)
             # press tab 4 times and hit space to agree
@@ -119,6 +122,8 @@ class LaunchZoom:
         else:
             if self.is_agreed:
                 print_with_time('줌 녹화 동의 완료')
+            else:
+                print_with_time('줌 회의는 발견했지만 동의는 못 함')
 
     def run(self):
         'Run the launch'
@@ -137,6 +142,7 @@ class LaunchZoom:
             # double check
             self.agree_recording()
             time.sleep(5)
+            print_with_time('동의 재확인')
             self.agree_recording()
         self.driver.quit()
         time.sleep(5)
