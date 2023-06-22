@@ -14,7 +14,7 @@ import win32con
 import win32gui
 
 from selenium import webdriver
-from selenium.common.exceptions import ElementClickInterceptedException
+from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
@@ -30,10 +30,12 @@ from fake_attendance.settings import (
     SCREEN_QR_READER_POPUP_LINK,
     SCREEN_QR_READER_SOURCE,
     ZOOM_RESIZE_PARAMETERS_LIST,
+    ZOOM_CLASSROOM_CLASS,
     LOGIN_WITH_KAKAO_BUTTON,
     ID_INPUT_BOX,
     PASSWORD_INPUT_BOX,
     LOGIN_BUTTON,
+    IFRAME,
     AGREE,
     CHECK_IN,
     SUBMIT)
@@ -54,6 +56,24 @@ def decorator_repeat_diff_sizes(func):
             if result:
                 break
             i += 1
+        return result
+    return wrapper
+
+def decorator_repeat_selenium_elements(func):
+    'decorator for checking elements in browser multiple times'
+    @wraps(func)
+    def wrapper(self, *args, **kwargs):
+        'wrapper'
+        i = 0
+        while i < 3:
+            result = func(self, *args, **kwargs)
+            if result:
+                break
+            i += 1
+            time.sleep(args[-1])
+        if i == 3:
+            print_with_time('재시도 전부 실패. 현 상태에서 이메일 발송')
+        time.sleep(args[-1])
         return result
     return wrapper
 
@@ -78,7 +98,7 @@ class FakeCheckIn:
 
     def check_window(self):
         'check and return window'
-        window = win32gui.FindWindow(None, 'Zoom 회의')
+        window = win32gui.FindWindow(ZOOM_CLASSROOM_CLASS, None)
         self.is_window = bool(window) # True if window not 0 else False
 
         return bool(window), window
@@ -100,8 +120,9 @@ class FakeCheckIn:
         time.sleep(1)
         # calculate new window size
         rect_resized = self.rect.copy()
-        for idx, _ in enumerate(self.rect[2:]):
-            rect_resized[idx+2] = int(self.rect[idx+2]*ratio)
+        # for idx, _ in enumerate(self.rect[2:]):
+        #     rect_resized[idx+2] = int(self.rect[idx+2]*ratio)
+        rect_resized[2] = int(self.rect[2] * ratio)
         # apply new window size
         win32gui.MoveWindow(self.zoom_window, *rect_resized, True)
         driver.get(SCREEN_QR_READER_POPUP_LINK) # Screen QR Reader
@@ -137,57 +158,92 @@ class FakeCheckIn:
 
         return webdriver.Chrome(service=auto_driver, options=options)
 
+    @decorator_repeat_selenium_elements
+    def selenium_action(self, driver, by_which, sleep, **kwargs):
+        '''
+        selenium action method\n
+        Must specify kwargs\n
+        'how' must be one of 'click', 'input', 'get_iframe', and 'submit'\n
+        'element' is the element to be inspected\n
+        'input_text' must be given if 'how' is 'input'
+        '''
+        try:
+            element = driver.find_element(by_which, kwargs['element'])
+            if kwargs['how'] == 'click':
+                element.click()
+            elif kwargs['how'] == 'input':
+                element.send_keys(kwargs['input_text'])
+            elif kwargs['how'] == 'get_iframe':
+                iframe_url = element.get_attribute('src')
+                driver.get(iframe_url)
+            elif kwargs['how'] == 'submit':
+                driver.execute_script('arguments[0].click();', element)
+            else:
+                raise AssertionError
+            print_with_time(f'{kwargs["element"]} 찾기 성공. {sleep}초 후 다음 단계로 진행')
+            return True
+        except NoSuchElementException:
+            print_with_time(f'{kwargs["element"]} 찾기 실패. {sleep}초 후 재시도')
+            return False
+
     def check_in(self, driver):
-        'do the check-in'
+        'testing'
         # login type
-        with_kakao = driver.find_element(By.CLASS_NAME, LOGIN_WITH_KAKAO_BUTTON)
-        with_kakao.click()
-        time.sleep(10)
+        is_login_type = self.selenium_action(driver, By.CLASS_NAME, 10,\
+                        how='click', element=LOGIN_WITH_KAKAO_BUTTON)
 
         # insert Kakao id
-        id_box = driver.find_element(By.ID, ID_INPUT_BOX)
-        id_box.send_keys(KAKAO_ID)
-        time.sleep(1)
+        is_id_box = None
+        if is_login_type:
+            is_id_box = self.selenium_action(driver, By.ID, 1,\
+                                        how='input', element=ID_INPUT_BOX, input_text=KAKAO_ID)
 
         # insert Kakao password
-        pw_box = driver.find_element(By.ID, PASSWORD_INPUT_BOX)
-        pw_box.send_keys(KAKAO_PASSWORD)
-        time.sleep(1)
+        is_pw_box = None
+        if is_id_box:
+            is_pw_box = self.selenium_action(driver, By.ID, 1,\
+                        how='input', element=PASSWORD_INPUT_BOX, input_text=KAKAO_PASSWORD)
 
         # log in
-        press_login = driver.find_element(By.CLASS_NAME, LOGIN_BUTTON)
-        press_login.click()
-        time.sleep(10)
-
-        # Should have successfully logged in. Now pass link to SendEmail
-        link = driver.current_url
-        self.send_email.get_link(link)
-        time.sleep(5)
+        is_press_login = None
+        if is_pw_box:
+            is_press_login = self.selenium_action(driver, By.CLASS_NAME, 10,\
+                        how='click', element=LOGIN_BUTTON)
 
         # get inner document link
-        iframe = driver.find_element(By.TAG_NAME, 'iframe')
-        iframe_url = iframe.get_attribute('src')
-        driver.get(iframe_url)
-        time.sleep(10)
+        is_iframe = None
+        if is_press_login:
+            # Should have successfully logged in. Now pass link to SendEmail
+            link = driver.current_url
+            self.send_email.record_link(link)
+            time.sleep(5)
+            is_iframe = self.selenium_action(driver, By.TAG_NAME, 10,\
+                        how='iframe', element=IFRAME)
 
         # agree to check in
-        agree_button = driver.find_element(By.XPATH, AGREE)
-        agree_button.click()
-        time.sleep(3)
+        is_agree = None
+        if is_iframe:
+            is_agree = self.selenium_action(driver, By.XPATH, 3,\
+                        how='click', element=AGREE)
 
         # select check-in
-        check_in_button = driver.find_element(By.XPATH, CHECK_IN)
-        check_in_button.click()
-        time.sleep(3)
+        is_check_in = None
+        if is_agree:
+            is_check_in = self.selenium_action(driver, By.XPATH, 3,\
+                        how='click', element=CHECK_IN)
 
         # submit
-        submit_button = driver.find_element(By.XPATH, SUBMIT)
-        try:
-            driver.execute_script('arguments[0].click();', submit_button)
-            self.send_email.get_result('성공')
+        is_submit = None
+        if is_check_in:
+            is_submit = self.selenium_action(driver, By.XPATH, 100,\
+                        how='submit', element=SUBMIT)
+
+        # send email
+        if is_submit:
+            self.send_email.record_result('성공')
             self.is_wait = True
-        except ElementClickInterceptedException:
-            self.send_email.get_result('실패')
+        else:
+            self.send_email.record_result('실패')
             self.is_wait = False
 
     def run(self):
@@ -222,6 +278,8 @@ class FakeCheckIn:
         if self.is_wait:
             self.until = datetime.now() + timedelta(minutes=30)
             print_with_time(f'출석 체크 완료. {datetime.strftime(self.until, "%H:%M")}까지 출석 체크 실행 안 함')
+        else:
+            print_with_time('QR 코드 확인 후 출석 체크 실패')
         self.reset_attributes()
         return
 

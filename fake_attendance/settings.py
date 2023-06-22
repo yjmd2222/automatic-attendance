@@ -49,6 +49,7 @@ LOGIN_WITH_KAKAO_BUTTON = 'login-form__button-title.css-caslt6'
 ID_INPUT_BOX = 'loginKey--1'
 PASSWORD_INPUT_BOX = 'password--2'
 LOGIN_BUTTON = 'btn_g.highlight.submit'
+IFRAME = 'iframe'
 AGREE = "//*[text()='동의합니다.']"
 CHECK_IN = "//*[text()='출석']"
 SUBMIT = "//*[text()='제출']"
