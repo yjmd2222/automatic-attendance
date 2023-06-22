@@ -113,7 +113,7 @@ class FakeCheckIn:
         return list(win32gui.GetWindowRect(self.zoom_window))
 
     @decorator_repeat_diff_sizes
-    def get_link(self, driver, ratio):
+    def check_link(self, driver, ratio):
         'Get link from QR'
         # maximize Chrome window
         driver.maximize_window()
@@ -259,7 +259,7 @@ class FakeCheckIn:
             print_with_time('줌 실행중인지 확인 필요')
             self.reset_attributes()
             return
-        is_link = self.get_link(driver, 0)
+        is_link = self.check_link(driver, 0)
         # if there's no link
         if not is_link:
             print_with_time('QR 코드 없음. 현 세션 완료')
