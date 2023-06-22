@@ -185,7 +185,7 @@ class FakeCheckIn:
             return False
 
     def check_in(self, driver):
-        'testing'
+        'do the check-in'
         # login type
         is_login_type = self.selenium_action(driver, By.CLASS_NAME, 10,\
                         how='click', element=LOGIN_WITH_KAKAO_BUTTON)
