@@ -120,8 +120,6 @@ class FakeCheckIn:
         time.sleep(1)
         # calculate new window size
         rect_resized = self.rect.copy()
-        # for idx, _ in enumerate(self.rect[2:]):
-        #     rect_resized[idx+2] = int(self.rect[idx+2]*ratio)
         rect_resized[2] = int(self.rect[2] * ratio)
         # apply new window size
         win32gui.MoveWindow(self.zoom_window, *rect_resized, True)
