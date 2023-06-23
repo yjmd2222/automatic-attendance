@@ -140,6 +140,35 @@ class FakeCheckIn:
 
         return False
 
+    @decorator_repeat_diff_sizes
+    def check_link_2(self, driver, ratio):
+        'Get link from QR'
+        # maximize Chrome window
+        driver.maximize_window()
+        time.sleep(1)
+        # calculate new window size
+        rect_resized = self.rect.copy()
+        for idx, _ in enumerate(self.rect[2:]):
+            rect_resized[idx+2] = int(self.rect[idx+2]*ratio)
+        # apply new window size
+        win32gui.MoveWindow(self.zoom_window, *rect_resized, True)
+        driver.get(SCREEN_QR_READER_POPUP_LINK) # Screen QR Reader
+        time.sleep(2)
+
+        # Selenium will automatically open the link in a new tab
+        # if there is a QR image, so check tab count.
+        window_handles = driver.window_handles
+
+        # Screen QR Reader may open 'about:blank' when there is not a valid QR image.
+        if len(window_handles) > 1: # if there are two tabs
+            driver.switch_to.window(window_handles[-1]) # force Selenium to be on the new tab
+            # check if the url is fake then return False
+            if driver.current_url in (SCREEN_QR_READER_BLANK, SCREEN_QR_READER_POPUP_LINK):
+                return False
+            return True # return True if url is valid
+
+        return False
+
     def create_selenium_options(self):
         'declare options for Selenium driver'
         options = Options()
@@ -259,7 +288,7 @@ class FakeCheckIn:
             print_with_time('줌 실행중인지 확인 필요')
             self.reset_attributes()
             return
-        is_link = self.check_link(driver, 0)
+        is_link = True if self.check_link(driver, 0) else self.check_link_2(driver, 0) # dirty fix for now
         # if there's no link
         if not is_link:
             print_with_time('QR 코드 없음. 현 세션 완료')

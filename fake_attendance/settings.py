@@ -33,7 +33,7 @@ START_IMAGE = get_file_path('start_video.png', 'images')
 # 11:00, 13:00, 15:30 project day 1 - ?
 DIFF_MINUTE = 5
 CHECK_IN_TIMES = [get_time_sets(*TIME_SET, DIFF_MINUTE) for TIME_SET in\
-                  [(10,0), (10,30), (11, 0), (11,20), (13,11), (14,30), (15,20), (17,0)]]
+                  [(11,20), (13,11), (14,30), (15,20), (17,0)]]
 CHECK_IN_TIMES = [TIME_SET for TIME_SETS in CHECK_IN_TIMES for TIME_SET in TIME_SETS]
 ZOOM_ON_HOURS = '9,13'
 ZOOM_QUIT_HOURS = '12,18'
