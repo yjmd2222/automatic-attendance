@@ -12,8 +12,6 @@ Install the Chrome extension [Screen QR Reader](https://chrome.google.com/websto
 
 Fill out the template [info-template.py](fake_attendance/info-template.py) with your login, email information, and the zoom link without the `#success`. Rename the file to `info.py`
 
-Enter a Zoom conference.
-
 Note: If the module fails to download the Chrome extension source, you can try downloading it manually. Put it in the root of the repository. See [this](https://crx-downloader.com/how-it-works).
 
 ## Run
