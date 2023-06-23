@@ -5,8 +5,6 @@ Script to automatically send link information in QR image on a Zoom meeting ever
 import os
 import sys
 
-from functools import wraps
-
 from datetime import datetime, timedelta
 import time
 
@@ -29,7 +27,6 @@ from fake_attendance.settings import (
     SCREEN_QR_READER_BLANK,
     SCREEN_QR_READER_POPUP_LINK,
     SCREEN_QR_READER_SOURCE,
-    ZOOM_RESIZE_PARAMETERS_LIST,
     ZOOM_CLASSROOM_CLASS,
     LOGIN_WITH_KAKAO_BUTTON,
     ID_INPUT_BOX,
@@ -41,41 +38,6 @@ from fake_attendance.settings import (
     SUBMIT)
 from fake_attendance.notify import SendEmail
 # pylint: enable=wrong-import-position
-
-def decorator_repeat_diff_sizes(func):
-    'decorator for checking link multiple times, with different Zoom window sizes'
-    @wraps(func) # needed for wrapping class methods with *args
-    def wrapper(self, *args):
-        'wrapper'
-        i = 0
-        result = None
-        while i < len(ZOOM_RESIZE_PARAMETERS_LIST):
-            # replace last argument == ratio
-            args = args[:-1] + (ZOOM_RESIZE_PARAMETERS_LIST[i],)
-            result = func(self, *args)
-            if result:
-                break
-            i += 1
-        return result
-    return wrapper
-
-def decorator_repeat_selenium_elements(func):
-    'decorator for checking elements in browser multiple times'
-    @wraps(func)
-    def wrapper(self, *args, **kwargs):
-        'wrapper'
-        i = 0
-        while i < 3:
-            result = func(self, *args, **kwargs)
-            if result:
-                break
-            i += 1
-            time.sleep(args[-1])
-        if i == 3:
-            print_with_time('재시도 전부 실패. 현 상태에서 이메일 발송')
-        time.sleep(args[-1])
-        return result
-    return wrapper
 
 class FakeCheckIn:
     'A class for checking QR image and sending email with link'
@@ -112,15 +74,35 @@ class FakeCheckIn:
 
         return list(win32gui.GetWindowRect(self.zoom_window))
 
-    @decorator_repeat_diff_sizes
-    def check_link(self, driver, ratio):
+    def check_link_loop(self, driver):
         'Get link from QR'
         # maximize Chrome window
         driver.maximize_window()
         time.sleep(1)
+
         # calculate new window size
+        ratios = [i/10 for i in range(3, 11)]
         rect_resized = self.rect.copy()
-        rect_resized[2] = int(self.rect[2] * ratio)
+        result = None
+        # only horizontally
+        for ratio in ratios:
+            rect_resized[2] = int(self.rect[2] * ratio)
+            result = self.check_link(driver, rect_resized)
+            if result:
+                break
+        # both horizontally and vertically
+        if not result:
+            for ratio in ratios:
+                rect_resized[2] = int(self.rect[2] * ratio)
+                rect_resized[3] = int(self.rect[3] * ratio)
+                result = self.check_link(driver, rect_resized)
+                if result:
+                    break
+
+        return result
+
+    def check_link(self, driver, rect_resized):
+        'method to actually fire Screen QR Reader inside loop'
         # apply new window size
         win32gui.MoveWindow(self.zoom_window, *rect_resized, True)
         driver.get(SCREEN_QR_READER_POPUP_LINK) # Screen QR Reader
@@ -137,36 +119,6 @@ class FakeCheckIn:
             if driver.current_url in (SCREEN_QR_READER_BLANK, SCREEN_QR_READER_POPUP_LINK):
                 return False
             return True # return True if url is valid
-
-        return False
-
-    @decorator_repeat_diff_sizes
-    def check_link_2(self, driver, ratio):
-        'Get link from QR'
-        # maximize Chrome window
-        driver.maximize_window()
-        time.sleep(1)
-        # calculate new window size
-        rect_resized = self.rect.copy()
-        for idx, _ in enumerate(self.rect[2:]):
-            rect_resized[idx+2] = int(self.rect[idx+2]*ratio)
-        # apply new window size
-        win32gui.MoveWindow(self.zoom_window, *rect_resized, True)
-        driver.get(SCREEN_QR_READER_POPUP_LINK) # Screen QR Reader
-        time.sleep(2)
-
-        # Selenium will automatically open the link in a new tab
-        # if there is a QR image, so check tab count.
-        window_handles = driver.window_handles
-
-        # Screen QR Reader may open 'about:blank' when there is not a valid QR image.
-        if len(window_handles) > 1: # if there are two tabs
-            driver.switch_to.window(window_handles[-1]) # force Selenium to be on the new tab
-            # check if the url is fake then return False
-            if driver.current_url in (SCREEN_QR_READER_BLANK, SCREEN_QR_READER_POPUP_LINK):
-                return False
-            return True # return True if url is valid
-
         return False
 
     def create_selenium_options(self):
@@ -185,7 +137,6 @@ class FakeCheckIn:
 
         return webdriver.Chrome(service=auto_driver, options=options)
 
-    @decorator_repeat_selenium_elements
     def selenium_action(self, driver, by_which, sleep, **kwargs):
         '''
         selenium action method\n
@@ -194,24 +145,30 @@ class FakeCheckIn:
         'element' is the element to be inspected\n
         'input_text' must be given if 'how' is 'input'
         '''
-        try:
-            element = driver.find_element(by_which, kwargs['element'])
-            if kwargs['how'] == 'click':
-                element.click()
-            elif kwargs['how'] == 'input':
-                element.send_keys(kwargs['input_text'])
-            elif kwargs['how'] == 'get_iframe':
-                iframe_url = element.get_attribute('src')
-                driver.get(iframe_url)
-            elif kwargs['how'] == 'submit':
-                driver.execute_script('arguments[0].click();', element)
-            else:
-                raise AssertionError
-            print_with_time(f'{kwargs["element"]} 찾기 성공. {sleep}초 후 다음 단계로 진행')
-            return True
-        except NoSuchElementException:
-            print_with_time(f'{kwargs["element"]} 찾기 실패. {sleep}초 후 재시도')
-            return False
+        # check three times
+        for _ in range(3):
+            try:
+                element = driver.find_element(by_which, kwargs['element'])
+                if kwargs['how'] == 'click':
+                    element.click()
+                elif kwargs['how'] == 'input':
+                    element.send_keys(kwargs['input_text'])
+                elif kwargs['how'] == 'get_iframe':
+                    iframe_url = element.get_attribute('src')
+                    driver.get(iframe_url)
+                elif kwargs['how'] == 'submit':
+                    driver.execute_script('arguments[0].click();', element)
+                else:
+                    raise AssertionError
+                print_with_time(f'{kwargs["element"]} 찾기 성공. {sleep}초 후 다음 단계로 진행')
+                time.sleep(sleep)
+                return True
+            except NoSuchElementException:
+                print_with_time(f'{kwargs["element"]} 찾기 실패. {sleep}초 후 재시도')
+                time.sleep(sleep)
+
+        print_with_time('재시도 전부 실패. 현 상태에서 이메일 발송')
+        return False
 
     def check_in(self, driver):
         'do the check-in'
@@ -288,7 +245,7 @@ class FakeCheckIn:
             print_with_time('줌 실행중인지 확인 필요')
             self.reset_attributes()
             return
-        is_link = True if self.check_link(driver, 0) else self.check_link_2(driver, 0) # dirty fix for now
+        is_link = self.check_link_loop(driver)
         # if there's no link
         if not is_link:
             print_with_time('QR 코드 없음. 현 세션 완료')
