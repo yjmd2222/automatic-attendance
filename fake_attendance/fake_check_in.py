@@ -245,7 +245,7 @@ class FakeCheckIn:
             self.send_email.record_link(link)
             time.sleep(5)
             is_iframe = self.selenium_action(driver, By.TAG_NAME, 10,\
-                        how='iframe', element=IFRAME)
+                        how='submit', element=IFRAME)
 
         # agree to check in
         is_agree = None
