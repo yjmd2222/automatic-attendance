@@ -180,7 +180,7 @@ class FakeCheckIn:
         is_id_box = None
         if is_login_type:
             is_id_box = self.selenium_action(driver, By.ID, 1,\
-                                        how='input', element=ID_INPUT_BOX, input_text=KAKAO_ID)
+                        how='input', element=ID_INPUT_BOX, input_text=KAKAO_ID)
 
         # insert Kakao password
         is_pw_box = None
