@@ -22,7 +22,8 @@ from fake_attendance.quit_zoom import QuitZoom
 from fake_attendance.settings import (
     CHECK_IN_TIMES,
     ZOOM_ON_HOURS,
-    ZOOM_QUIT_HOURS)
+    ZOOM_QUIT_HOURS,
+    ZOOM_QUIT_MINUTE)
 # pylint: enable=wrong-import-position
 
 class MyScheduler:
@@ -57,7 +58,7 @@ class MyScheduler:
         self.sched.add_job(self.launch_zoom.run, 'cron',\
                            hour=ZOOM_ON_HOURS, id='lauch_zoom')
         self.sched.add_job(self.quit_zoom.run, 'cron',\
-                           hour=ZOOM_QUIT_HOURS, id='quit_zoom')
+                           hour=ZOOM_QUIT_HOURS, minute=ZOOM_QUIT_MINUTE, id='quit_zoom')
         self.sched.add_listener(
             callback = lambda event: self.print_next_time(),
             mask = EVENT_JOB_EXECUTED)
