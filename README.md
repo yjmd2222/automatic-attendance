@@ -21,7 +21,7 @@ For testing QR scan scheduler, you can run `python test_scheduler.py YOUR-ARGUME
 - A text file that contains a 24-hour format time sets such as [test_times.txt](test_times.txt)
 - A json-like format such as `'[{"hour": int, "minute": int},...]'`
 - Leaving it blank to run scheduler at default times: See [settings.py](fake_attendance/settings.py)
-- For a single test, run `python -m fake_attendance.fake_check_in`.
+- For a single test to fire right now, run `python -m fake_attendance.fake_check_in`.
 
 ## How it works and why
 Last updated 2023-06-21
