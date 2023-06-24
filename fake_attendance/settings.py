@@ -37,6 +37,7 @@ CHECK_IN_TIMES = [get_time_sets(*TIME_SET, DIFF_MINUTE) for TIME_SET in\
 CHECK_IN_TIMES = [TIME_SET for TIME_SETS in CHECK_IN_TIMES for TIME_SET in TIME_SETS]
 ZOOM_ON_HOURS = '9,13'
 ZOOM_QUIT_HOURS = '12,18'
+ZOOM_QUIT_MINUTE = 5
 
 # Zoom props
 ZOOM_AGREE_RECORDING_POPUP_CLASS = 'ZPRecordingConsentClass' # '이 회의는 호스트 또는 참가자가 기록 중입니다'
