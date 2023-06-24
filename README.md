@@ -17,10 +17,11 @@ Note: If the module fails to download the Chrome extension source, you can try d
 ## Run
 Run `python -m fake_attendance` for download, launch Zoom, and check_in. Read [How it works and why](#how-it-works-and-why) for explanation.
 
-For testing QR recognition, you can run `python test_scheduler.py YOUR-ARGUMENT-HERE` with `YOUR-ARGUMENT-HERE` as either:
+For testing QR scan scheduler, you can run `python test_scheduler.py YOUR-ARGUMENT-HERE` with `YOUR-ARGUMENT-HERE` as either:
 - A text file that contains a 24-hour format time sets such as [test_times.txt](test_times.txt)
 - A json-like format such as `'[{"hour": int, "minute": int},...]'`
 - Leaving it blank to run scheduler at default times: See [settings.py](fake_attendance/settings.py)
+- For a single test, run `python -m fake_attendance.fake_check_in`.
 
 ## How it works and why
 Last updated 2023-06-21
