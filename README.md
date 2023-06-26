@@ -1,4 +1,4 @@
-[![Clones count](https://img.shields.io/badge/dynamic/json?color=success&label=Clone&query=count&url=https://gist.githubusercontent.com/yjmd2222/f556bbbab7d65f98e77aac8a34e2fdeb/raw/clone.json&logo=github)](https://github.com/yjmd2222/fake-attendance)
+[![Clone count](https://img.shields.io/badge/dynamic/json?color=success&label=Clone&query=count&url=https://gist.githubusercontent.com/yjmd2222/f556bbbab7d65f98e77aac8a34e2fdeb/raw/clone.json&logo=github)](https://github.com/yjmd2222/fake-attendance)[![Unique clone count](https://img.shields.io/badge/dynamic/json?color=success&label=Clone-unique&query=uniques&url=https://gist.githubusercontent.com/yjmd2222/f556bbbab7d65f98e77aac8a34e2fdeb/raw/clone.json&logo=github)](https://github.com/yjmd2222/fake-attendance)
 
 # Fake attendance script for you-know-what
 For educational purposes only
