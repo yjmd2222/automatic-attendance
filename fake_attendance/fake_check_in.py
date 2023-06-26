@@ -249,6 +249,7 @@ class FakeCheckIn:
         # if there's no link
         if not is_link:
             print_with_time('QR 코드 없음. 현 세션 완료')
+            return
         # otherwise check in
         else:
             print_with_time('QR 코드 확인. 출석 체크 진행')
