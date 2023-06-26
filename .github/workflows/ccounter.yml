@@ -49,7 +49,7 @@ jobs:
 
       - name: update clone.json
         run: |
-          curl https://raw.githubusercontent.com/MShawon/github-clone-count-badge/master/main.py > main.py
+          curl https://raw.githubusercontent.com/yjmd2222/misc/main/clone-json.py > main.py
           python3 main.py
 
       - name: Update gist with latest count
