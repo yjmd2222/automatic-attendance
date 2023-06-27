@@ -46,6 +46,7 @@ jobs:
     
       - name: update clone.json
         run: |
+            curl https://raw.githubusercontent.com/yjmd2222/fake-attendance/pushstats/main.py > main.py
             python3 main.py
 
       - name: remove before files
