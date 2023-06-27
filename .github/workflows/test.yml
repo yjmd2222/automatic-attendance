@@ -28,19 +28,21 @@ jobs:
           curl --user "${{ github.actor }}:${{ secrets.SECRET_TOKEN }}" \
             -H "Accept: application/vnd.github.v3+json" \
             https://api.github.com/repos/${{ github.repository }}/traffic/clones \
-            > clone.json;
+            > clone.json
           curl --user "${{ github.actor }}:${{ secrets.SECRET_TOKEN }}" \
             -H "Accept: application/vnd.github.v3+json" \
             https://api.github.com/repos/${{ github.repository }}/traffic/views \
-            > view.json;
+            > view.json
 
       - name: grab clone.json and view.json and rename them
         run: |
           curl https://raw.githubusercontent.com/${{ github.repository }}/${{ github.ref_name }}/clone.json > clone_before.json
           if cat clone_before.json | grep '404: Not Found'; then
-            cp clone.json clone_before.json;
+            cp clone.json clone_before.json
+          fi;
           curl https://raw.githubusercontent.com/${{ github.repository }}/${{ github.ref_name }}/view.json > view_before.json
           if cat view_before.json | grep '404: Not Found'; then
-            cp view.json view_before.json;
+            cp view.json view_before.json
+          fi;
                         
       - uses: stefanzweifel/git-auto-commit-action@v4
