@@ -23,17 +23,24 @@ jobs:
           - name: gh login
             run: echo "${{ secrets.SECRET_TOKEN }}" | gh auth login --with-token
 
-          - name: parse latest clone count
+          - name: parse latest clone and view count
             run: |
                 curl --user "${{ github.actor }}:${{ secrets.SECRET_TOKEN }}" \
                     -H "Accept: application/vnd.github.v3+json" \
                     https://api.github.com/repos/${{ github.repository }}/traffic/clones \
                     > clone.json
-          - name: parse latest clone count
-            run: |
                 curl --user "${{ github.actor }}:${{ secrets.SECRET_TOKEN }}" \
                     -H "Accept: application/vnd.github.v3+json" \
                     https://api.github.com/repos/${{ github.repository }}/traffic/views \
-                    > views.json
+                    > view.json
 
+          - name: grab clone.json and view.json and rename them
+            run: |
+                curl https://raw.githubusercontent.com/${{ github.repository }}/clone.json > clone_before.json
+                if cat clone_before.json | grep '404: Not Found'; then
+                    cp clone.json clone_before.json
+                curl https://raw.githubusercontent.com/${{ github.repository }}/view.json > view_before.json
+                if cat view_before.json | grep '404: Not Found'; then
+                    cp view.json view_before.json
+                        
           - uses: stefanzweifel/git-auto-commit-action@v4
