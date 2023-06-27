@@ -5,6 +5,7 @@ on:
     branches:
       - main
       - pushstats
+      - stats
 
 jobs:
   build:
