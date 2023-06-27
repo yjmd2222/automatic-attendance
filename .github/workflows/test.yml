@@ -1,46 +1,46 @@
 name: test
 
 on:
-    push:
-      branches:
-        - test
+  push:
+    branches:
+      - test
 
 jobs:
-    build:
-        runs-on: ubuntu-latest
+  build:
+    runs-on: ubuntu-latest
 
-        permissions:
-            contents: write
+    permissions:
+      contents: write
 
-        steps:
-          - uses: actions/checkout@v3
-            with:
-                ref: test
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          ref: test
     
-          - name: Run a one-line script
-            run: echo 'Hello World'
+      - name: Run a one-line script
+        run: echo 'Hello World'
 
-          - name: gh login
-            run: echo "${{ secrets.SECRET_TOKEN }}" | gh auth login --with-token
+      - name: gh login
+        run: echo "${{ secrets.SECRET_TOKEN }}" | gh auth login --with-token
 
-          - name: parse latest clone and view count
-            run: |
-                curl --user "${{ github.actor }}:${{ secrets.SECRET_TOKEN }}" \
-                    -H "Accept: application/vnd.github.v3+json" \
-                    https://api.github.com/repos/${{ github.repository }}/traffic/clones \
-                    > clone.json
-                curl --user "${{ github.actor }}:${{ secrets.SECRET_TOKEN }}" \
-                    -H "Accept: application/vnd.github.v3+json" \
-                    https://api.github.com/repos/${{ github.repository }}/traffic/views \
-                    > view.json
+      - name: parse latest clone and view count
+        run: |
+          curl --user "${{ github.actor }}:${{ secrets.SECRET_TOKEN }}" \
+            -H "Accept: application/vnd.github.v3+json" \
+            https://api.github.com/repos/${{ github.repository }}/traffic/clones \
+            > clone.json
+          curl --user "${{ github.actor }}:${{ secrets.SECRET_TOKEN }}" \
+            -H "Accept: application/vnd.github.v3+json" \
+            https://api.github.com/repos/${{ github.repository }}/traffic/views \
+            > view.json
 
-          - name: grab clone.json and view.json and rename them
-            run: |
-                curl https://raw.githubusercontent.com/${{ github.repository }}/clone.json > clone_before.json
-                if cat clone_before.json | grep '404: Not Found'; then
-                    cp clone.json clone_before.json
-                curl https://raw.githubusercontent.com/${{ github.repository }}/view.json > view_before.json
-                if cat view_before.json | grep '404: Not Found'; then
-                    cp view.json view_before.json
+      - name: grab clone.json and view.json and rename them
+        run: |
+          curl https://raw.githubusercontent.com/${{ github.repository }}/${{ github.ref_name }}/clone.json > clone_before.json
+          if cat clone_before.json | grep '404: Not Found'; then
+            cp clone.json clone_before.json
+          curl https://raw.githubusercontent.com/${{ github.repository }}/${{ github.ref_name }}/view.json > view_before.json
+          if cat view_before.json | grep '404: Not Found'; then
+            cp view.json view_before.json
                         
-          - uses: stefanzweifel/git-auto-commit-action@v4
+      - uses: stefanzweifel/git-auto-commit-action@v4
