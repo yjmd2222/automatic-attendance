@@ -37,11 +37,11 @@ jobs:
 
       - name: grab clones.json and views.json and rename them
         run: |
-            curl https://raw.githubusercontent.com/${{ github.repository }}/${{ github.ref_name }}/clones.json > clones_before.json
+            curl https://raw.githubusercontent.com/${{ github.repository }}/stats/clones.json > clones_before.json
             if cat clones_before.json | grep '404: Not Found'; then
                 cp clones.json clones_before.json
             fi;
-            curl https://raw.githubusercontent.com/${{ github.repository }}/${{ github.ref_name }}/views.json > views_before.json
+            curl https://raw.githubusercontent.com/${{ github.repository }}/stats/views.json > views_before.json
             if cat views_before.json | grep '404: Not Found'; then
                 cp views.json views_before.json
             fi;
