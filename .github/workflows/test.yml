@@ -9,8 +9,31 @@ jobs:
     build:
         runs-on: ubuntu-latest
 
+        permissions:
+            contents: write
+
         steps:
           - uses: actions/checkout@v3
+            with:
+                ref: test
     
           - name: Run a one-line script
             run: echo 'Hello World'
+
+          - name: gh login
+            run: echo "${{ secrets.SECRET_TOKEN }}" | gh auth login --with-token
+
+          - name: parse latest clone count
+            run: |
+                curl --user "${{ github.actor }}:${{ secrets.SECRET_TOKEN }}" \
+                    -H "Accept: application/vnd.github.v3+json" \
+                    https://api.github.com/repos/${{ github.repository }}/traffic/clones \
+                    > clone.json
+          - name: parse latest clone count
+            run: |
+                curl --user "${{ github.actor }}:${{ secrets.SECRET_TOKEN }}" \
+                    -H "Accept: application/vnd.github.v3+json" \
+                    https://api.github.com/repos/${{ github.repository }}/traffic/views \
+                    > views.json
+
+          - uses: stefanzweifel/git-auto-commit-action@v4
