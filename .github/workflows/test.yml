@@ -1,0 +1,16 @@
+name: test
+
+on:
+    push:
+      branches:
+        - test
+
+jobs:
+    build:
+        runs-on: ubuntu-latest
+
+        steps:
+          - uses: actions/checkout@v3
+    
+          - name: Run a one-line script
+            run: echo 'Hello World'
