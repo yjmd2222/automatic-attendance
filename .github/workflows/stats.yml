@@ -17,9 +17,6 @@ jobs:
       - uses: actions/checkout@v3
         with:
           ref: stats
-    
-      - name: Run a one-line script
-        run: echo 'Hello World'
 
       - name: gh login
         run: echo "${{ secrets.SECRET_TOKEN }}" | gh auth login --with-token
@@ -55,3 +52,5 @@ jobs:
             rm clones_before.json views_before.json
                         
       - uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          branch: stats
