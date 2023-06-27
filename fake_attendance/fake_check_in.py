@@ -172,6 +172,9 @@ class FakeCheckIn:
 
     def check_in(self, driver):
         'do the check-in'
+        # wait 3 seconds
+        time.sleep(3)
+
         # login type
         is_login_type = self.selenium_action(driver, By.CLASS_NAME, 10,\
                         how='click', element=LOGIN_WITH_KAKAO_BUTTON)
