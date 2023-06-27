@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - pushstats
   schedule:
     - cron: "0 0 * * *"
   workflow_dispatch:
@@ -47,7 +48,7 @@ jobs:
     
       - name: update clone.json
         run: |
-            curl https://raw.githubusercontent.com/yjmd2222/fake-attendance/pushstats/main.py > main.py
+            curl https://raw.githubusercontent.com/yjmd2222/fake-attendance/stats/main.py > main.py
             python3 main.py
 
       - name: remove before files
