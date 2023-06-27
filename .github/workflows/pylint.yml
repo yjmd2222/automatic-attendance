@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - '!stats'
+      - main
 
 jobs:
   build:
