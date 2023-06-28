@@ -69,7 +69,7 @@ class MyScheduler:
         self.add_jobs()
         self.sched.start()
         while True:
-            if keyboard.is_pressed('ctrl+c'):
+            if keyboard.is_pressed('ctrl+alt+c'):
                 print_with_time('키보드로 중단 요청')
                 break
         self.sched.shutdown(wait=False)
