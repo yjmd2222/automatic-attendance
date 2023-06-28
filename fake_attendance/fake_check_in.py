@@ -159,17 +159,17 @@ class FakeCheckIn:
                 elif kwargs['how'] == 'submit':
                     driver.execute_script('arguments[0].click();', element)
                 else:
-                    assert kwargs['how'] in ['click', 'input', 'get_iframe', 'submit'] == True
+                    assert kwargs['how'] in ['click', 'input', 'get_iframe', 'submit']
                 print_with_time(f'{kwargs["element"]} 찾기 성공. {sleep}초 후 다음 단계로 진행')
                 time.sleep(sleep)
                 return True
             except NoSuchElementException:
                 print_with_time(f'{kwargs["element"]} 찾기 실패. {sleep}초 후 재시도')
                 time.sleep(sleep)
-            except KeyError as e:
-                print_with_time(f'kwarg의 매개변수 알맞게 입력했는지 확인 필요. 조회 실패: {e}, 입력: {list(kwargs)}')
+            except KeyError as error:
+                print_with_time(f'kwarg의 매개변수 알맞게 입력했는지 확인 필요. 조회 실패: {error}, 입력: {list(kwargs)}')
                 break
-            except AssertionError as e:
+            except AssertionError:
                 print_with_time(f'how kwarg의 인자값 알맞게 입력했는지 확인 필요. 입력: {kwargs["how"]}')
                 break
 
