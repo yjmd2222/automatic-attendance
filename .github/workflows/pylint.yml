@@ -2,9 +2,8 @@ name: Pylint
 
 on:
   push:
-    branches:
-      - '!stats'
-      - main
+    branches-ignore:
+      - stats
 
 jobs:
   build:

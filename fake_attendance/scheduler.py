@@ -43,11 +43,6 @@ class MyScheduler:
             for TIME_SET in time_sets
         ])
 
-    def shutdown(self, event):
-        'testing interrupt'
-        if self.sched.running and event:
-            self.sched.shutdown(wait=False)
-
     def add_jobs(self):
         '''
         add 1. grab zoom link on screen
@@ -73,12 +68,11 @@ class MyScheduler:
         print_with_time('스케줄러 실행')
         self.add_jobs()
         self.sched.start()
-        try:
-            keyboard.wait('ctrl+c')
-        except KeyboardInterrupt:
-            print_with_time('키보드로 중단 요청')
-        self.sched.shutdown()
-
+        while True:
+            if keyboard.is_pressed('ctrl+c'):
+                print_with_time('키보드로 중단 요청')
+                break
+        self.sched.shutdown(wait=False)
 
 if __name__ == '__main__':
     MyScheduler().run()
