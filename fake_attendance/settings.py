@@ -7,7 +7,7 @@ import sys
 sys.path.append(os.getcwd())
 
 # pylint: disable=wrong-import-position
-from fake_attendance.helper import get_file_path, get_time_sets
+from fake_attendance.helper import get_file_path, extrapolate_time_sets, unfoil_time_sets
 # pylint: enable=wrong-import-position
 
 # Screen QR Reader download
@@ -28,14 +28,28 @@ CONTINUE_IMAGE = get_file_path('continue_with_download.png', 'images')
 START_IMAGE = get_file_path('start_video.png', 'images')
 
 # APScheduler timings
-# 10:00, 11:20, 13:00, 14:30, 15:20, 17:00 normal
-# 11:50, 13:00, 14:30 sprint challenge
-# 11:00, 13:00, 15:30 project day 1 - ?
-# They check about only three times per day now.
+# 11:20, 13:00, 15:20 normal
+# 11:50, 13:00, 15:50 sprint challenge
+# 10::25(Days 2-5) 11:00(Day 1), 13:00, 15:30 project
 DIFF_MINUTE = 5
-CHECK_IN_TIMES = [get_time_sets(*TIME_SET, DIFF_MINUTE) for TIME_SET in\
-                  [(11,20), (13,11), (15,20)]]
-CHECK_IN_TIMES = [TIME_SET for TIME_SETS in CHECK_IN_TIMES for TIME_SET in TIME_SETS]
+REGULAR_CHECK_IN_TIMES = unfoil_time_sets(
+    [extrapolate_time_sets(*TIME_SET, DIFF_MINUTE) for TIME_SET in [(11,20), (13,11), (15,20)]]
+)
+SC_CHECK_IN_TIMES = unfoil_time_sets(
+    [extrapolate_time_sets(*TIME_SET, DIFF_MINUTE) for TIME_SET in [(11,50), (13,11), (15,50)]]
+)
+P_D1_CHECK_IN_TIMES = unfoil_time_sets(
+    [extrapolate_time_sets(*TIME_SET, DIFF_MINUTE) for TIME_SET in [(11,0), (13,11), (15,20)]]
+)
+P_D2_5_CHECK_IN_TIMES = unfoil_time_sets(
+    [extrapolate_time_sets(*TIME_SET, DIFF_MINUTE) for TIME_SET in [(10,30), (13,11), (15,20)]]
+)
+ARGUMENT_MAP = {
+    'regular': REGULAR_CHECK_IN_TIMES,
+    'section challenge': SC_CHECK_IN_TIMES,
+    'project day 1': P_D1_CHECK_IN_TIMES,
+    'project days 2-5': P_D2_5_CHECK_IN_TIMES
+}
 ZOOM_ON_HOURS = '9,13'
 ZOOM_QUIT_HOURS = '12,18'
 ZOOM_QUIT_MINUTE = 5
