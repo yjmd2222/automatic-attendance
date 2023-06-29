@@ -31,11 +31,15 @@ def get_last_match(image):
 
     return positions[-1]
 
-def get_time_sets(hour, minute, diff_minute=5):
+def extrapolate_time_sets(hour, minute, diff_minute=5):
     'return time sets diff_min and 2*diff_min minutes before and after given time'
     input_time = datetime.now().replace(hour=hour, minute=minute)
     time_list = [input_time + timedelta(minutes=diff_minute*i) for i in range(-2, 3)]
     return [{'hour': time_set.hour, 'minute': time_set.minute} for time_set in time_list]
+
+def unfoil_time_sets(time_sets_outer):
+    'return unfoiled time sets'
+    return [time_set for time_sets in time_sets_outer for time_set in time_sets]
 
 def print_with_time(*args):
     'print with time in %H:%M:%S format'
