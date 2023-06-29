@@ -21,11 +21,14 @@ Note: If the module fails to download the Chrome extension source, you can try d
 ## Run
 Run `python -m fake_attendance` for download, launch Zoom, and check_in. Read [How it works and why](#how-it-works-and-why) for explanation.
 
-For testing QR scan scheduler, you can run `python test_scheduler.py YOUR-ARGUMENT-HERE` with `YOUR-ARGUMENT-HERE` as either:
-- A text file that contains a 24-hour format time sets such as [test_times.txt](test_times.txt)
-- A json-like format such as `'[{"hour": int, "minute": int},...]'`
-- Leaving it blank to run scheduler at default times: See [settings.py](fake_attendance/settings.py)
-- For a single test to fire right away, run `python -m fake_attendance.fake_check_in`.
+For testing QR scan scheduler, you can run add an argument as either:
+- one of `'regular'`, `'section challenge'`, `'project day 1'`, or `'project days 2-5'` (See [settings.py](fake_attendance/settings.py) for actual timings.)
+- a text file that contains a 24-hour format time sets such as [test_times.txt](test_times.txt)
+- or a json-like format such as `'[{"hour": int, "minute": int},...]'`.
+
+Leaving it blank is the same as `'regular'` argument. 
+
+For a single test to fire right away, run `python -m fake_attendance.fake_check_in`.
 
 ## How it works and why
 [![Last updated](https://img.shields.io/badge/Last_updated-2023--06--21-blue)](#)

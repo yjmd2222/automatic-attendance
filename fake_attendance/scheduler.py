@@ -103,6 +103,7 @@ class MyScheduler:
         print_with_time('스케줄러 실행')
         self.add_jobs()
         self.sched.start()
+        self.print_next_time()
         while True:
             if keyboard.is_pressed('ctrl+alt+c'):
                 print_with_time('키보드로 중단 요청')
