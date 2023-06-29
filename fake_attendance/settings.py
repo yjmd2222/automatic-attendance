@@ -7,7 +7,7 @@ import sys
 sys.path.append(os.getcwd())
 
 # pylint: disable=wrong-import-position
-from fake_attendance.helper import get_file_path, get_time_sets
+from fake_attendance.helper import get_file_path, get_time_sets, extrapolate_time_sets
 # pylint: enable=wrong-import-position
 
 # Screen QR Reader download
@@ -33,9 +33,8 @@ START_IMAGE = get_file_path('start_video.png', 'images')
 # 11:00, 13:00, 15:30 project day 1 - ?
 # They check about only three times per day now.
 DIFF_MINUTE = 5
-CHECK_IN_TIMES = [get_time_sets(*TIME_SET, DIFF_MINUTE) for TIME_SET in\
-                  [(11,20), (13,11), (15,20)]]
-CHECK_IN_TIMES = [TIME_SET for TIME_SETS in CHECK_IN_TIMES for TIME_SET in TIME_SETS]
+CHECK_IN_TIMES = extrapolate_time_sets(
+    [get_time_sets(*TIME_SET, DIFF_MINUTE) for TIME_SET in [(11,20), (13,11), (15,20)]])
 ZOOM_ON_HOURS = '9,13'
 ZOOM_QUIT_HOURS = '12,18'
 ZOOM_QUIT_MINUTE = 5

@@ -63,6 +63,9 @@ class MyScheduler:
         next_time = self.sched.get_job('fake_check_in').next_run_time
         print_with_time('다음 출석 스크립트 실행 시각:', next_time.strftime(('%H:%M')))
 
+    def arguments(self):
+        if 1: pass
+
     def run(self):
         'run scheduler'
         print_with_time('스케줄러 실행')

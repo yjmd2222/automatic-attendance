@@ -37,6 +37,10 @@ def get_time_sets(hour, minute, diff_minute=5):
     time_list = [input_time + timedelta(minutes=diff_minute*i) for i in range(-2, 3)]
     return [{'hour': time_set.hour, 'minute': time_set.minute} for time_set in time_list]
 
+def extrapolate_time_sets(time_sets_outer):
+    'return unfoiled time sets'
+    return [time_set for time_sets in time_sets_outer for time_set in time_sets]
+
 def print_with_time(*args):
     'print with time in %H:%M:%S format'
     now = datetime.strftime(datetime.now(), '%H:%M:%S')
