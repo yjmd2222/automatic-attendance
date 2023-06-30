@@ -22,13 +22,12 @@ sys.path.append(os.getcwd())
 
 # pylint: disable=wrong-import-position
 from fake_attendance.info import KAKAO_ID, KAKAO_PASSWORD
-from fake_attendance.helper import print_with_time
+from fake_attendance.helper import decorator_start_end, print_with_time
 from fake_attendance.settings import (
     SCREEN_QR_READER_BLANK,
     SCREEN_QR_READER_POPUP_LINK,
     SCREEN_QR_READER_SOURCE,
     ZOOM_CLASSROOM_CLASS,
-    ZOOM_CLASSROOM_TITLE,
     LOGIN_WITH_KAKAO_BUTTON,
     ID_INPUT_BOX,
     PASSWORD_INPUT_BOX,
@@ -42,6 +41,7 @@ from fake_attendance.notify import SendEmail
 
 class FakeCheckIn:
     'A class for checking QR image and sending email with link'
+    print_name = 'QR 체크'
 
     def __init__(self):
         'initialize'
@@ -61,7 +61,7 @@ class FakeCheckIn:
 
     def check_window(self):
         'check and return window'
-        window = win32gui.FindWindow(ZOOM_CLASSROOM_CLASS, ZOOM_CLASSROOM_TITLE)
+        window = win32gui.FindWindow(ZOOM_CLASSROOM_CLASS, None)
         self.is_window = bool(window) # True if window not 0 else False
 
         return bool(window), window
@@ -147,7 +147,7 @@ class FakeCheckIn:
         'input_text' must be given if 'how' is 'input'
         '''
         # check three times
-        for _ in range(3):
+        for i in range(1, 3+1):
             try:
                 element = driver.find_element(by_which, kwargs['element'])
                 if kwargs['how'] == 'click':
@@ -165,7 +165,11 @@ class FakeCheckIn:
                 time.sleep(sleep)
                 return True
             except NoSuchElementException:
-                print_with_time(f'{kwargs["element"]} 찾기 실패. {sleep}초 후 재시도')
+                search_fail_message = f'{kwargs["element"]} 찾기 실패'
+                if i == 3:
+                    print_with_time(search_fail_message)
+                    break
+                print_with_time(search_fail_message + f'. {sleep}초 후 재시도')
                 time.sleep(sleep)
             except KeyError as error:
                 print_with_time(f'kwarg의 매개변수 알맞게 입력했는지 확인 필요. 조회 실패: {error}, 입력: {list(kwargs)}')
@@ -240,6 +244,7 @@ class FakeCheckIn:
             self.send_email.record_result('실패')
             self.is_wait = False
 
+    @decorator_start_end(print_name)
     def run(self):
         'run once'
         # make sure same job does not run within 30 minutes upon completion

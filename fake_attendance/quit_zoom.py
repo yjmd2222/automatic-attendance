@@ -5,32 +5,40 @@ Quit Zoom
 import os
 import sys
 import pywinauto
-import win32gui
+from pywinauto.findwindows import ElementNotFoundError
 
 sys.path.append(os.getcwd())
 
 # pylint: disable=wrong-import-position
-from fake_attendance.helper import print_with_time
-from fake_attendance.settings import ZOOM_CLASSROOM_CLASS, ZOOM_CLASSROOM_TITLE
+from fake_attendance.helper import print_with_time, decorator_start_end
+from fake_attendance.settings import ZOOM_CLASSROOM_CLASS
 # pylint: enable=wrong-import-position
 
 class QuitZoom:
     'A class for quitting Zoom'
+    print_name = '줌 종료'
 
-    def connect_and_kill(self):
+    def connect_and_kill(self, force):
         'connect to Zoom conference and kill'
-        hwnd_zoom_class_classroom = win32gui.FindWindow(ZOOM_CLASSROOM_CLASS, ZOOM_CLASSROOM_TITLE)
-        if win32gui.IsWindowVisible(hwnd_zoom_class_classroom):
+        try:
             pywinauto.Application().connect(class_name=ZOOM_CLASSROOM_CLASS, found_index=0)\
                 .kill(soft=True)
-            print_with_time('Zoom 회의 입장 확인 후 종료함')
-        else:
-            print_with_time('Zoom 회의 입장 안 함')
+            if force:
+                print_with_time('숨겨진 Zoom 회의 종료')
+            else:
+                print_with_time('Zoom 회의 입장 확인 후 종료')
+            return True
+        except ElementNotFoundError:
+            if force:
+                print_with_time('숨겨진 Zoom 회의 없음')
+            else:
+                print_with_time('Zoom 회의 입장 안 함')
+            return False
 
-    def run(self):
+    @decorator_start_end(print_name)
+    def run(self, force=False):
         'Run the launch'
-        print_with_time('줌 종료 스크립트 시작')
-        self.connect_and_kill()
+        self.connect_and_kill(force)
 
 if __name__ == '__main__':
     QuitZoom().run()

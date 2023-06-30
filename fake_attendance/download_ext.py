@@ -18,13 +18,20 @@ import pyautogui
 sys.path.append(os.getcwd())
 
 # pylint: disable=wrong-import-position
-from fake_attendance.helper import get_last_match, print_with_time
-from fake_attendance.settings import (CONTINUE_IMAGE, GET_CRX_LINK,
-                  SCREEN_QR_READER_SOURCE, SCREEN_QR_READER_WEBSTORE_LINK)
+from fake_attendance.helper import (
+    decorator_start_end,
+    get_last_match,
+    print_with_time)
+from fake_attendance.settings import (
+    CONTINUE_IMAGE,
+    GET_CRX_LINK,
+    SCREEN_QR_READER_SOURCE,
+    SCREEN_QR_READER_WEBSTORE_LINK)
 # pylint: enable=wrong-import-position
 
 class DownloadExtensionSource:
     'A class for downloading the source of Screen QR Reader'
+    print_name = '다운로드'
 
     def __init__(self):
         'initialize'
@@ -78,9 +85,9 @@ class DownloadExtensionSource:
         else:
             print_with_time('다운로드 "계속" 버튼 찾을 수 없음')
 
+    @decorator_start_end(print_name)
     def run(self):
         'Run the download'
-        print_with_time('다운로드 스크립트 실행')
         if self.check_source_exists():
             print_with_time('이미 디렉터리 안에 확장자 소스 파일 있음')
             return
@@ -93,7 +100,6 @@ class DownloadExtensionSource:
         else:
             print_with_time('다운로드된 파일 없음')
             raise AssertionError
-        print_with_time('다운로드 스크립트 종료')
         return
 
 if __name__ == '__main__':

@@ -18,7 +18,7 @@ sys.path.append(os.getcwd())
 
 # pylint: disable=wrong-import-position
 from fake_attendance.fake_check_in import FakeCheckIn
-from fake_attendance.helper import print_with_time
+from fake_attendance.helper import decorator_start_end, print_with_time
 from fake_attendance.launch_zoom import LaunchZoom
 from fake_attendance.quit_zoom import QuitZoom
 from fake_attendance.settings import (
@@ -31,6 +31,7 @@ from fake_attendance.settings import (
 
 class MyScheduler:
     'A class that manages the scheduler'
+    print_name = '스케줄러'
 
     def __init__(self):
         '''
@@ -103,16 +104,16 @@ class MyScheduler:
 
         return time_sets
     
-    def interrupt_from_keyboard(interrupt_sequence):
+    def interrupt_from_keyboard(self, interrupt_sequence):
         'break if sequence is pressed'
         while True:
             if keyboard.is_pressed(interrupt_sequence):
                 print_with_time('키보드로 중단 요청')
                 break
 
+    @decorator_start_end(print_name)
     def run(self):
         'run scheduler'
-        print_with_time('스케줄러 실행')
         self.add_jobs() # add all jobs
         self.sched.start() # start the scheduler
         self.print_next_time() # print time first job fires

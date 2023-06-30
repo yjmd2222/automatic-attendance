@@ -10,6 +10,18 @@ import pyautogui
 from win32com.client import Dispatch
 import win32gui
 
+def decorator_start_end(name):
+    'outer decorator, argument should be name for script'
+    def inner_decorator(func):
+        'inner'
+        def wrapper(*args, **kwargs):
+            'wrapper'
+            print_with_time(f'{name} 스크립트 시작')
+            func(*args, **kwargs)
+            print_with_time(f'{name} 스크립트 종료')
+        return wrapper
+    return inner_decorator
+
 def get_file_path(filename, sub=None):
     'return full file path'
     if sub:
@@ -53,3 +65,16 @@ def send_alt_key_and_set_foreground(hwnd):
     '''
     Dispatch('WScript.Shell').SendKeys('%')
     win32gui.SetForegroundWindow(hwnd)
+
+def print_all_windows(title='Zoom'):
+    'wrapper'
+    def win_enum_handler(hwnd, items):
+        '''print hwnds and respective class names with 'Zoom' in title'''
+        if title in win32gui.GetWindowText(hwnd):
+            items.append(str(hwnd).ljust(10) + win32gui.GetClassName(hwnd).ljust(20))
+
+    items = []
+    win32gui.EnumWindows(win_enum_handler, items)
+
+    for i in items:
+        print(i)
