@@ -110,9 +110,15 @@ class LaunchZoom(UseSelenium):
         'check the result'
         # check Zoom classroom
         self.hwnd_zoom_classroom = win32gui.FindWindow(ZOOM_CLASSROOM_CLASS, None)
-        # if Zoom classroom visible
-        if win32gui.IsWindowVisible(self.hwnd_zoom_classroom):
-            print_with_time('줌 회의 실행/발견 성공')
+
+        def check_zoom_visible(hwnd):
+            'check if zoom classroom window is visible'
+            # if Zoom classroom visible
+            if win32gui.IsWindowVisible(hwnd):
+                print_with_time('줌 회의 실행/발견 성공')
+                return True
+
+        if check_zoom_visible(self.hwnd_zoom_classroom):
             return True
         # if not
         for _ in range(3):
@@ -128,9 +134,11 @@ class LaunchZoom(UseSelenium):
                 self.check_window_down(window_class=ZOOM_UPDATE_ACTUAL_UPDATE_CLASS)
                 print_all_windows() # debug
             self.launch_zoom()
-        # if successfully launched
-        if self.check_launch_result():
-            return True
+            # check if now zoom window is visible
+            self.hwnd_zoom_classroom = win32gui.FindWindow(ZOOM_CLASSROOM_CLASS, None)
+            if check_zoom_visible(self.hwnd_zoom_classroom):
+                return True
+
         # no launch from all tries
         print_with_time('줌 회의 실행/발견 모두 실패')
         return False
@@ -199,7 +207,7 @@ class LaunchZoom(UseSelenium):
             self.process_popup(ZOOM_AGREE_RECORDING_POPUP_CLASS, reverse=True, send_alt=True)
             print_with_time('동의 재확인')
             self.process_popup(ZOOM_AGREE_RECORDING_POPUP_CLASS, reverse=True, send_alt=True)
-        self.quit_selenium() # quit popped out of nowhere, but init is done in other places
+        self.quit_selenium() # seems quit popped out of nowhere, but init is done in other places
         if self.is_agreed[ZOOM_AGREE_RECORDING_POPUP_CLASS]:
             self.maximize_window(self.hwnd_zoom_classroom) # maximize if everything done correctly
         self.reset_attributes() # reset attributes for next run
