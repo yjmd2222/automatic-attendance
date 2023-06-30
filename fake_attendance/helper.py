@@ -70,8 +70,9 @@ def print_all_windows(title='Zoom'):
     'wrapper'
     def win_enum_handler(hwnd, items):
         '''print hwnds and respective class names with 'Zoom' in title'''
-        if title in win32gui.GetWindowText(hwnd):
-            items.append(str(hwnd).ljust(10) + win32gui.GetClassName(hwnd).ljust(20))
+        full_title = win32gui.GetWindowText(hwnd)
+        if title in full_title:
+            items.append(str(hwnd).ljust(10) + win32gui.GetClassName(hwnd).ljust(30) + full_title)
 
     items = []
     win32gui.EnumWindows(win_enum_handler, items)

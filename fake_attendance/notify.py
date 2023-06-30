@@ -18,6 +18,7 @@ from textwrap import dedent
 sys.path.append(os.getcwd())
 
 # pylint: disable=wrong-import-position
+from fake_attendance.abc import BaseClass
 from fake_attendance.helper import print_with_time
 from fake_attendance.info import (
     EMAIL_ADDRESS,
@@ -25,7 +26,7 @@ from fake_attendance.info import (
     SMTP_HOST, SMTP_PORT)
 # pylint: enable=wrong-import-position
 
-class SendEmail:
+class SendEmail(BaseClass):
     'A class for sending email on successful QR recognization'
 
     def __init__(self):
@@ -33,6 +34,8 @@ class SendEmail:
         self.link = ''
         self.result = ''
         self.body = ''
+        self.print_name = '이메일 발송'
+        super().__init__()
 
     def record_link(self, link):
         'get link from FakeCheckIn'
@@ -52,7 +55,7 @@ class SendEmail:
         '''
         self.body = dedent(body).strip()
 
-    def send_email(self):
+    def run(self):
         'send email'
         try:
             smtp = smtplib.SMTP(SMTP_HOST, SMTP_PORT)

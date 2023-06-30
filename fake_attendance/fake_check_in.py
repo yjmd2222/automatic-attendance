@@ -8,21 +8,18 @@ import sys
 from datetime import datetime, timedelta
 import time
 
-import win32con
 import win32gui
 
-from selenium import webdriver
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
-from webdriver_manager.chrome import ChromeDriverManager
 
 sys.path.append(os.getcwd())
 
 # pylint: disable=wrong-import-position
+from fake_attendance.abc import UseSelenium
 from fake_attendance.info import KAKAO_ID, KAKAO_PASSWORD
-from fake_attendance.helper import decorator_start_end, print_with_time
+from fake_attendance.helper import print_with_time
 from fake_attendance.settings import (
     SCREEN_QR_READER_BLANK,
     SCREEN_QR_READER_POPUP_LINK,
@@ -39,9 +36,8 @@ from fake_attendance.settings import (
 from fake_attendance.notify import SendEmail
 # pylint: enable=wrong-import-position
 
-class FakeCheckIn:
+class FakeCheckIn(UseSelenium):
     'A class for checking QR image and sending email with link'
-    print_name = 'QR 체크'
 
     def __init__(self):
         'initialize'
@@ -51,11 +47,13 @@ class FakeCheckIn:
         self.is_wait = False
         self.until = None
         self.send_email = SendEmail()
+        self.print_name = 'QR 체크인'
+        super().__init__()
 
     def reset_attributes(self):
         'reset attributes for next run'
         self.is_window, self.hwnd = self.check_window()
-        self.rect = self.get_max_window_size() if self.is_window else []
+        self.rect = self.maximize_window(self.hwnd) if self.is_window else []
         self.is_wait = False
         self.send_email = SendEmail()
 
@@ -65,15 +63,6 @@ class FakeCheckIn:
         self.is_window = win32gui.IsWindowVisible(hwnd)
 
         return bool(hwnd), hwnd
-
-    def get_max_window_size(self):
-        'get max window size'
-        # force normal size from possible out-of-size maximized window
-        win32gui.ShowWindow(self.hwnd, win32con.SW_NORMAL)
-        # maximize window
-        win32gui.ShowWindow(self.hwnd, win32con.SW_MAXIMIZE)
-
-        return list(win32gui.GetWindowRect(self.hwnd))
 
     def check_link_loop(self, driver):
         'Get link from QR'
@@ -131,12 +120,6 @@ class FakeCheckIn:
         options.add_argument('--auto-select-desktop-capture-source=Zoom')
 
         return options
-
-    def initialize_selenium(self, options):
-        'initialize Selenium and return driver'
-        auto_driver = Service(ChromeDriverManager().install())
-
-        return webdriver.Chrome(service=auto_driver, options=options)
 
     def selenium_action(self, driver, by_which, sleep, **kwargs):
         '''
@@ -244,7 +227,6 @@ class FakeCheckIn:
             self.send_email.record_result('실패')
             self.is_wait = False
 
-    @decorator_start_end(print_name)
     def run(self):
         'run once'
         # make sure same job does not run within 30 minutes upon completion
@@ -252,7 +234,7 @@ class FakeCheckIn:
             print_with_time(f'기존 출석 확인. {datetime.strftime(self.until, "%H:%M")}까지 출석 체크 실행 안 함')
             return
         self.is_window, self.hwnd = self.check_window()
-        self.rect = self.get_max_window_size()
+        self.rect = self.maximize_window(self.hwnd)
         if self.is_window:
             options = self.create_selenium_options()
             driver = self.initialize_selenium(options)
@@ -270,7 +252,7 @@ class FakeCheckIn:
         print_with_time('QR 코드 확인. 출석 체크 진행')
         self.check_in(driver)
         # send email
-        self.send_email.send_email()
+        self.send_email.run()
         driver.quit()
         # maximize Zoom window
         win32gui.MoveWindow(self.hwnd, *self.rect, True)

@@ -17,8 +17,9 @@ import keyboard
 sys.path.append(os.getcwd())
 
 # pylint: disable=wrong-import-position
+from fake_attendance.abc import BaseClass
 from fake_attendance.fake_check_in import FakeCheckIn
-from fake_attendance.helper import decorator_start_end, print_with_time
+from fake_attendance.helper import print_with_time
 from fake_attendance.launch_zoom import LaunchZoom
 from fake_attendance.quit_zoom import QuitZoom
 from fake_attendance.settings import (
@@ -29,9 +30,8 @@ from fake_attendance.settings import (
     INTERRUPT_SEQUENCE)
 # pylint: enable=wrong-import-position
 
-class MyScheduler:
+class MyScheduler(BaseClass):
     'A class that manages the scheduler'
-    print_name = '스케줄러'
 
     def __init__(self):
         '''
@@ -47,6 +47,8 @@ class MyScheduler:
             CronTrigger(hour=TIME_SET['hour'], minute=TIME_SET['minute'])\
             for TIME_SET in self.time_sets
         ])
+        self.print_name = '스케줄러'
+        super().__init__()
 
     def add_jobs(self):
         '''
@@ -110,7 +112,6 @@ class MyScheduler:
                 print_with_time('키보드로 중단 요청')
                 break
 
-    @decorator_start_end(print_name)
     def run(self):
         'run scheduler'
         self.add_jobs() # add all jobs

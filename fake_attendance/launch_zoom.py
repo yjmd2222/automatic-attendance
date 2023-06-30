@@ -7,19 +7,15 @@ import sys
 
 import time
 
-from selenium import webdriver
-from selenium.webdriver.chrome.service import Service
-from webdriver_manager.chrome import ChromeDriverManager
-
 import keyboard
 import win32gui
 
 sys.path.append(os.getcwd())
 
 # pylint: disable=wrong-import-position
+from fake_attendance.abc import UseSelenium
 from fake_attendance.info import ZOOM_LINK
 from fake_attendance.helper import (
-    decorator_start_end,
     print_with_time,
     print_all_windows,
     send_alt_key_and_set_foreground)
@@ -33,9 +29,8 @@ from fake_attendance.settings import (
     ZOOM_UPDATE_ACTUAL_UPDATE_CLASS)
 # pylint: enable=wrong-import-position
 
-class LaunchZoom:
+class LaunchZoom(UseSelenium):
     'A class for launching Zoom'
-    print_name = '줌 실행'
 
     def __init__(self):
         'initialize'
@@ -46,6 +41,8 @@ class LaunchZoom:
             ZOOM_UPDATE_POPUP_CLASS: False,
             ZOOM_AGREE_RECORDING_POPUP_CLASS: False
         }
+        self.print_name = '줌 실행'
+        super().__init__()
 
     def reset_attributes(self):
         'reset attributes for next run'
@@ -78,17 +75,11 @@ class LaunchZoom:
         # if not visible
         else:
             print_with_time('줌 입장 안 함. 입장 실행')
-            self.full_launch()
-
-    def initialize_selenium(self):
-        'Initialize Selenium and return driver'
-        auto_driver = Service(ChromeDriverManager().install())
-
-        return webdriver.Chrome(service=auto_driver)
+            self.launch_zoom()
 
     def launch_zoom(self):
         'launch method'
-        # driver init if Zoom shut down in middle
+        # initialize driver if not done already
         if not self.driver:
             self.driver = self.initialize_selenium()
 
@@ -100,7 +91,7 @@ class LaunchZoom:
 
         # connect to automated Chrome browser
         # because recent Chrome does not allow bypassing this popup
-        self.process_popup(None, ZOOM_LAUNCHING_CHROME_TITLE)
+        self.process_popup(window_title=ZOOM_LAUNCHING_CHROME_TITLE)
 
     def check_window_down(self, window_class=None, window_title=None):
         'wait until window is down'
@@ -127,7 +118,7 @@ class LaunchZoom:
         for _ in range(3):
             print_with_time('줌 회의 실행/발견 실패. 업데이트 중인지 확인 후 재실행')
             # check update
-            self.process_popup(ZOOM_UPDATE_POPUP_CLASS, None, reverse=True, send_alt=True)
+            self.process_popup(ZOOM_UPDATE_POPUP_CLASS, reverse=True, send_alt=True)
             # if agreed to update
             if self.is_agreed[ZOOM_UPDATE_POPUP_CLASS]:
                 # downloading updates
@@ -157,7 +148,9 @@ class LaunchZoom:
         keyboard.press_and_release('space')
         time.sleep(10)
 
-    def process_popup(self, window_class, window_title, tab_num=2, reverse=False, send_alt=False):
+    # pylint: disable=too-many-arguments
+    def process_popup(self, window_class=None, window_title=None,\
+                      tab_num=2, reverse=False, send_alt=False):
         'enter the popup'
         window_name = '' # will print this name
         try:
@@ -165,7 +158,7 @@ class LaunchZoom:
                 'window_class와 window_title 둘 다 None일 수 없음'
         except AssertionError as error:
             print_with_time(f'입력 오류: {error}')
-            return
+            return False
         # get hwnd
         if window_class:
             hwnd = win32gui.FindWindow(window_class, None)
@@ -189,28 +182,35 @@ class LaunchZoom:
                 print_with_time(f'{window_name} 동의 실패')
                 self.is_agreed[window_name] = False
         return self.is_agreed[window_name]
+    # pylint: enable=too-many-arguments
 
     def check_launch_result_and_agree(self):
         'check from check_launch_result() and double check agree result'
         if self.check_launch_result():
-            self.process_popup(ZOOM_AGREE_RECORDING_POPUP_CLASS, None, reverse=True, send_alt=True)
+            self.process_popup(ZOOM_AGREE_RECORDING_POPUP_CLASS, reverse=True, send_alt=True)
             print_with_time('동의 재확인')
-            self.process_popup(ZOOM_AGREE_RECORDING_POPUP_CLASS, None, reverse=True, send_alt=True)
+            self.process_popup(ZOOM_AGREE_RECORDING_POPUP_CLASS, reverse=True, send_alt=True)
         self.driver.quit()
         time.sleep(5)
 
-    def full_launch(self):
-        'initialize selenium and launch zoom'
-        self.driver = self.initialize_selenium()
-        self.launch_zoom()
+    def quit_selenium(self):
+        'quit Selenium'
+        self.driver.quit()
+        time.sleep(5)
 
-    @decorator_start_end(print_name)
     def run(self):
         'Run the launch'
         self.quit_zoom() # kill hidden Zoom conference windows if any
         self.connect() # check connection and launch Zoom to connect if False
-        # check launch result and agree recording if success
-        self.check_launch_result_and_agree()
+        # if launch successful
+        if self.check_launch_result():
+            # double check recording consent
+            self.process_popup(ZOOM_AGREE_RECORDING_POPUP_CLASS, reverse=True, send_alt=True)
+            print_with_time('동의 재확인')
+            self.process_popup(ZOOM_AGREE_RECORDING_POPUP_CLASS, reverse=True, send_alt=True)
+        self.quit_selenium() # quit popped out of nowhere, but init is done in other places
+        if self.is_agreed[ZOOM_AGREE_RECORDING_POPUP_CLASS]:
+            self.maximize_window(self.hwnd_zoom_classroom) # maximize if everything done correctly
         self.reset_attributes() # reset attributes for next run
 
 if __name__ == '__main__':

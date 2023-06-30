@@ -7,19 +7,16 @@ import sys
 
 import time
 
-from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
-from webdriver_manager.chrome import ChromeDriverManager
 
 import pyautogui
 
 sys.path.append(os.getcwd())
 
 # pylint: disable=wrong-import-position
+from fake_attendance.abc import UseSelenium
 from fake_attendance.helper import (
-    decorator_start_end,
     get_last_match,
     print_with_time)
 from fake_attendance.settings import (
@@ -29,13 +26,14 @@ from fake_attendance.settings import (
     SCREEN_QR_READER_WEBSTORE_LINK)
 # pylint: enable=wrong-import-position
 
-class DownloadExtensionSource:
+class DownloadExtensionSource(UseSelenium):
     'A class for downloading the source of Screen QR Reader'
-    print_name = '다운로드'
 
     def __init__(self):
         'initialize'
         self.image = CONTINUE_IMAGE
+        self.print_name = '다운로드'
+        super().__init__()
 
     def check_source_exists(self):
         'Check if source exists'
@@ -55,12 +53,6 @@ class DownloadExtensionSource:
           })
 
         return options
-
-    def initialize_selenium(self, options):
-        'Initialize Selenium and return driver'
-        auto_driver = Service(ChromeDriverManager().install())
-
-        return webdriver.Chrome(service=auto_driver, options=options)
 
     def download(self, driver):
         'Download the source'
@@ -85,7 +77,9 @@ class DownloadExtensionSource:
         else:
             print_with_time('다운로드 "계속" 버튼 찾을 수 없음')
 
-    @decorator_start_end(print_name)
+    def maximize_window(self, hwnd):
+        print_with_time('하위클래스에서 사용 안 함')
+
     def run(self):
         'Run the download'
         if self.check_source_exists():
