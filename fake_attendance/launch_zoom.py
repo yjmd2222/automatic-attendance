@@ -59,7 +59,7 @@ class LaunchZoom(UseSelenium):
         quit_zoom = QuitZoom()
         for _ in range(3):
             # if nothing to quit
-            if not quit_zoom.run():
+            if not quit_zoom.run(kill_hidden=True):
                 break
             # if something quit, wait for quitting to finish
             time.sleep(10)

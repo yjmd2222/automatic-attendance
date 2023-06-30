@@ -22,26 +22,26 @@ class QuitZoom(BaseClass):
         self.print_name = '줌 종료'
         super().__init__()
 
-    def connect_and_kill(self, force):
+    def connect_and_kill(self, kill_hidden):
         'connect to Zoom conference and kill'
         try:
             pywinauto.Application().connect(class_name=ZOOM_CLASSROOM_CLASS, found_index=0)\
                 .kill(soft=True)
-            if force:
+            if kill_hidden:
                 print_with_time('숨겨진 Zoom 회의 종료')
             else:
                 print_with_time('Zoom 회의 입장 확인 후 종료')
             return True
         except ElementNotFoundError:
-            if force:
+            if kill_hidden:
                 print_with_time('숨겨진 Zoom 회의 없음')
             else:
                 print_with_time('Zoom 회의 입장 안 함')
             return False
 
-    def run(self, force=False):
+    def run(self, kill_hidden=False):
         'Run the launch'
-        self.connect_and_kill(force)
+        self.connect_and_kill(kill_hidden)
 
 if __name__ == '__main__':
     QuitZoom().run()
