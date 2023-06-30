@@ -184,15 +184,6 @@ class LaunchZoom(UseSelenium):
         return self.is_agreed[window_name]
     # pylint: enable=too-many-arguments
 
-    def check_launch_result_and_agree(self):
-        'check from check_launch_result() and double check agree result'
-        if self.check_launch_result():
-            self.process_popup(ZOOM_AGREE_RECORDING_POPUP_CLASS, reverse=True, send_alt=True)
-            print_with_time('동의 재확인')
-            self.process_popup(ZOOM_AGREE_RECORDING_POPUP_CLASS, reverse=True, send_alt=True)
-        self.driver.quit()
-        time.sleep(5)
-
     def quit_selenium(self):
         'quit Selenium'
         self.driver.quit()
