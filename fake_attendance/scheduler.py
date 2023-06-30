@@ -73,31 +73,39 @@ class MyScheduler(BaseClass):
     def get_timesets(self):
         'receive argument from command line for which time sets to add to schedule'
         time_sets = None
+        def parse_time(raw_time_sets):
+            'parse time sets from raw list'
+            parsed_time_sets = []
+            for raw in raw_time_sets:
+                try:
+                    time_set = datetime.strptime(raw, '%H:%M')
+                    if len(raw.split(":")[1]) != 2:
+                        raise ValueError("분이 10의 자리 숫자가 아님")
+                    time_set = {'hour': time_set.hour, 'minute': time_set.minute}
+                    parsed_time_sets.append(time_set)
+                except ValueError as error:
+                    print_with_time(f'시간 형식 잘 못 입력함. 이 부분 스킵: {error}')
+            if not parsed_time_sets:
+                print_with_time('모든 입력값 시간 형식 잘 못 입력함. 기본 스케줄 사용')
+                parsed_time_sets = ARGUMENT_MAP['regular']
+
+            return parsed_time_sets
+
         # check argument passed
         if len(sys.argv) > 1:
             # argument as text file
             if '.txt' in sys.argv[1]:
                 filename = sys.argv[1]
                 with open (filename, 'r', encoding='utf-8') as file:
-                    time_sets = [line.strip() for line in file[1:]]
-                    time_sets = [datetime.strptime(i, '%H:%M') for i in time_sets]
-                    time_sets = [{'hour': i.hour, 'minute': i.minute} for i in time_sets]
+                    raw_time_sets = [time_set.strip() for time_set in file[1:]]
+                    time_sets = parse_time(raw_time_sets)
             else:
                 # look up time sets map with argument
                 time_sets = ARGUMENT_MAP.get(sys.argv[1])
                 # if no match, check if time input
                 if not time_sets:
-                    time_sets = []
-                    for i in sys.argv[1:]:
-                        try:
-                            time_set = datetime.strptime(i, '%H:%M')
-                            time_set = {'hour': time_set.hour, 'minute': time_set.minute}
-                            time_sets.append(time_set)
-                        except ValueError as error:
-                            print_with_time(f'시간 형식 잘 못 입력함: {error}')
-                    if not time_sets:
-                        print_with_time('모든 입력값 시간 형식 잘 못 입력함. 기본 스케줄 사용')
-                        time_sets = ARGUMENT_MAP['regular']
+                    raw_time_sets = sys.argv[1:]
+                    time_sets = parse_time(raw_time_sets)
         # if no argument
         else:
             # regular day time sets
