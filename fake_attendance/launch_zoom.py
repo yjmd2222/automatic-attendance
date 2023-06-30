@@ -128,9 +128,9 @@ class LaunchZoom(UseSelenium):
                 self.check_window_down(window_class=ZOOM_UPDATE_ACTUAL_UPDATE_CLASS)
                 print_all_windows() # debug
             self.launch_zoom()
-            # if successfully launched
-            if self.check_launch_result():
-                return True
+        # if successfully launched
+        if self.check_launch_result():
+            return True
         # no launch from all tries
         print_with_time('줌 회의 실행/발견 모두 실패')
         return False
