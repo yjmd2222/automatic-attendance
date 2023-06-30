@@ -22,6 +22,7 @@ from fake_attendance.helper import print_with_time, send_alt_key_and_set_foregro
 from fake_attendance.settings import (
     ZOOM_AGREE_RECORDING_POPUP_CLASS,
     ZOOM_CLASSROOM_CLASS,
+    ZOOM_CLASSROOM_TITLE,
     ZOOM_LAUNCHING_CHROME_TITLE)
 # pylint: enable=wrong-import-position
 
@@ -47,7 +48,7 @@ class LaunchZoom:
     def connect(self):
         'connect to Zoom conference'
         # check presence of Zoom conference
-        self.hwnd_zoom_classroom = win32gui.FindWindow(ZOOM_CLASSROOM_CLASS, None)
+        self.hwnd_zoom_classroom = win32gui.FindWindow(ZOOM_CLASSROOM_CLASS, ZOOM_CLASSROOM_TITLE)
         # if visible
         if win32gui.IsWindowVisible(self.hwnd_zoom_classroom):
             send_alt_key_and_set_foreground(self.hwnd_zoom_classroom)
@@ -94,7 +95,7 @@ class LaunchZoom:
     def check_launch_result(self):
         'check the result'
         # check Zoom classroom
-        self.hwnd_zoom_classroom = win32gui.FindWindow(ZOOM_CLASSROOM_CLASS, None)
+        self.hwnd_zoom_classroom = win32gui.FindWindow(ZOOM_CLASSROOM_CLASS, ZOOM_CLASSROOM_TITLE)
         # if Zoom classroom visible
         if win32gui.IsWindowVisible(self.hwnd_zoom_classroom):
             print_with_time('줌 회의 실행/발견 성공')

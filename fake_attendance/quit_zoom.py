@@ -11,7 +11,7 @@ sys.path.append(os.getcwd())
 
 # pylint: disable=wrong-import-position
 from fake_attendance.helper import print_with_time
-from fake_attendance.settings import ZOOM_CLASSROOM_CLASS
+from fake_attendance.settings import ZOOM_CLASSROOM_CLASS, ZOOM_CLASSROOM_TITLE
 # pylint: enable=wrong-import-position
 
 class QuitZoom:
@@ -19,7 +19,7 @@ class QuitZoom:
 
     def connect_and_kill(self, pywinauto_app):
         'connect to Zoom conference and kill'
-        hwnd_zoom_class_classroom = win32gui.FindWindow(ZOOM_CLASSROOM_CLASS, None)
+        hwnd_zoom_class_classroom = win32gui.FindWindow(ZOOM_CLASSROOM_CLASS, ZOOM_CLASSROOM_TITLE)
         if win32gui.IsWindowVisible(hwnd_zoom_class_classroom):
             pywinauto_app.connect(class_name=ZOOM_CLASSROOM_CLASS, found_index=0)\
                 .kill(soft=True)

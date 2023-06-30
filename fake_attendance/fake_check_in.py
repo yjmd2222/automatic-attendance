@@ -28,6 +28,7 @@ from fake_attendance.settings import (
     SCREEN_QR_READER_POPUP_LINK,
     SCREEN_QR_READER_SOURCE,
     ZOOM_CLASSROOM_CLASS,
+    ZOOM_CLASSROOM_TITLE,
     LOGIN_WITH_KAKAO_BUTTON,
     ID_INPUT_BOX,
     PASSWORD_INPUT_BOX,
@@ -60,7 +61,7 @@ class FakeCheckIn:
 
     def check_window(self):
         'check and return window'
-        window = win32gui.FindWindow(ZOOM_CLASSROOM_CLASS, None)
+        window = win32gui.FindWindow(ZOOM_CLASSROOM_CLASS, ZOOM_CLASSROOM_TITLE)
         self.is_window = bool(window) # True if window not 0 else False
 
         return bool(window), window

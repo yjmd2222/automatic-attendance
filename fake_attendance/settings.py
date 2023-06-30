@@ -56,7 +56,8 @@ ZOOM_QUIT_MINUTE = 5
 
 # Zoom props
 ZOOM_AGREE_RECORDING_POPUP_CLASS = 'ZPRecordingConsentClass' # '이 회의는 호스트 또는 참가자가 기록 중입니다'
-ZOOM_CLASSROOM_CLASS = 'ZPContentViewWndClass' # 'Zoom 회의'
+ZOOM_CLASSROOM_CLASS = 'ZPContentViewWndClass'
+ZOOM_CLASSROOM_TITLE = 'Zoom 회의'
 ZOOM_LAUNCHING_CHROME_TITLE = '회의 시작 - Zoom - Chrome'
 
 # Check-in props

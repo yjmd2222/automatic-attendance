@@ -19,10 +19,10 @@ Fill out the template [info-template.py](fake_attendance/info-template.py) with 
 Note: If the module fails to download the Chrome extension source, you can try downloading it manually. Put it in the root of the repository. See [this](https://crx-downloader.com/how-it-works).
 
 ## Run
-Run `python -m fake_attendance` for download, launch Zoom, and check_in. Read [How it works and why](#how-it-works-and-why) for explanation.
+Run `python -m fake_attendance` for download, Zoom launch, and check-in. Read [How it works and why](#how-it-works-and-why) for explanation.
 
 For testing QR scan scheduler, you can run add an argument as either:
-- one of `'regular'`, `'section challenge'`, `'project day 1'`, or `'project days 2-5'` (See [settings.py](fake_attendance/settings.py) for actual timings.)
+- one of `'regular'`, `'section challenge'`, `'project day 1'`, and `'project days 2-5'` (See [settings.py](fake_attendance/settings.py) for actual timings.)
 - a text file that contains a 24-hour format time sets such as [test_times.txt](test_times.txt)
 - or a json-like format such as `'[{"hour": int, "minute": int},...]'`.
 
