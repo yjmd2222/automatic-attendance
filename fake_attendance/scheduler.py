@@ -6,8 +6,6 @@ import os
 import sys
 
 from datetime import datetime
-import json
-from json.decoder import JSONDecodeError
 
 from apscheduler.events import EVENT_JOB_EXECUTED
 from apscheduler.schedulers.background import BackgroundScheduler
@@ -77,20 +75,26 @@ class MyScheduler:
             if '.txt' in sys.argv[1]:
                 filename = sys.argv[1]
                 with open (filename, 'r', encoding='utf-8') as file:
-                    time_sets = [line.strip() for line in file][1:]
+                    time_sets = [line.strip() for line in file[1:]]
                     time_sets = [datetime.strptime(i, '%H:%M') for i in time_sets]
                     time_sets = [{'hour': i.hour, 'minute': i.minute} for i in time_sets]
             else:
                 # look up time sets map with argument
                 time_sets = ARGUMENT_MAP.get(sys.argv[1])
-                # if no match, check if json
+                # if no match, check if time input
                 if not time_sets:
-                    try:
-                        time_sets = json.loads(sys.argv[1])
-                    except JSONDecodeError as error:
-                        print_with_time(f'JSON 형식 잘 못 입력함. 에러 메시지: {error}')
-                        print_with_time('기본값으로 스케줄 설정')
-                        time_sets = ARGUMENT_MAP['regular']
+                    time_sets = []
+                    for i in sys.argv[1:]:
+                        try:
+                            time_set = datetime.strptime(i, '%H:%M')
+                            time_set = {'hour': time_set.hour, 'minute': time_set.minute}
+                            time_sets.append(time_set)
+                        except ValueError as error:
+                            print_with_time(f'시간 형식 잘 못 입력함: {error}')
+                    else:
+                        if not time_sets:
+                            print_with_time('모든 입력값 시간 형식 잘 못 입력함. 기존 스케줄 사용')
+                            time_sets = ARGUMENT_MAP['regular']
         # if no argument
         else:
             # regular day time sets

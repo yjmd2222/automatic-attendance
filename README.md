@@ -23,8 +23,8 @@ Run `python -m fake_attendance` for download, Zoom launch, and check-in. Read [H
 
 For testing QR scan scheduler, you can run add an argument as either:
 - one of `'regular'`, `'section challenge'`, `'project day 1'`, and `'project days 2-5'` (See [settings.py](fake_attendance/settings.py) for actual timings.)
-- a text file that contains a 24-hour format time sets such as [test_times.txt](test_times.txt)
-- or a json-like format such as `'[{"hour": int, "minute": int},...]'`.
+- a text file that contains a 24-hour format time sets, such as [test_times.txt](test_times.txt)
+- or a series of time sets, such as `10:00 15:00` (This case would be multiple arguments).
 
 Leaving it blank is the same as `'regular'` argument. 
 
