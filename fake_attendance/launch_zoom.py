@@ -35,6 +35,7 @@ class LaunchZoom:
         self.hwnd_zoom_popup = 0
         self.hwnd_zoom_launching_chrome = 0
         self.driver = None
+        self.is_running = False
         self.is_agreed = False
 
     def reset_attributes(self):
@@ -43,6 +44,7 @@ class LaunchZoom:
         self.hwnd_zoom_popup = 0
         self.hwnd_zoom_launching_chrome = 0
         self.driver = None
+        self.is_running = False
         self.is_agreed = False
 
     def connect(self):
@@ -53,13 +55,11 @@ class LaunchZoom:
         if win32gui.IsWindowVisible(self.hwnd_zoom_classroom):
             send_alt_key_and_set_foreground(self.hwnd_zoom_classroom)
             print_with_time('줌 회의 입장 확인')
-            # agree recording if there is popup
-            self.agree_recording()
-            time.sleep(5)
-            return True
+            self.is_running = True
         # if not visible
-        print_with_time('줌 입장 안 함. 실행 필요')
-        return False
+        else:
+            print_with_time('줌 입장 안 함. 실행 필요')
+            self.is_running = False
 
     def initialize_selenium(self):
         'Initialize Selenium and return driver'
@@ -130,14 +130,11 @@ class LaunchZoom:
         'Run the launch'
         print_with_time('줌 실행 스크립트 시작')
 
-        # if zoom already running, return
-        if self.connect():
-            self.reset_attributes()
-            return
+        self.connect()
 
-        # if not, launch Zoom
-        self.driver = self.initialize_selenium()
-        self.launch_zoom()
+        if self.is_running:
+            self.driver = self.initialize_selenium()
+            self.launch_zoom()
         # check launch result and agree recording if success
         if self.check_launch_result():
             # double check
@@ -148,7 +145,6 @@ class LaunchZoom:
         self.driver.quit()
         time.sleep(5)
         self.reset_attributes()
-        return
 
 if __name__ == '__main__':
     LaunchZoom().run()
