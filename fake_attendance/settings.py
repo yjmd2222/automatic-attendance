@@ -69,3 +69,6 @@ IFRAME = 'iframe'
 AGREE = "//*[text()='동의합니다.']"
 CHECK_IN = "//*[text()='출석']"
 SUBMIT = "//*[text()='제출']"
+
+# misc
+INTERRUPT_SEQUENCE = 'ctrl+alt+c'

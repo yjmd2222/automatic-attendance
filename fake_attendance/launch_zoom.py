@@ -35,7 +35,6 @@ class LaunchZoom:
         self.hwnd_zoom_popup = 0
         self.hwnd_zoom_launching_chrome = 0
         self.driver = None
-        self.is_running = False
         self.is_agreed = False
 
     def reset_attributes(self):
@@ -44,7 +43,6 @@ class LaunchZoom:
         self.hwnd_zoom_popup = 0
         self.hwnd_zoom_launching_chrome = 0
         self.driver = None
-        self.is_running = False
         self.is_agreed = False
 
     def connect(self):
@@ -55,11 +53,10 @@ class LaunchZoom:
         if win32gui.IsWindowVisible(self.hwnd_zoom_classroom):
             send_alt_key_and_set_foreground(self.hwnd_zoom_classroom)
             print_with_time('줌 회의 입장 확인')
-            self.is_running = True
         # if not visible
         else:
-            print_with_time('줌 입장 안 함. 실행 필요')
-            self.is_running = False
+            print_with_time('줌 입장 안 함. 입장 실행')
+            self.full_launch()
 
     def initialize_selenium(self):
         'Initialize Selenium and return driver'
@@ -101,8 +98,14 @@ class LaunchZoom:
             print_with_time('줌 회의 실행/발견 성공')
             return True
         # if not
-        print_with_time('줌 회의 실행/발견 실패. 재실행')
-        self.launch_zoom()
+        for _ in range(3):
+            print_with_time('줌 회의 실행/발견 실패. 재실행')
+            self.launch_zoom()
+            # if successfully launched
+            if self.check_launch_result():
+                return True
+        # no launch from all tries
+        print_with_time('줌 회의 실행/발견 모두 실패.')
         return False
 
     def agree_recording(self):
@@ -126,25 +129,28 @@ class LaunchZoom:
             else:
                 print_with_time('줌 회의는 발견했지만 동의는 못 함')
 
-    def run(self):
-        'Run the launch'
-        print_with_time('줌 실행 스크립트 시작')
-
-        self.connect()
-
-        if self.is_running:
-            self.driver = self.initialize_selenium()
-            self.launch_zoom()
-        # check launch result and agree recording if success
+    def check_launch_result_and_agree(self):
+        'check from check_launch_result() and double check agree result'
         if self.check_launch_result():
-            # double check
             self.agree_recording()
             time.sleep(5)
             print_with_time('동의 재확인')
             self.agree_recording()
         self.driver.quit()
         time.sleep(5)
-        self.reset_attributes()
+
+    def full_launch(self):
+        'initialize selenium and launch zoom'
+        self.driver = self.initialize_selenium()
+        self.launch_zoom()
+
+    def run(self):
+        'Run the launch'
+        print_with_time('줌 실행 스크립트 시작')
+        self.connect() # check connection and launch Zoom to connect if False
+        # check launch result and agree recording if success
+        self.check_launch_result_and_agree()
+        self.reset_attributes() # reset attributes for next run
 
 if __name__ == '__main__':
     LaunchZoom().run()

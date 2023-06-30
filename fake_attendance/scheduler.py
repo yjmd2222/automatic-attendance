@@ -25,7 +25,8 @@ from fake_attendance.settings import (
     ARGUMENT_MAP,
     ZOOM_ON_HOURS,
     ZOOM_QUIT_HOURS,
-    ZOOM_QUIT_MINUTE)
+    ZOOM_QUIT_MINUTE,
+    INTERRUPT_SEQUENCE)
 # pylint: enable=wrong-import-position
 
 class MyScheduler:
@@ -93,7 +94,7 @@ class MyScheduler:
                             print_with_time(f'시간 형식 잘 못 입력함: {error}')
                     else:
                         if not time_sets:
-                            print_with_time('모든 입력값 시간 형식 잘 못 입력함. 기존 스케줄 사용')
+                            print_with_time('모든 입력값 시간 형식 잘 못 입력함. 기본 스케줄 사용')
                             time_sets = ARGUMENT_MAP['regular']
         # if no argument
         else:
@@ -101,18 +102,22 @@ class MyScheduler:
             time_sets = ARGUMENT_MAP['regular']
 
         return time_sets
+    
+    def interrupt_from_keyboard(interrupt_sequence):
+        'break if sequence is pressed'
+        while True:
+            if keyboard.is_pressed(interrupt_sequence):
+                print_with_time('키보드로 중단 요청')
+                break
 
     def run(self):
         'run scheduler'
         print_with_time('스케줄러 실행')
-        self.add_jobs()
-        self.sched.start()
-        self.print_next_time()
-        while True:
-            if keyboard.is_pressed('ctrl+alt+c'):
-                print_with_time('키보드로 중단 요청')
-                break
-        self.sched.shutdown(wait=False)
+        self.add_jobs() # add all jobs
+        self.sched.start() # start the scheduler
+        self.print_next_time() # print time first job fires
+        self.interrupt_from_keyboard(INTERRUPT_SEQUENCE) # allow quit with keyboard
+        self.sched.shutdown(wait=False) # shutdown scheduler if quit
 
 if __name__ == '__main__':
     MyScheduler().run()
