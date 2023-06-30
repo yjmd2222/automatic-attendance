@@ -46,7 +46,7 @@ class FakeCheckIn:
     def __init__(self):
         'initialize'
         self.is_window = False
-        self.zoom_window = 0
+        self.hwnd = 0
         self.rect = [100,100,100,100]
         self.is_wait = False
         self.until = None
@@ -54,26 +54,26 @@ class FakeCheckIn:
 
     def reset_attributes(self):
         'reset attributes for next run'
-        self.is_window, self.zoom_window = self.check_window()
+        self.is_window, self.hwnd = self.check_window()
         self.rect = self.get_max_window_size() if self.is_window else []
         self.is_wait = False
         self.send_email = SendEmail()
 
     def check_window(self):
         'check and return window'
-        window = win32gui.FindWindow(ZOOM_CLASSROOM_CLASS, None)
-        self.is_window = bool(window) # True if window not 0 else False
+        hwnd = win32gui.FindWindow(ZOOM_CLASSROOM_CLASS, None)
+        self.is_window = win32gui.IsWindowVisible(hwnd)
 
-        return bool(window), window
+        return bool(hwnd), hwnd
 
     def get_max_window_size(self):
         'get max window size'
         # force normal size from possible out-of-size maximized window
-        win32gui.ShowWindow(self.zoom_window, win32con.SW_NORMAL)
+        win32gui.ShowWindow(self.hwnd, win32con.SW_NORMAL)
         # maximize window
-        win32gui.ShowWindow(self.zoom_window, win32con.SW_MAXIMIZE)
+        win32gui.ShowWindow(self.hwnd, win32con.SW_MAXIMIZE)
 
-        return list(win32gui.GetWindowRect(self.zoom_window))
+        return list(win32gui.GetWindowRect(self.hwnd))
 
     def check_link_loop(self, driver):
         'Get link from QR'
@@ -105,7 +105,7 @@ class FakeCheckIn:
     def check_link(self, driver, rect_resized):
         'method to actually fire Screen QR Reader inside loop'
         # apply new window size
-        win32gui.MoveWindow(self.zoom_window, *rect_resized, True)
+        win32gui.MoveWindow(self.hwnd, *rect_resized, True)
         driver.get(SCREEN_QR_READER_POPUP_LINK) # Screen QR Reader
         time.sleep(2)
 
@@ -251,7 +251,7 @@ class FakeCheckIn:
         if self.until and datetime.now() < self.until: # self.until is set towards the end
             print_with_time(f'기존 출석 확인. {datetime.strftime(self.until, "%H:%M")}까지 출석 체크 실행 안 함')
             return
-        self.is_window, self.zoom_window = self.check_window()
+        self.is_window, self.hwnd = self.check_window()
         self.rect = self.get_max_window_size()
         if self.is_window:
             options = self.create_selenium_options()
@@ -273,7 +273,7 @@ class FakeCheckIn:
         self.send_email.send_email()
         driver.quit()
         # maximize Zoom window
-        win32gui.MoveWindow(self.zoom_window, *self.rect, True)
+        win32gui.MoveWindow(self.hwnd, *self.rect, True)
         # make sure same job does not run within 30 minutes upon completion
         if self.is_wait:
             self.until = datetime.now() + timedelta(minutes=30)

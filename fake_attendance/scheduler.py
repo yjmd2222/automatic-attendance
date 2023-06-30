@@ -93,17 +93,16 @@ class MyScheduler:
                             time_sets.append(time_set)
                         except ValueError as error:
                             print_with_time(f'시간 형식 잘 못 입력함: {error}')
-                    else:
-                        if not time_sets:
-                            print_with_time('모든 입력값 시간 형식 잘 못 입력함. 기본 스케줄 사용')
-                            time_sets = ARGUMENT_MAP['regular']
+                    if not time_sets:
+                        print_with_time('모든 입력값 시간 형식 잘 못 입력함. 기본 스케줄 사용')
+                        time_sets = ARGUMENT_MAP['regular']
         # if no argument
         else:
             # regular day time sets
             time_sets = ARGUMENT_MAP['regular']
 
         return time_sets
-    
+
     def interrupt_from_keyboard(self, interrupt_sequence):
         'break if sequence is pressed'
         while True:

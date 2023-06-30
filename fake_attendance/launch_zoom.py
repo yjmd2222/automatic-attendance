@@ -13,7 +13,6 @@ from webdriver_manager.chrome import ChromeDriverManager
 
 import keyboard
 import win32gui
-from pywinauto.findwindows import ElementNotFoundError
 
 sys.path.append(os.getcwd())
 
