@@ -10,6 +10,7 @@ import time
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 
+import keyboard
 import pyautogui
 
 sys.path.append(os.getcwd())
@@ -78,7 +79,7 @@ class DownloadExtensionSource(UseSelenium):
             print_with_time('다운로드 "계속" 버튼 찾을 수 없음')
 
     def maximize_window(self, hwnd):
-        print_with_time('하위클래스에서 사용 안 함')
+        print_with_time(f'maximize_window 하위클래스 {self.print_name}에서 사용 안 함')
 
     def run(self):
         'Run the download'
@@ -92,8 +93,8 @@ class DownloadExtensionSource(UseSelenium):
         if os.path.isfile(SCREEN_QR_READER_SOURCE):
             print_with_time('다운로드한 확장자 소스 파일 확인 완료')
         else:
-            print_with_time('다운로드된 파일 없음')
-            raise AssertionError
+            print_with_time('다운로드된 파일 없음. 모듈 종료')
+            exit()
         return
 
 if __name__ == '__main__':

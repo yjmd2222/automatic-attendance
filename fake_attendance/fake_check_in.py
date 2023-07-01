@@ -44,6 +44,7 @@ class FakeCheckIn(UseSelenium):
         self.is_window = False
         self.hwnd = 0
         self.rect = [100,100,100,100]
+        self.link = ''
         self.is_wait = False
         self.until = None
         self.send_email = SendEmail()
@@ -53,7 +54,8 @@ class FakeCheckIn(UseSelenium):
     def reset_attributes(self):
         'reset attributes for next run'
         self.is_window, self.hwnd = self.check_window()
-        self.rect = self.maximize_window(self.hwnd) if self.is_window else []
+        self.rect = self.maximize_window(self.hwnd) if self.is_window else [100,100,100,100]
+        self.link = ''
         self.is_wait = False
         self.send_email = SendEmail()
 
@@ -170,96 +172,109 @@ class FakeCheckIn(UseSelenium):
         time.sleep(3)
 
         # login type
-        is_login_type = self.selenium_action(driver, By.CLASS_NAME, 10,\
-                        how='click', element=LOGIN_WITH_KAKAO_BUTTON)
+        if not self.selenium_action(driver, By.CLASS_NAME, 10,\
+                        how='click', element=LOGIN_WITH_KAKAO_BUTTON):
+            return False
 
         # insert Kakao id
-        is_id_box = None
-        if is_login_type:
-            is_id_box = self.selenium_action(driver, By.ID, 1,\
-                        how='input', element=ID_INPUT_BOX, input_text=KAKAO_ID)
+        if not self.selenium_action(driver, By.ID, 1,\
+                        how='input', element=ID_INPUT_BOX, input_text=KAKAO_ID):
+            return False
 
         # insert Kakao password
-        is_pw_box = None
-        if is_id_box:
-            is_pw_box = self.selenium_action(driver, By.ID, 1,\
-                        how='input', element=PASSWORD_INPUT_BOX, input_text=KAKAO_PASSWORD)
+        if not self.selenium_action(driver, By.ID, 1,\
+                        how='input', element=PASSWORD_INPUT_BOX, input_text=KAKAO_PASSWORD):
+            return False
 
         # log in
-        is_press_login = None
-        if is_pw_box:
-            is_press_login = self.selenium_action(driver, By.CLASS_NAME, 10,\
-                        how='click', element=LOGIN_BUTTON)
+        if not self.selenium_action(driver, By.CLASS_NAME, 10,\
+                        how='click', element=LOGIN_BUTTON):
+            return False
 
         # get inner document link
-        is_iframe = None
-        if is_press_login:
-            # Should have successfully logged in. Now pass link to SendEmail
-            link = driver.current_url
-            self.send_email.record_link(link)
-            time.sleep(5)
-            is_iframe = self.selenium_action(driver, By.TAG_NAME, 10,\
-                        how='get_iframe', element=IFRAME)
+        # Should have successfully logged in. Now pass link to SendEmail
+        self.link = driver.current_url
+        if not self.selenium_action(driver, By.TAG_NAME, 10,\
+                    how='get_iframe', element=IFRAME):
+            return False
 
         # agree to check in
-        is_agree = None
-        if is_iframe:
-            is_agree = self.selenium_action(driver, By.XPATH, 3,\
-                        how='click', element=AGREE)
+        if not self.selenium_action(driver, By.XPATH, 3,\
+                        how='click', element=AGREE):
+            return False
 
         # select check-in
-        is_check_in = None
-        if is_agree:
-            is_check_in = self.selenium_action(driver, By.XPATH, 3,\
-                        how='click', element=CHECK_IN)
+        if not self.selenium_action(driver, By.XPATH, 3,\
+                        how='click', element=CHECK_IN):
+            return False
 
         # submit
-        is_submit = None
-        if is_check_in:
-            is_submit = self.selenium_action(driver, By.XPATH, 3,\
-                        how='submit', element=SUBMIT)
+        if not self.selenium_action(driver, By.XPATH, 3,\
+                        how='submit', element=SUBMIT):
+            return False
+
+        # if everything went through
+        return True
+    
+    def print_wont_run_until(self):
+        'print check-in will be ignored until given time'
+        print_with_time(f'기존 출석 확인. {datetime.strftime(self.until, "%H:%M")}까지 출석 체크 실행 안 함')
+
+    def run(self):
+        'run once'
+        # read from self.until to see if QR check should run
+        if self.until and datetime.now() < self.until:
+            self.print_wont_run_until()
+            return
+
+        # get Zoom window
+        self.is_window, self.hwnd = self.check_window()
+        # if it is visible
+        if self.is_window:
+            # get max rect
+            self.rect = self.maximize_window(self.hwnd)
+            # init selenium
+            options = self.create_selenium_options()
+            driver = self.initialize_selenium(options)
+        # if not
+        else:
+            # quit
+            print_with_time('줌 실행중인지 확인 필요')
+            self.reset_attributes()
+            return
+
+        # check QR code in Zoom
+        is_qr = self.check_link_loop(driver)
+        # if there's no QR code
+        if not is_qr:
+            print_with_time('QR 코드 없음. 현 세션 완료')
+            driver.quit()
+            return
+
+        # otherwise check in
+        print_with_time('QR 코드 확인. 출석 체크 진행')
+        check_in_result = self.check_in(driver)
 
         # send email
-        if is_submit:
+        self.send_email.record_link(self.link) # self.link set within self.check_in
+
+        if check_in_result:
             self.send_email.record_result('성공')
             self.is_wait = True
         else:
             self.send_email.record_result('실패')
             self.is_wait = False
 
-    def run(self):
-        'run once'
-        # make sure same job does not run within 30 minutes upon completion
-        if self.until and datetime.now() < self.until: # self.until is set towards the end
-            print_with_time(f'기존 출석 확인. {datetime.strftime(self.until, "%H:%M")}까지 출석 체크 실행 안 함')
-            return
-        self.is_window, self.hwnd = self.check_window()
-        self.rect = self.maximize_window(self.hwnd)
-        if self.is_window:
-            options = self.create_selenium_options()
-            driver = self.initialize_selenium(options)
-        else:
-            print_with_time('줌 실행중인지 확인 필요')
-            self.reset_attributes()
-            return
-        is_link = self.check_link_loop(driver)
-        # if there's no link
-        if not is_link:
-            print_with_time('QR 코드 없음. 현 세션 완료')
-            driver.quit()
-            return
-        # otherwise check in
-        print_with_time('QR 코드 확인. 출석 체크 진행')
-        self.check_in(driver)
-        # send email
         self.send_email.run()
+
+        # quit Selenium
         driver.quit()
-        # maximize Zoom window
+        # maximize Zoom window on exit
         win32gui.MoveWindow(self.hwnd, *self.rect, True)
-        # make sure same job does not run within 30 minutes upon completion
+        # set self.until to make sure same job does not run within 30 minutes upon completion
         if self.is_wait:
             self.until = datetime.now() + timedelta(minutes=30)
-            print_with_time(f'출석 체크 완료. {datetime.strftime(self.until, "%H:%M")}까지 출석 체크 실행 안 함')
+            self.print_wont_run_until()
         else:
             print_with_time('QR 코드 확인 후 출석 체크 실패')
         self.reset_attributes()

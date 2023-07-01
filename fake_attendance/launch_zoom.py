@@ -117,6 +117,7 @@ class LaunchZoom(UseSelenium):
             if win32gui.IsWindowVisible(hwnd):
                 print_with_time('줌 회의 실행/발견 성공')
                 return True
+            return False
 
         if check_zoom_visible(self.hwnd_zoom_classroom):
             return True
@@ -192,22 +193,17 @@ class LaunchZoom(UseSelenium):
         return self.is_agreed[window_name]
     # pylint: enable=too-many-arguments
 
-    def quit_selenium(self):
-        'quit Selenium'
-        self.driver.quit()
-        time.sleep(5)
-
     def run(self):
         'Run the launch'
         self.quit_zoom() # kill hidden Zoom conference windows if any
-        self.connect() # check connection and launch Zoom to connect if False
+        self.connect() # check connection. launch Zoom to connect if False
         # if launch successful
         if self.check_launch_result():
             # double check recording consent
             self.process_popup(ZOOM_AGREE_RECORDING_POPUP_CLASS, reverse=True, send_alt=True)
             print_with_time('동의 재확인')
             self.process_popup(ZOOM_AGREE_RECORDING_POPUP_CLASS, reverse=True, send_alt=True)
-        self.quit_selenium() # seems quit popped out of nowhere, but init is done in other places
+        self.driver.quit() # seems quit popped out of nowhere, but init is done in other places
         if self.is_agreed[ZOOM_AGREE_RECORDING_POPUP_CLASS]:
             self.maximize_window(self.hwnd_zoom_classroom) # maximize if everything done correctly
         self.reset_attributes() # reset attributes for next run
