@@ -35,7 +35,6 @@ class LaunchZoom(UseSelenium):
     def __init__(self):
         'initialize'
         self.hwnd_zoom_classroom = 0
-        self.driver = None
         self.is_agreed = {
             ZOOM_LAUNCHING_CHROME_TITLE: False,
             ZOOM_UPDATE_POPUP_CLASS: False,

@@ -54,17 +54,17 @@ class DownloadExtensionSource(UseSelenium):
 
         return options
 
-    def download(self, driver):
+    def download(self):
         'Download the source'
-        driver.get(GET_CRX_LINK)
-        driver.maximize_window()
+        self.driver.get(GET_CRX_LINK)
+        self.driver.maximize_window()
         time.sleep(5)
 
-        input_box = driver.find_element(By.ID, 'extension-url')
+        input_box = self.driver.find_element(By.ID, 'extension-url')
         input_box.send_keys(SCREEN_QR_READER_WEBSTORE_LINK)
         time.sleep(1)
 
-        button_ok = driver.find_element(By.ID, 'form-extension-downloader-btn')
+        button_ok = self.driver.find_element(By.ID, 'form-extension-downloader-btn')
         button_ok.click()
         time.sleep(1)
 
@@ -86,9 +86,9 @@ class DownloadExtensionSource(UseSelenium):
             print_with_time('이미 디렉터리 안에 확장자 소스 파일 있음')
             return
         options = self.create_selenium_options()
-        driver = self.initialize_selenium(options)
-        self.download(driver)
-        driver.quit()
+        self.driver = self.initialize_selenium(options)
+        self.download()
+        self.driver.quit()
         if os.path.isfile(SCREEN_QR_READER_SOURCE):
             print_with_time('다운로드한 확장자 소스 파일 확인 완료')
         else:

@@ -37,6 +37,12 @@ class BaseClass(ABC):
 class UseSelenium(BaseClass):
     'base class for subclasses that use Selenium'
 
+    @abstractmethod
+    def __init__(self):
+        'initialize'
+        super().__init__()
+        self.driver = None
+
     def initialize_selenium(self, options=None):
         'initialize Selenium and return driver'
         auto_driver = Service(ChromeDriverManager().install())

@@ -36,10 +36,10 @@ from fake_attendance.settings import (
 from fake_attendance.notify import SendEmail
 # pylint: enable=wrong-import-position
 
+# pylint: disable=too-many-instance-attributes
 class FakeCheckIn(UseSelenium):
     'A class for checking QR image and sending email with link'
 
-    # pylint: disable=too-many-instance-attributes
     def __init__(self):
         'initialize'
         self.is_window = False
@@ -51,12 +51,12 @@ class FakeCheckIn(UseSelenium):
         self.send_email = SendEmail()
         self.print_name = 'QR 체크인'
         super().__init__()
-    # pylint: enable=too-many-instance-attributes
 
     def reset_attributes(self):
         'reset attributes for next run'
         self.is_window, self.hwnd = self.check_window()
         self.rect = self.maximize_window(self.hwnd) if self.is_window else [100,100,100,100]
+        self.driver = None
         self.link = ''
         self.is_wait = False
         self.send_email = SendEmail()
@@ -68,10 +68,10 @@ class FakeCheckIn(UseSelenium):
 
         return bool(hwnd), hwnd
 
-    def check_link_loop(self, driver):
+    def check_link_loop(self):
         'Get link from QR'
         # maximize Chrome window
-        driver.maximize_window()
+        self.driver.maximize_window()
         time.sleep(1)
 
         # calculate new window size
@@ -81,7 +81,7 @@ class FakeCheckIn(UseSelenium):
         # only horizontally
         for ratio in ratios:
             rect_resized[2] = int(self.rect[2] * ratio)
-            result = self.check_link(driver, rect_resized)
+            result = self.check_link(rect_resized)
             if result:
                 break
         # both horizontally and vertically
@@ -89,28 +89,28 @@ class FakeCheckIn(UseSelenium):
             for ratio in ratios:
                 rect_resized[2] = int(self.rect[2] * ratio)
                 rect_resized[3] = int(self.rect[3] * ratio)
-                result = self.check_link(driver, rect_resized)
+                result = self.check_link(rect_resized)
                 if result:
                     break
 
         return result
 
-    def check_link(self, driver, rect_resized):
+    def check_link(self, rect_resized):
         'method to actually fire Screen QR Reader inside loop'
         # apply new window size
         win32gui.MoveWindow(self.hwnd, *rect_resized, True)
-        driver.get(SCREEN_QR_READER_POPUP_LINK) # Screen QR Reader
+        self.driver.get(SCREEN_QR_READER_POPUP_LINK) # Screen QR Reader
         time.sleep(2)
 
         # Selenium will automatically open the link in a new tab
         # if there is a QR image, so check tab count.
-        window_handles = driver.window_handles
+        window_handles = self.driver.window_handles
 
         # Screen QR Reader may open 'about:blank' when there is not a valid QR image.
         if len(window_handles) > 1: # if there are two tabs
-            driver.switch_to.window(window_handles[-1]) # force Selenium to be on the new tab
+            self.driver.switch_to.window(window_handles[-1]) # force Selenium to be on the new tab
             # check if the url is fake then return False
-            if driver.current_url in (SCREEN_QR_READER_BLANK, SCREEN_QR_READER_POPUP_LINK):
+            if self.driver.current_url in (SCREEN_QR_READER_BLANK, SCREEN_QR_READER_POPUP_LINK):
                 return False
             return True # return True if url is valid
         return False
@@ -125,7 +125,7 @@ class FakeCheckIn(UseSelenium):
 
         return options
 
-    def selenium_action(self, is_continue, driver, by_which, sleep, **kwargs):
+    def selenium_action(self, is_continue, by_which, sleep, **kwargs):
         '''
         selenium action method\n
         Must specify kwargs\n
@@ -139,16 +139,16 @@ class FakeCheckIn(UseSelenium):
         # check three times
         for i in range(1, 3+1):
             try:
-                element = driver.find_element(by_which, kwargs['element'])
+                element = self.driver.find_element(by_which, kwargs['element'])
                 if kwargs['how'] == 'click':
                     element.click()
                 elif kwargs['how'] == 'input':
                     element.send_keys(kwargs['input_text'])
                 elif kwargs['how'] == 'get_iframe':
                     iframe_url = element.get_attribute('src')
-                    driver.get(iframe_url)
+                    self.driver.get(iframe_url)
                 elif kwargs['how'] == 'submit':
-                    driver.execute_script('arguments[0].click();', element)
+                    self.driver.execute_script('arguments[0].click();', element)
                 else:
                     assert kwargs['how'] in ['click', 'input', 'get_iframe', 'submit']
                 print_with_time(f'{kwargs["element"]} 찾기 성공. {sleep}초 후 다음 단계로 진행')
@@ -171,7 +171,7 @@ class FakeCheckIn(UseSelenium):
         print_with_time('재시도 전부 실패. 현 상태에서 이메일 발송')
         return False
 
-    def check_in(self, driver):
+    def check_in(self):
         'do the check-in'
         # wait 3 seconds
         time.sleep(3)
@@ -180,37 +180,37 @@ class FakeCheckIn(UseSelenium):
         is_continue = True
 
         # login type
-        is_continue = self.selenium_action(is_continue, driver, By.CLASS_NAME, 10,\
+        is_continue = self.selenium_action(is_continue, By.CLASS_NAME, 10,\
                         how='click', element=LOGIN_WITH_KAKAO_BUTTON)
 
         # insert Kakao id
-        is_continue = self.selenium_action(is_continue, driver, By.ID, 1,\
+        is_continue = self.selenium_action(is_continue, By.ID, 1,\
                         how='input', element=ID_INPUT_BOX, input_text=KAKAO_ID)
 
         # insert Kakao password
-        is_continue = self.selenium_action(is_continue, driver, By.ID, 1,\
+        is_continue = self.selenium_action(is_continue, By.ID, 1,\
                         how='input', element=PASSWORD_INPUT_BOX, input_text=KAKAO_PASSWORD)
 
         # log in
-        is_continue = self.selenium_action(is_continue, driver, By.CLASS_NAME, 10,\
+        is_continue = self.selenium_action(is_continue, By.CLASS_NAME, 10,\
                         how='click', element=LOGIN_BUTTON)
 
         # get inner document link
         # Should have successfully logged in. Now pass set link to pass to SendEmail
-        self.link = driver.current_url if is_continue else '발견 실패'
-        is_continue = self.selenium_action(is_continue, driver, By.TAG_NAME, 10,\
+        self.link = self.driver.current_url if is_continue else '발견 실패'
+        is_continue = self.selenium_action(is_continue, By.TAG_NAME, 10,\
                     how='get_iframe', element=IFRAME)
 
         # agree to check in
-        is_continue = self.selenium_action(is_continue, driver, By.XPATH, 3,\
+        is_continue = self.selenium_action(is_continue, By.XPATH, 3,\
                         how='click', element=AGREE)
 
         # select check-in
-        is_continue = self.selenium_action(is_continue, driver, By.XPATH, 3,\
+        is_continue = self.selenium_action(is_continue, By.XPATH, 3,\
                         how='click', element=CHECK_IN)
 
         # submit
-        is_continue = self.selenium_action(is_continue, driver, By.XPATH, 3,\
+        is_continue = self.selenium_action(is_continue, By.XPATH, 3,\
                         how='submit', element=SUBMIT)
 
         return is_continue
@@ -234,7 +234,7 @@ class FakeCheckIn(UseSelenium):
             self.rect = self.maximize_window(self.hwnd)
             # init selenium
             options = self.create_selenium_options()
-            driver = self.initialize_selenium(options)
+            self.driver = self.initialize_selenium(options)
         # if not
         else:
             # quit
@@ -243,16 +243,16 @@ class FakeCheckIn(UseSelenium):
             return
 
         # check QR code in Zoom
-        is_qr = self.check_link_loop(driver)
+        is_qr = self.check_link_loop()
         # if there's no QR code
         if not is_qr:
             print_with_time('QR 코드 없음. 현 세션 완료')
-            driver.quit()
+            self.driver.quit()
             return
 
         # otherwise check in
         print_with_time('QR 코드 확인. 출석 체크 진행')
-        check_in_result = self.check_in(driver)
+        check_in_result = self.check_in()
 
         # send email
         self.send_email.record_link(self.link) # self.link set within self.check_in
@@ -267,7 +267,7 @@ class FakeCheckIn(UseSelenium):
         self.send_email.run()
 
         # quit Selenium
-        driver.quit()
+        self.driver.quit()
         # maximize Zoom window on exit
         win32gui.MoveWindow(self.hwnd, *self.rect, True)
         # set self.until to make sure same job does not run within 30 minutes upon completion
@@ -278,6 +278,7 @@ class FakeCheckIn(UseSelenium):
             print_with_time('QR 코드 확인 후 출석 체크 실패')
         self.reset_attributes()
         return
+# pylint: enable=too-many-instance-attributes
 
 if __name__ == '__main__':
     FakeCheckIn().run()
