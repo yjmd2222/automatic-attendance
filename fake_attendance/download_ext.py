@@ -54,6 +54,7 @@ class DownloadExtensionSource(UseSelenium):
           "download.prompt_for_download": False,
           "download.directory_upgrade": True
           })
+        options.add_experimental_option('excludeSwitches', ['enable-logging'])
 
         return options
 
