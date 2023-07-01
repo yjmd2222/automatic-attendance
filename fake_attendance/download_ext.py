@@ -10,7 +10,6 @@ import time
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 
-import keyboard
 import pyautogui
 
 sys.path.append(os.getcwd())
@@ -94,7 +93,7 @@ class DownloadExtensionSource(UseSelenium):
             print_with_time('다운로드한 확장자 소스 파일 확인 완료')
         else:
             print_with_time('다운로드된 파일 없음. 모듈 종료')
-            exit()
+            sys.exit()
         return
 
 if __name__ == '__main__':

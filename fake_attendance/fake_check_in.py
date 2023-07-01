@@ -39,6 +39,7 @@ from fake_attendance.notify import SendEmail
 class FakeCheckIn(UseSelenium):
     'A class for checking QR image and sending email with link'
 
+    # pylint: disable=too-many-instance-attributes
     def __init__(self):
         'initialize'
         self.is_window = False
@@ -50,6 +51,7 @@ class FakeCheckIn(UseSelenium):
         self.send_email = SendEmail()
         self.print_name = 'QR 체크인'
         super().__init__()
+    # pylint: enable=too-many-instance-attributes
 
     def reset_attributes(self):
         'reset attributes for next run'
@@ -123,7 +125,7 @@ class FakeCheckIn(UseSelenium):
 
         return options
 
-    def selenium_action(self, driver, by_which, sleep, **kwargs):
+    def selenium_action(self, is_continue, driver, by_which, sleep, **kwargs):
         '''
         selenium action method\n
         Must specify kwargs\n
@@ -131,6 +133,9 @@ class FakeCheckIn(UseSelenium):
         'element' is the element to be inspected\n
         'input_text' must be given if 'how' is 'input'
         '''
+        # run if is_continue
+        if not is_continue:
+            return False
         # check three times
         for i in range(1, 3+1):
             try:
@@ -171,53 +176,47 @@ class FakeCheckIn(UseSelenium):
         # wait 3 seconds
         time.sleep(3)
 
+        # bool flag
+        is_continue = True
+
         # login type
-        if not self.selenium_action(driver, By.CLASS_NAME, 10,\
-                        how='click', element=LOGIN_WITH_KAKAO_BUTTON):
-            return False
+        is_continue = self.selenium_action(is_continue, driver, By.CLASS_NAME, 10,\
+                        how='click', element=LOGIN_WITH_KAKAO_BUTTON)
 
         # insert Kakao id
-        if not self.selenium_action(driver, By.ID, 1,\
-                        how='input', element=ID_INPUT_BOX, input_text=KAKAO_ID):
-            return False
+        is_continue = self.selenium_action(is_continue, driver, By.ID, 1,\
+                        how='input', element=ID_INPUT_BOX, input_text=KAKAO_ID)
 
         # insert Kakao password
-        if not self.selenium_action(driver, By.ID, 1,\
-                        how='input', element=PASSWORD_INPUT_BOX, input_text=KAKAO_PASSWORD):
-            return False
+        is_continue = self.selenium_action(is_continue, driver, By.ID, 1,\
+                        how='input', element=PASSWORD_INPUT_BOX, input_text=KAKAO_PASSWORD)
 
         # log in
-        if not self.selenium_action(driver, By.CLASS_NAME, 10,\
-                        how='click', element=LOGIN_BUTTON):
-            return False
+        is_continue = self.selenium_action(is_continue, driver, By.CLASS_NAME, 10,\
+                        how='click', element=LOGIN_BUTTON)
 
         # get inner document link
-        # Should have successfully logged in. Now pass link to SendEmail
-        self.link = driver.current_url
-        if not self.selenium_action(driver, By.TAG_NAME, 10,\
-                    how='get_iframe', element=IFRAME):
-            return False
+        # Should have successfully logged in. Now pass set link to pass to SendEmail
+        self.link = driver.current_url if is_continue else '발견 실패'
+        is_continue = self.selenium_action(is_continue, driver, By.TAG_NAME, 10,\
+                    how='get_iframe', element=IFRAME)
 
         # agree to check in
-        if not self.selenium_action(driver, By.XPATH, 3,\
-                        how='click', element=AGREE):
-            return False
+        is_continue = self.selenium_action(is_continue, driver, By.XPATH, 3,\
+                        how='click', element=AGREE)
 
         # select check-in
-        if not self.selenium_action(driver, By.XPATH, 3,\
-                        how='click', element=CHECK_IN):
-            return False
+        is_continue = self.selenium_action(is_continue, driver, By.XPATH, 3,\
+                        how='click', element=CHECK_IN)
 
         # submit
-        if not self.selenium_action(driver, By.XPATH, 3,\
-                        how='submit', element=SUBMIT):
-            return False
+        is_continue = self.selenium_action(is_continue, driver, By.XPATH, 3,\
+                        how='submit', element=SUBMIT)
 
-        # if everything went through
-        return True
-    
+        return is_continue
+
     def print_wont_run_until(self):
-        'print check-in will be ignored until given time'
+        'print that check-in will be ignored until given time'
         print_with_time(f'기존 출석 확인. {datetime.strftime(self.until, "%H:%M")}까지 출석 체크 실행 안 함')
 
     def run(self):
