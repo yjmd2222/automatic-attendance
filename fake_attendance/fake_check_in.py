@@ -45,6 +45,7 @@ class FakeCheckIn(UseSelenium):
         self.is_window = False
         self.hwnd = 0
         self.rect = [100,100,100,100]
+        self.extension_source = SCREEN_QR_READER_SOURCE
         self.link = ''
         self.is_wait = False
         self.until = None
@@ -119,7 +120,7 @@ class FakeCheckIn(UseSelenium):
         'declare options for Selenium driver'
         options = Options()
         # Screen QR Reader source required
-        options.add_extension(SCREEN_QR_READER_SOURCE)
+        options.add_extension(self.extension_source)
         # automatically select Zoom meeting
         options.add_argument('--auto-select-desktop-capture-source=Zoom')
 

@@ -17,8 +17,10 @@ sys.path.append(os.getcwd())
 # pylint: disable=wrong-import-position
 from fake_attendance.abc import UseSelenium
 from fake_attendance.helper import (
+    get_file_path,
     get_last_match,
     print_with_time)
+from fake_attendance.scheduler import MyScheduler
 from fake_attendance.settings import (
     CONTINUE_IMAGE,
     GET_CRX_LINK,
@@ -29,9 +31,10 @@ from fake_attendance.settings import (
 class DownloadExtensionSource(UseSelenium):
     'A class for downloading the source of Screen QR Reader'
 
-    def __init__(self):
+    def __init__(self, scheduler:MyScheduler=None):
         'initialize'
         self.image = CONTINUE_IMAGE
+        self.scheduler = scheduler
         self.print_name = '다운로드'
         super().__init__()
 
@@ -82,18 +85,42 @@ class DownloadExtensionSource(UseSelenium):
 
     def run(self):
         'Run the download'
+        # quit if source already exists
         if self.check_source_exists():
             print_with_time('이미 디렉터리 안에 확장자 소스 파일 있음')
             return
+
+        # init selenium
         options = self.create_selenium_options()
         self.driver = self.initialize_selenium(options)
+
+        # track current directory list
+        cur_listdir = os.listdir()
+
+        # run the download
         self.download()
+
+        # quit selenium
         self.driver.quit()
+
+        # new directory list
+        new_listdir = os.listdir()
+
+        # check file download, exact match
         if os.path.isfile(SCREEN_QR_READER_SOURCE):
             print_with_time('다운로드한 확장자 소스 파일 확인 완료')
         else:
-            print_with_time('다운로드된 파일 없음. 모듈 종료')
-            sys.exit()
+            # check if a .crx file was downloaded
+            downloaded_file = [i for i in new_listdir if i not in cur_listdir][0]
+            if '.crx' in downloaded_file:
+                print_with_time(f'다운로드 파일 이름 일치 안 함: {downloaded_file}. 주의 필요')
+                # update source path
+                self.scheduler.fake_check_in.extension_source = get_file_path(downloaded_file)
+            # if not
+            else:
+                print_with_time('다운로드된 확장자 소스 파일 없음. 모듈 종료')
+                # quit everything because nothing will work
+                sys.exit()
         return
 
 if __name__ == '__main__':
