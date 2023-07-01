@@ -16,6 +16,7 @@ sys.path.append(os.getcwd())
 from fake_attendance.abc import UseSelenium
 from fake_attendance.info import ZOOM_LINK
 from fake_attendance.helper import (
+    bring_chrome_to_front,
     print_with_time,
     print_all_windows,
     send_alt_key_and_set_foreground)
@@ -23,7 +24,6 @@ from fake_attendance.quit_zoom import QuitZoom
 from fake_attendance.settings import (
     ZOOM_AGREE_RECORDING_POPUP_CLASS,
     ZOOM_CLASSROOM_CLASS,
-    ZOOM_LAUNCHING_CHROME_TITLE,
     ZOOM_UPDATE_POPUP_CLASS,
     ZOOM_UPDATE_DOWNLOAD_CLASS,
     ZOOM_UPDATE_ACTUAL_UPDATE_CLASS)
@@ -36,7 +36,6 @@ class LaunchZoom(UseSelenium):
         'initialize'
         self.hwnd_zoom_classroom = 0
         self.is_agreed = {
-            ZOOM_LAUNCHING_CHROME_TITLE: False,
             ZOOM_UPDATE_POPUP_CLASS: False,
             ZOOM_AGREE_RECORDING_POPUP_CLASS: False
         }
@@ -46,9 +45,7 @@ class LaunchZoom(UseSelenium):
     def reset_attributes(self):
         'reset attributes for next run'
         self.hwnd_zoom_classroom = 0
-        self.driver = None
         self.is_agreed = {
-            ZOOM_LAUNCHING_CHROME_TITLE: False,
             ZOOM_UPDATE_POPUP_CLASS: False,
             ZOOM_AGREE_RECORDING_POPUP_CLASS: False
         }
@@ -78,19 +75,25 @@ class LaunchZoom(UseSelenium):
 
     def launch_zoom(self):
         'launch method'
-        # initialize driver if not done already
-        if not self.driver:
-            self.driver = self.initialize_selenium()
+        # initialize driver
+        self.driver = self.initialize_selenium()
 
         # launch Zoom link
         print_with_time('줌 입장 시작')
         self.driver.get(ZOOM_LINK)
+        # maximize and wait
         self.driver.maximize_window()
         time.sleep(5)
 
-        # connect to automated Chrome browser
+        # hack to focus on top
         # because recent Chrome does not allow bypassing this popup
-        self.process_popup(window_title=ZOOM_LAUNCHING_CHROME_TITLE)
+        bring_chrome_to_front(self.driver)
+        # click 'open Zoom in app'
+        self.press_tabs_and_space(tab_num=2, reverse=False, send_alt=False)
+
+        # quit driver for multiple tries
+        self.driver.quit()
+        self.driver = None
 
     def check_window_down(self, window_class=None, window_title=None):
         'wait until window is down'
@@ -202,7 +205,6 @@ class LaunchZoom(UseSelenium):
             self.process_popup(ZOOM_AGREE_RECORDING_POPUP_CLASS, reverse=True, send_alt=True)
             print_with_time('동의 재확인')
             self.process_popup(ZOOM_AGREE_RECORDING_POPUP_CLASS, reverse=True, send_alt=True)
-        self.driver.quit() # seems quit popped out of nowhere, but init is done in other places
         if self.is_agreed[ZOOM_AGREE_RECORDING_POPUP_CLASS]:
             self.maximize_window(self.hwnd_zoom_classroom) # maximize if everything done correctly
         self.reset_attributes() # reset attributes for next run

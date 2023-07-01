@@ -5,6 +5,7 @@ Helper methods
 import os
 
 from datetime import datetime, timedelta
+import time
 
 import pyautogui
 from win32com.client import Dispatch
@@ -79,3 +80,10 @@ def print_all_windows(title='Zoom'):
 
     for i in items:
         print(i)
+
+def bring_chrome_to_front(driver):
+    'bring Selenium Chrome browser to front with a hack'
+    driver.minimize_window()
+    time.sleep(1)
+    driver.maximize_window()
+    time.sleep(0.5)

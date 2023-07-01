@@ -17,6 +17,7 @@ sys.path.append(os.getcwd())
 # pylint: disable=wrong-import-position
 from fake_attendance.abc import UseSelenium
 from fake_attendance.helper import (
+    bring_chrome_to_front,
     get_file_path,
     get_last_match,
     print_with_time)
@@ -71,6 +72,9 @@ class DownloadExtensionSource(UseSelenium):
         button_ok = self.driver.find_element(By.ID, 'form-extension-downloader-btn')
         button_ok.click()
         time.sleep(1)
+
+        # bring to front with hack
+        bring_chrome_to_front(self.driver)
 
         # Recent Chrome does not allow bypassing 'harmful download', so use pyautogui.
         pos = get_last_match(self.image)
