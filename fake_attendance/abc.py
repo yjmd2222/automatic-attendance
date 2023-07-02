@@ -37,7 +37,6 @@ class BaseClass(ABC):
 class UseSelenium(BaseClass):
     'base class for subclasses that use Selenium'
 
-    @abstractmethod
     def __init__(self):
         'initialize'
         super().__init__()
