@@ -85,4 +85,4 @@ class SendEmail(BaseClass):
         smtp.quit()
 
 if __name__ == '__main__':
-    SendEmail().send_email()
+    SendEmail().run()
