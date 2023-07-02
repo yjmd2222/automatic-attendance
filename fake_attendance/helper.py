@@ -87,3 +87,11 @@ def bring_chrome_to_front(driver):
     time.sleep(1)
     driver.maximize_window()
     time.sleep(0.5)
+
+def decorator_get_name(func):
+    'decorator for getting method name'
+    def wrapper(*args, **kwargs):
+        'wrapper'
+        args = args[:-1] + (func.__name__,)
+        func(*args, **kwargs)
+    return wrapper

@@ -43,6 +43,10 @@ class UseSelenium(BaseClass):
         super().__init__()
         self.driver = None
 
+    @abstractmethod
+    def create_selenium_options(self):
+        'declare options for Selenium driver.'
+
     def initialize_selenium(self, options=None):
         'initialize Selenium and return driver'
         auto_driver = Service(ChromeDriverManager().install())

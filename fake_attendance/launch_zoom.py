@@ -60,6 +60,10 @@ class LaunchZoom(UseSelenium):
             # if something quit, wait for quitting to finish
             time.sleep(10)
 
+    def create_selenium_options(self):
+        'not implemented'
+        return None
+
     def connect(self):
         'connect to Zoom conference'
         # check presence of Zoom conference

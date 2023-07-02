@@ -86,7 +86,8 @@ class DownloadExtensionSource(UseSelenium):
             print_with_time('다운로드 "계속" 버튼 찾을 수 없음')
 
     def maximize_window(self, hwnd):
-        print_with_time(f'maximize_window 하위클래스 {self.print_name}에서 사용 안 함')
+        'not implemented'
+        return None
 
     def run(self):
         'Run the download'
@@ -119,8 +120,9 @@ class DownloadExtensionSource(UseSelenium):
             downloaded_file = [i for i in new_listdir if i not in cur_listdir][0]
             if '.crx' in downloaded_file:
                 print_with_time(f'다운로드 파일 이름 일치 안 함: {downloaded_file}. 주의 필요')
-                # update source path
-                self.scheduler.fake_check_in.extension_source = get_file_path(downloaded_file)
+                if self.scheduler:
+                    # update source path
+                    self.scheduler.fake_check_in.extension_source = get_file_path(downloaded_file)
             # if not
             else:
                 print_with_time('다운로드된 확장자 소스 파일 없음. 모듈 종료')
