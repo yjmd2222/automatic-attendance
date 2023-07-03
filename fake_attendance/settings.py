@@ -30,7 +30,7 @@ START_IMAGE = get_file_path('start_video.png', 'images')
 # APScheduler timings
 # 11:20, 13:00, 15:20 normal
 # 11:50, 13:00, 15:50 sprint challenge
-# 10::25(Days 2-5) 11:00(Day 1), 13:00, 15:30 project
+# 10:25(Days 2-5) 11:00(Day 1), 13:00, 15:30 project
 DIFF_MINUTE = 5
 REGULAR_CHECK_IN_TIMES = unfoil_time_sets(
     [extrapolate_time_sets(*TIME_SET, DIFF_MINUTE) for TIME_SET in [(11,20), (13,11), (15,20)]]
