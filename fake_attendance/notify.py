@@ -24,6 +24,7 @@ from fake_attendance.info import (
     EMAIL_ADDRESS,
     EMAIL_PASSWORD,
     SMTP_HOST, SMTP_PORT)
+from fake_attendance.settings import RESULT_DICTS
 # pylint: enable=wrong-import-position
 
 class Notify(BaseClass):
@@ -79,7 +80,8 @@ class Notify(BaseClass):
             return
 
         msg = MIMEText(self.body)
-        msg['Subject'] = f'!!fake-attendance {self.job_name} {datetime.now().strftime(r"%Y-%m-%d %H:%M")}!!'
+        msg['Subject'] = f'!!fake-attendance {self.job_name}\
+            {datetime.now().strftime(r"%Y-%m-%d %H:%M")}!!'
 
         smtp.sendmail(EMAIL_ADDRESS, EMAIL_ADDRESS, msg.as_string())
 
@@ -87,14 +89,23 @@ class Notify(BaseClass):
 
         smtp.quit()
 
+# pylint: disable=attribute-defined-outside-init
+# pylint: disable=too-few-public-methods
 class SendEmail:
     'A class for instantiating Notify class'
 
     # pylint: disable=no-member
     def instantiate(self):
-        'initialize'
+        '''
+        SendEmail.instantiate(self) method that defines\n
+        a notify attribute with an instance of Notify\n
+        and a result_dict attribute for multiple purposes
+        '''
         self.notify = Notify(self.print_name)
+        self.result_dict: dict = RESULT_DICTS[self.print_name]
     # pylint: enable=no-member
+# pylint: enable=too-few-public-methods
+# pylint: enable=attribute-defined-outside-init
 
 if __name__ == '__main__':
-    Notify().run()
+    Notify('test').run()

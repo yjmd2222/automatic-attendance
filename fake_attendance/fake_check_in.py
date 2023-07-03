@@ -46,16 +46,6 @@ class FakeCheckIn(SendEmail, UseSelenium):
         self.hwnd = 0
         self.rect = [100,100,100,100]
         self.extension_source = SCREEN_QR_READER_SOURCE
-        self.result_dict = {
-            'link': {
-                'name': 'QR 코드 링크',
-                'content': ''
-            },
-            'result': {
-                'name': '체크인 결과',
-                'content': ''
-            }
-        }
         self.is_wait = False
         self.until = None
         self.print_name = 'QR 체크인'
@@ -67,16 +57,6 @@ class FakeCheckIn(SendEmail, UseSelenium):
         self.is_window, self.hwnd = self.check_window()
         self.rect = self.maximize_window(self.hwnd) if self.is_window else [100,100,100,100]
         self.driver = None
-        self.result_dict = {
-            'link': {
-                'name': 'QR 코드 링크',
-                'content': ''
-            },
-            'result': {
-                'name': '체크인 결과',
-                'content': ''
-            }
-        }
         self.is_wait = False
         SendEmail.instantiate(self)
 

@@ -30,6 +30,7 @@ from fake_attendance.settings import (
     INTERRUPT_SEQUENCE)
 # pylint: enable=wrong-import-position
 
+# pylint: disable=too-many-instance-attributes
 class MyScheduler(BaseClass):
     'A class that manages the scheduler'
 
@@ -71,9 +72,9 @@ class MyScheduler(BaseClass):
 
     def print_next_time(self):
         'print next trigger for next jobs'
-        for id in self.job_ids:
-            next_time = self.sched.get_job(id).next_run_time
-            print_with_time(f'다음 {id} 스크립트 실행 시각: {next_time.strftime(("%H:%M"))}')
+        for job_id in self.job_ids:
+            next_time = self.sched.get_job(job_id).next_run_time
+            print_with_time(f'다음 {job_id} 스크립트 실행 시각: {next_time.strftime(("%H:%M"))}')
 
     def get_timesets(self):
         'receive argument from command line for which time sets to add to schedule'
@@ -132,6 +133,7 @@ class MyScheduler(BaseClass):
         self.print_next_time() # print time first job fires
         self.interrupt_from_keyboard(INTERRUPT_SEQUENCE) # allow quit with keyboard
         self.sched.shutdown(wait=False) # shutdown scheduler if quit
+# pylint: enable=too-many-instance-attributes
 
 if __name__ == '__main__':
     MyScheduler().run()

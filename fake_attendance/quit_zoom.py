@@ -20,12 +20,6 @@ class QuitZoom(SendEmail, BaseClass):
     'A class for quitting Zoom'
 
     def __init__(self):
-        self.result_dict = {
-            'quit': {
-                'name': '줌 종료',
-                'content': False
-            }
-        }
         self.print_name = '줌 종료'
         SendEmail.instantiate(self)
         super().__init__()

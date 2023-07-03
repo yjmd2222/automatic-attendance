@@ -36,19 +36,6 @@ class LaunchZoom(SendEmail, UseSelenium):
     def __init__(self):
         'initialize'
         self.hwnd_zoom_classroom = 0
-        self.result_dict = {
-            ZOOM_UPDATE_POPUP_CLASS: {
-                'name': '줌 업데이트',
-                'content': False
-            },
-            ZOOM_CLASSROOM_CLASS:{
-                'name': '줌 회의 입장',
-                'content': False
-            },
-            ZOOM_AGREE_RECORDING_POPUP_CLASS: {
-                'name': '줌 녹화 동의',
-                'content': False}
-        }
         self.print_name = '줌 실행'
         SendEmail.instantiate(self)
         super().__init__()
@@ -56,19 +43,6 @@ class LaunchZoom(SendEmail, UseSelenium):
     def reset_attributes(self):
         'reset attributes for next run'
         self.hwnd_zoom_classroom = 0
-        self.result_dict = {
-            ZOOM_UPDATE_POPUP_CLASS: {
-                'name': '줌 업데이트',
-                'content': False
-            },
-            ZOOM_CLASSROOM_CLASS:{
-                'name': '줌 회의 입장',
-                'content': False
-            },
-            ZOOM_AGREE_RECORDING_POPUP_CLASS: {
-                'name': '줌 녹화 동의',
-                'content': False}
-        }
         SendEmail.instantiate(self)
 
     def quit_zoom(self):
