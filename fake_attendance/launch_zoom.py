@@ -21,6 +21,7 @@ from fake_attendance.helper import (
     print_all_windows,
     send_alt_key_and_set_foreground)
 from fake_attendance.quit_zoom import QuitZoom
+from fake_attendance.notify import Notify
 from fake_attendance.settings import (
     ZOOM_AGREE_RECORDING_POPUP_CLASS,
     ZOOM_CLASSROOM_CLASS,
@@ -35,20 +36,40 @@ class LaunchZoom(UseSelenium):
     def __init__(self):
         'initialize'
         self.hwnd_zoom_classroom = 0
-        self.is_agreed = {
-            ZOOM_UPDATE_POPUP_CLASS: False,
-            ZOOM_AGREE_RECORDING_POPUP_CLASS: False
+        self.result_dict = {
+            ZOOM_UPDATE_POPUP_CLASS: {
+                'name': '줌 업데이트',
+                'content': False
+            },
+            ZOOM_CLASSROOM_CLASS:{
+                'name': '줌 회의 입장',
+                'content': False
+            },
+            ZOOM_AGREE_RECORDING_POPUP_CLASS: {
+                'name': '줌 녹화 동의',
+                'content': False}
         }
+        self.notify = Notify()
         self.print_name = '줌 실행'
         super().__init__()
 
     def reset_attributes(self):
         'reset attributes for next run'
         self.hwnd_zoom_classroom = 0
-        self.is_agreed = {
-            ZOOM_UPDATE_POPUP_CLASS: False,
-            ZOOM_AGREE_RECORDING_POPUP_CLASS: False
+        self.result_dict = {
+            ZOOM_UPDATE_POPUP_CLASS: {
+                'name': '줌 업데이트',
+                'content': False
+            },
+            ZOOM_CLASSROOM_CLASS:{
+                'name': '줌 회의 입장',
+                'content': False
+            },
+            ZOOM_AGREE_RECORDING_POPUP_CLASS: {
+                'name': '줌 녹화 동의',
+                'content': False}
         }
+        self.notify = Notify()
 
     def quit_zoom(self):
         'quit hidden Zoom windows if any'
@@ -133,7 +154,7 @@ class LaunchZoom(UseSelenium):
             # check update
             self.process_popup(ZOOM_UPDATE_POPUP_CLASS, reverse=True, send_alt=True)
             # if agreed to update
-            if self.is_agreed[ZOOM_UPDATE_POPUP_CLASS]:
+            if self.result_dict[ZOOM_UPDATE_POPUP_CLASS]['content']:
                 # downloading updates
                 self.check_window_down(window_class=ZOOM_UPDATE_DOWNLOAD_CLASS)
                 print_all_windows() # debug
@@ -188,15 +209,15 @@ class LaunchZoom(UseSelenium):
             send_alt_key_and_set_foreground(hwnd)
             # press tab num times and hit space to enter
             self.press_tabs_and_space(tab_num, reverse, send_alt)
-            self.is_agreed[window_name] = True
+            self.result_dict[window_name]['content'] = True
         # agree window not visible
         else:
-            if self.is_agreed[window_name]:
+            if self.result_dict[window_name]['content']:
                 print_with_time(f'{window_name} 동의 완료')
             else:
                 print_with_time(f'{window_name} 동의 실패')
-                self.is_agreed[window_name] = False
-        return self.is_agreed[window_name]
+                self.result_dict[window_name]['content'] = False
+        return self.result_dict[window_name]['content']
     # pylint: enable=too-many-arguments
 
     def run(self):
@@ -209,9 +230,15 @@ class LaunchZoom(UseSelenium):
             self.process_popup(ZOOM_AGREE_RECORDING_POPUP_CLASS, reverse=True, send_alt=True)
             print_with_time('동의 재확인')
             self.process_popup(ZOOM_AGREE_RECORDING_POPUP_CLASS, reverse=True, send_alt=True)
-        if self.is_agreed[ZOOM_AGREE_RECORDING_POPUP_CLASS]:
-            self.maximize_window(self.hwnd_zoom_classroom) # maximize if everything done correctly
-        self.reset_attributes() # reset attributes for next run
+        # send email
+        self.notify.record_result(self.result_dict)
+        self.notify.write_body()
+        self.notify.run()
+        # maximize if everything done correctly
+        if self.result_dict[ZOOM_AGREE_RECORDING_POPUP_CLASS]['content']:
+            self.maximize_window(self.hwnd_zoom_classroom)
+        # reset attributes for next run
+        self.reset_attributes()
 
 if __name__ == '__main__':
     LaunchZoom().run()
