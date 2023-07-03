@@ -7,28 +7,37 @@ import sys
 
 import time
 
-from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
-from webdriver_manager.chrome import ChromeDriverManager
 
 import pyautogui
 
 sys.path.append(os.getcwd())
 
 # pylint: disable=wrong-import-position
-from fake_attendance.helper import get_last_match, print_with_time
-from fake_attendance.settings import (CONTINUE_IMAGE, GET_CRX_LINK,
-                  SCREEN_QR_READER_SOURCE, SCREEN_QR_READER_WEBSTORE_LINK)
+from fake_attendance.abc import UseSelenium
+from fake_attendance.helper import (
+    bring_chrome_to_front,
+    get_file_path,
+    get_last_match,
+    print_with_time)
+from fake_attendance.scheduler import MyScheduler
+from fake_attendance.settings import (
+    CONTINUE_IMAGE,
+    GET_CRX_LINK,
+    SCREEN_QR_READER_SOURCE,
+    SCREEN_QR_READER_WEBSTORE_LINK)
 # pylint: enable=wrong-import-position
 
-class DownloadExtensionSource:
+class DownloadExtensionSource(UseSelenium):
     'A class for downloading the source of Screen QR Reader'
 
-    def __init__(self):
+    def __init__(self, scheduler:MyScheduler=None):
         'initialize'
         self.image = CONTINUE_IMAGE
+        self.scheduler = scheduler
+        self.print_name = '다운로드'
+        super().__init__()
 
     def check_source_exists(self):
         'Check if source exists'
@@ -46,28 +55,26 @@ class DownloadExtensionSource:
           "download.prompt_for_download": False,
           "download.directory_upgrade": True
           })
+        options.add_experimental_option('excludeSwitches', ['enable-logging'])
 
         return options
 
-    def initialize_selenium(self, options):
-        'Initialize Selenium and return driver'
-        auto_driver = Service(ChromeDriverManager().install())
-
-        return webdriver.Chrome(service=auto_driver, options=options)
-
-    def download(self, driver):
+    def download(self):
         'Download the source'
-        driver.get(GET_CRX_LINK)
-        driver.maximize_window()
+        self.driver.get(GET_CRX_LINK)
+        self.driver.maximize_window()
         time.sleep(5)
 
-        input_box = driver.find_element(By.ID, 'extension-url')
+        input_box = self.driver.find_element(By.ID, 'extension-url')
         input_box.send_keys(SCREEN_QR_READER_WEBSTORE_LINK)
         time.sleep(1)
 
-        button_ok = driver.find_element(By.ID, 'form-extension-downloader-btn')
+        button_ok = self.driver.find_element(By.ID, 'form-extension-downloader-btn')
         button_ok.click()
         time.sleep(1)
+
+        # bring to front with hack
+        bring_chrome_to_front(self.driver)
 
         # Recent Chrome does not allow bypassing 'harmful download', so use pyautogui.
         pos = get_last_match(self.image)
@@ -78,22 +85,49 @@ class DownloadExtensionSource:
         else:
             print_with_time('다운로드 "계속" 버튼 찾을 수 없음')
 
+    def maximize_window(self, hwnd):
+        'not implemented'
+        return None
+
     def run(self):
         'Run the download'
-        print_with_time('다운로드 스크립트 실행')
+        # quit if source already exists
         if self.check_source_exists():
             print_with_time('이미 디렉터리 안에 확장자 소스 파일 있음')
             return
+
+        # init selenium
         options = self.create_selenium_options()
-        driver = self.initialize_selenium(options)
-        self.download(driver)
-        driver.quit()
+        self.driver = self.initialize_selenium(options)
+
+        # track current directory list
+        cur_listdir = os.listdir()
+
+        # run the download
+        self.download()
+
+        # quit selenium
+        self.driver.quit()
+
+        # new directory list
+        new_listdir = os.listdir()
+
+        # check file download, exact match
         if os.path.isfile(SCREEN_QR_READER_SOURCE):
             print_with_time('다운로드한 확장자 소스 파일 확인 완료')
         else:
-            print_with_time('다운로드된 파일 없음')
-            raise AssertionError
-        print_with_time('다운로드 스크립트 종료')
+            # check if a .crx file was downloaded
+            downloaded_file = [i for i in new_listdir if i not in cur_listdir][0]
+            if '.crx' in downloaded_file:
+                print_with_time(f'다운로드 파일 이름 일치 안 함: {downloaded_file}. 주의 필요')
+                if self.scheduler:
+                    # update source path
+                    self.scheduler.fake_check_in.extension_source = get_file_path(downloaded_file)
+            # if not
+            else:
+                print_with_time('다운로드된 확장자 소스 파일 없음. 모듈 종료')
+                # quit everything because nothing will work
+                sys.exit()
         return
 
 if __name__ == '__main__':

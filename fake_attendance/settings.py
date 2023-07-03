@@ -56,8 +56,10 @@ ZOOM_QUIT_MINUTE = 5
 
 # Zoom props
 ZOOM_AGREE_RECORDING_POPUP_CLASS = 'ZPRecordingConsentClass' # '이 회의는 호스트 또는 참가자가 기록 중입니다'
-ZOOM_CLASSROOM_CLASS = 'ZPContentViewWndClass' # 'Zoom 회의'
-ZOOM_LAUNCHING_CHROME_TITLE = '회의 시작 - Zoom - Chrome'
+ZOOM_CLASSROOM_CLASS = 'ZPContentViewWndClass'
+ZOOM_UPDATE_POPUP_CLASS = 'ZPForceUpdateWnd' # update popup when launching Zoom
+ZOOM_UPDATE_DOWNLOAD_CLASS = 'CZPUpdateWndCls'
+ZOOM_UPDATE_ACTUAL_UPDATE_CLASS = 'zoom.us Installer Engine'
 
 # Check-in props
 LOGIN_WITH_KAKAO_BUTTON = 'login-form__button-title.css-caslt6'
@@ -68,3 +70,6 @@ IFRAME = 'iframe'
 AGREE = "//*[text()='동의합니다.']"
 CHECK_IN = "//*[text()='출석']"
 SUBMIT = "//*[text()='제출']"
+
+# misc
+INTERRUPT_SEQUENCE = 'ctrl+alt+c'
