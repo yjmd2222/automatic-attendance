@@ -22,7 +22,7 @@ class QuitZoom(BaseClass):
     def __init__(self):
         self.notify = Notify()
         self.is_success = {
-            'quit_success': {
+            'quit': {
                 'name': '줌 종료',
                 'result': False
             }
@@ -39,14 +39,14 @@ class QuitZoom(BaseClass):
                 print_with_time('숨겨진 Zoom 회의 종료')
             else:
                 print_with_time('Zoom 회의 입장 확인 후 종료')
-            self.is_success['result'] = True
+            self.is_success['quit']['result'] = True
             return True
         except ElementNotFoundError:
             if kill_hidden:
                 print_with_time('숨겨진 Zoom 회의 없음')
             else:
                 print_with_time('Zoom 회의 입장 안 함')
-            self.is_success['result'] = False
+            self.is_success['quit']['result'] = False
             return False
 
     def run(self, kill_hidden=False):
@@ -55,7 +55,9 @@ class QuitZoom(BaseClass):
 
         # send email if called at end of session
         if kill_hidden == False:
-            pass
+            self.notify.record_launch_result(self.is_success)
+            self.notify.write_body_launch()
+            self.notify.run()
 
 if __name__ == '__main__':
     QuitZoom().run()
