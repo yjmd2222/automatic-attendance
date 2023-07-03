@@ -33,7 +33,7 @@ from fake_attendance.settings import (
     AGREE,
     CHECK_IN,
     SUBMIT)
-from fake_attendance.notify import SendEmail
+from fake_attendance.notify import Notify
 # pylint: enable=wrong-import-position
 
 # pylint: disable=too-many-instance-attributes
@@ -49,7 +49,7 @@ class FakeCheckIn(UseSelenium):
         self.link = ''
         self.is_wait = False
         self.until = None
-        self.send_email = SendEmail()
+        self.notify = Notify()
         self.print_name = 'QR 체크인'
         super().__init__()
 
@@ -60,7 +60,7 @@ class FakeCheckIn(UseSelenium):
         self.driver = None
         self.link = ''
         self.is_wait = False
-        self.send_email = SendEmail()
+        self.notify = Notify()
 
     def check_window(self):
         'check and return window'
@@ -197,7 +197,7 @@ class FakeCheckIn(UseSelenium):
                         how='click', element=LOGIN_BUTTON)
 
         # get inner document link
-        # Should have successfully logged in. Now pass set link to pass to SendEmail
+        # Should have successfully logged in. Now pass set link to pass to Notify
         self.link = self.driver.current_url if is_continue else '발견 실패'
         is_continue = self.selenium_action(is_continue, By.TAG_NAME, 10,\
                     how='get_iframe', element=IFRAME)
@@ -256,16 +256,18 @@ class FakeCheckIn(UseSelenium):
         check_in_result = self.check_in()
 
         # send email
-        self.send_email.record_link(self.link) # self.link set within self.check_in
+        self.notify.record_qr_link(self.link) # self.link set within self.check_in
 
         if check_in_result:
-            self.send_email.record_result('성공')
+            self.notify.record_qr_result('성공')
             self.is_wait = True
         else:
-            self.send_email.record_result('실패')
+            self.notify.record_qr_result('실패')
             self.is_wait = False
 
-        self.send_email.run()
+        self.notify.write_body_qr()
+
+        self.notify.run()
 
         # quit Selenium
         self.driver.quit()

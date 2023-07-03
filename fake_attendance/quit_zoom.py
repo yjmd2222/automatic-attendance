@@ -12,6 +12,7 @@ sys.path.append(os.getcwd())
 # pylint: disable=wrong-import-position
 from fake_attendance.abc import BaseClass
 from fake_attendance.helper import print_with_time
+from fake_attendance.notify import Notify
 from fake_attendance.settings import ZOOM_CLASSROOM_CLASS
 # pylint: enable=wrong-import-position
 
@@ -19,6 +20,13 @@ class QuitZoom(BaseClass):
     'A class for quitting Zoom'
 
     def __init__(self):
+        self.notify = Notify()
+        self.is_success = {
+            'quit_success': {
+                'name': '줌 종료',
+                'result': False
+            }
+        }
         self.print_name = '줌 종료'
         super().__init__()
 
@@ -31,17 +39,23 @@ class QuitZoom(BaseClass):
                 print_with_time('숨겨진 Zoom 회의 종료')
             else:
                 print_with_time('Zoom 회의 입장 확인 후 종료')
+            self.is_success['result'] = True
             return True
         except ElementNotFoundError:
             if kill_hidden:
                 print_with_time('숨겨진 Zoom 회의 없음')
             else:
                 print_with_time('Zoom 회의 입장 안 함')
+            self.is_success['result'] = False
             return False
 
     def run(self, kill_hidden=False):
         'Run the launch'
         self.connect_and_kill(kill_hidden)
+
+        # send email if called at end of session
+        if kill_hidden == False:
+            pass
 
 if __name__ == '__main__':
     QuitZoom().run()
