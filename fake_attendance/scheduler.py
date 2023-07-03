@@ -47,6 +47,10 @@ class MyScheduler(BaseClass):
             CronTrigger(hour=TIME_SET['hour'], minute=TIME_SET['minute'])\
             for TIME_SET in self.time_sets
         ])
+        self.job_ids = [
+            self.fake_check_in.print_name,
+            self.launch_zoom.print_name,
+            self.quit_zoom.print_name]
         self.print_name = '스케줄러'
         super().__init__()
 
@@ -56,19 +60,20 @@ class MyScheduler(BaseClass):
             2. launch Zoom
             3. print next trigger time for next QR check
         '''
-        self.sched.add_job(self.fake_check_in.run, self.check_in_trigger, id='fake_check_in')
+        self.sched.add_job(self.fake_check_in.run, self.check_in_trigger, id=self.job_ids[0])
         self.sched.add_job(self.launch_zoom.run, 'cron',\
-                           hour=ZOOM_ON_HOURS, id='lauch_zoom')
+                           hour=ZOOM_ON_HOURS, id=self.job_ids[1])
         self.sched.add_job(self.quit_zoom.run, 'cron',\
-                           hour=ZOOM_QUIT_HOURS, minute=ZOOM_QUIT_MINUTE, id='quit_zoom')
+                           hour=ZOOM_QUIT_HOURS, minute=ZOOM_QUIT_MINUTE, id=self.job_ids[2])
         self.sched.add_listener(
             callback = lambda event: self.print_next_time(),
             mask = EVENT_JOB_EXECUTED)
 
     def print_next_time(self):
-        'print next trigger for next QR check'
-        next_time = self.sched.get_job('fake_check_in').next_run_time
-        print_with_time('다음 출석 스크립트 실행 시각:', next_time.strftime(('%H:%M')))
+        'print next trigger for next jobs'
+        for id in self.job_ids:
+            next_time = self.sched.get_job(id).next_run_time
+            print_with_time(f'다음 {id} 스크립트 실행 시각: {next_time.strftime(("%H:%M"))}')
 
     def get_timesets(self):
         'receive argument from command line for which time sets to add to schedule'
