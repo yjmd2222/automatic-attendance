@@ -46,15 +46,14 @@ class FakeCheckIn(UseSelenium):
         self.hwnd = 0
         self.rect = [100,100,100,100]
         self.extension_source = SCREEN_QR_READER_SOURCE
-        self.link = ''
-        self.is_success = {
+        self.result_dict = {
             'link': {
                 'name': 'QR 코드 링크',
-                'result': ''
+                'content': ''
             },
-            'check_in_result': {
-                'name': '결과',
-                'result': ''
+            'result': {
+                'name': '체크인 결과',
+                'content': ''
             }
         }
         self.is_wait = False
@@ -68,15 +67,14 @@ class FakeCheckIn(UseSelenium):
         self.is_window, self.hwnd = self.check_window()
         self.rect = self.maximize_window(self.hwnd) if self.is_window else [100,100,100,100]
         self.driver = None
-        self.link = ''
-        self.is_success = {
+        self.result_dict = {
             'link': {
                 'name': 'QR 코드 링크',
-                'result': ''
+                'content': ''
             },
-            'check_in_success': {
-                'name': '결과',
-                'result': ''
+            'result': {
+                'name': '체크인 결과',
+                'content': ''
             }
         }
         self.is_wait = False
@@ -218,7 +216,7 @@ class FakeCheckIn(UseSelenium):
 
         # get inner document link
         # Should have successfully logged in. Now pass set link to pass to Notify
-        self.is_success['link']['result'] = self.driver.current_url if is_continue else '발견 실패'
+        self.result_dict['link']['content'] = self.driver.current_url if is_continue else '발견 실패'
         is_continue = self.selenium_action(is_continue, By.TAG_NAME, 10,\
                     how='get_iframe', element=IFRAME)
 
@@ -277,15 +275,15 @@ class FakeCheckIn(UseSelenium):
 
         # send email
         if check_in_result:
-            self.is_success['check_in_result']['result'] = '성공'
+            self.result_dict['result']['content'] = '성공'
             self.is_wait = True
         else:
-            self.is_success['check_in_result']['result'] = '실패'
+            self.result_dict['result']['content'] = '실패'
             self.is_wait = False
 
-        self.notify.record_launch_result(self.is_success)
+        self.notify.record_result(self.result_dict)
 
-        self.notify.write_body_launch()
+        self.notify.write_body()
 
         self.notify.run()
 

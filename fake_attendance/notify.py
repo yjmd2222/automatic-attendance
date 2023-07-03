@@ -37,30 +37,12 @@ class Notify(BaseClass):
         self.print_name = '이메일 발송'
         super().__init__()
 
-    def record_qr_link(self, link):
-        'get link from FakeCheckIn'
-        self.link = link
-
-    def record_qr_result(self, result):
-        'get result from FakeCheckIn'
+    def record_result(self, result):
+        'record result'
         self.result = result
 
-    def record_launch_result(self, result):
-        'get result from LaunchZoom'
-        self.result = result
-
-    def write_body_qr(self):
-        'write email body for QR check-in'
-        body = f'''
-        QR 코드 링크: {self.link}
-        결과: {self.result}
-
-        credit: yjmd2222's fake-attendance project https://github.com/yjmd2222/fake-attendance
-        '''
-        self.body = dedent(body).strip()
-
-    def write_body_launch(self):
-        'write email body for launch'
+    def write_body(self):
+        'write email body with result'
         # unfoiling nested dictionary
         result = '\n'.join([f'{key}: {value}' for i in self.result.values() for key, value in i.items()])
         body = f'''
