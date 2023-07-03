@@ -58,9 +58,9 @@ class FakeCheckIn(UseSelenium):
         }
         self.is_wait = False
         self.until = None
-        self.notify = Notify()
         self.print_name = 'QR 체크인'
         super().__init__()
+        self.notify = Notify(self.print_name)
 
     def reset_attributes(self):
         'reset attributes for next run'
@@ -78,7 +78,7 @@ class FakeCheckIn(UseSelenium):
             }
         }
         self.is_wait = False
-        self.notify = Notify()
+        self.notify = Notify(self.print_name)
 
     def check_window(self):
         'check and return window'

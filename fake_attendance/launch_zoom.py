@@ -49,9 +49,9 @@ class LaunchZoom(UseSelenium):
                 'name': '줌 녹화 동의',
                 'content': False}
         }
-        self.notify = Notify()
         self.print_name = '줌 실행'
         super().__init__()
+        self.notify = Notify(self.print_name)
 
     def reset_attributes(self):
         'reset attributes for next run'
@@ -69,7 +69,7 @@ class LaunchZoom(UseSelenium):
                 'name': '줌 녹화 동의',
                 'content': False}
         }
-        self.notify = Notify()
+        self.notify = Notify(self.print_name)
 
     def quit_zoom(self):
         'quit hidden Zoom windows if any'

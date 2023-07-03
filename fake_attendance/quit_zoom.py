@@ -20,7 +20,6 @@ class QuitZoom(BaseClass):
     'A class for quitting Zoom'
 
     def __init__(self):
-        self.notify = Notify()
         self.result_dict = {
             'quit': {
                 'name': '줌 종료',
@@ -29,6 +28,7 @@ class QuitZoom(BaseClass):
         }
         self.print_name = '줌 종료'
         super().__init__()
+        self.notify = Notify(self.print_name)
 
     def connect_and_kill(self, kill_hidden):
         'connect to Zoom conference and kill'
