@@ -21,7 +21,7 @@ from fake_attendance.helper import (
     print_all_windows,
     send_alt_key_and_set_foreground)
 from fake_attendance.quit_zoom import QuitZoom
-from fake_attendance.notify import Notify
+from fake_attendance.notify import SendEmail
 from fake_attendance.settings import (
     ZOOM_AGREE_RECORDING_POPUP_CLASS,
     ZOOM_CLASSROOM_CLASS,
@@ -30,7 +30,7 @@ from fake_attendance.settings import (
     ZOOM_UPDATE_ACTUAL_UPDATE_CLASS)
 # pylint: enable=wrong-import-position
 
-class LaunchZoom(UseSelenium):
+class LaunchZoom(SendEmail, UseSelenium):
     'A class for launching Zoom'
 
     def __init__(self):
@@ -50,8 +50,8 @@ class LaunchZoom(UseSelenium):
                 'content': False}
         }
         self.print_name = '줌 실행'
+        SendEmail.instantiate(self)
         super().__init__()
-        self.notify = Notify(self.print_name)
 
     def reset_attributes(self):
         'reset attributes for next run'
@@ -69,7 +69,7 @@ class LaunchZoom(UseSelenium):
                 'name': '줌 녹화 동의',
                 'content': False}
         }
-        self.notify = Notify(self.print_name)
+        SendEmail.instantiate(self)
 
     def quit_zoom(self):
         'quit hidden Zoom windows if any'

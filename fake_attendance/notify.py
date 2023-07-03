@@ -87,5 +87,14 @@ class Notify(BaseClass):
 
         smtp.quit()
 
+class SendEmail:
+    'A class for instantiating Notify class'
+
+    # pylint: disable=no-member
+    def instantiate(self):
+        'initialize'
+        self.notify = Notify(self.print_name)
+    # pylint: enable=no-member
+
 if __name__ == '__main__':
     Notify().run()

@@ -33,11 +33,11 @@ from fake_attendance.settings import (
     AGREE,
     CHECK_IN,
     SUBMIT)
-from fake_attendance.notify import Notify
+from fake_attendance.notify import SendEmail
 # pylint: enable=wrong-import-position
 
 # pylint: disable=too-many-instance-attributes
-class FakeCheckIn(UseSelenium):
+class FakeCheckIn(SendEmail, UseSelenium):
     'A class for checking QR image and sending email with link'
 
     def __init__(self):
@@ -59,8 +59,8 @@ class FakeCheckIn(UseSelenium):
         self.is_wait = False
         self.until = None
         self.print_name = 'QR 체크인'
+        SendEmail.instantiate(self)
         super().__init__()
-        self.notify = Notify(self.print_name)
 
     def reset_attributes(self):
         'reset attributes for next run'
@@ -78,7 +78,7 @@ class FakeCheckIn(UseSelenium):
             }
         }
         self.is_wait = False
-        self.notify = Notify(self.print_name)
+        SendEmail.instantiate(self)
 
     def check_window(self):
         'check and return window'
