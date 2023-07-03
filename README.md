@@ -16,15 +16,15 @@ Install the Chrome extension [Screen QR Reader](https://chrome.google.com/websto
 
 Fill out the template [info-template.py](fake_attendance/info-template.py) with your login, email information, and the zoom link without the `#success`. Rename the file to `info.py`
 
-Note: If the module fails to download the Chrome extension source, you can try downloading it manually. Put it in the root of the repository. See [this](https://crx-downloader.com/how-it-works).
+Note: If the module fails to download the Chrome extension source, you can try downloading it manually. Check that its name is `extension_0_1_2_0.crx`, and put it in the root of the repository. See [this](https://crx-downloader.com/how-it-works).
 
 ## Run
-Run `python -m fake_attendance` for download, launch Zoom, and check_in. Read [How it works and why](#how-it-works-and-why) for explanation.
+Run `python -m fake_attendance` for download, Zoom launch, and check-in. Read [How it works and why](#how-it-works-and-why) for explanation.
 
 For testing QR scan scheduler, you can run add an argument as either:
-- one of `'regular'`, `'section challenge'`, `'project day 1'`, or `'project days 2-5'` (See [settings.py](fake_attendance/settings.py) for actual timings.)
-- a text file that contains a 24-hour format time sets such as [test_times.txt](test_times.txt)
-- or a json-like format such as `'[{"hour": int, "minute": int},...]'`.
+- one of `'regular'`, `'section challenge'`, `'project day 1'`, and `'project days 2-5'` (See [settings.py](fake_attendance/settings.py) for actual timings.)
+- a text file that contains a 24-hour format time sets, such as [test_times.txt](test_times.txt)
+- or a series of time sets, such as `10:00 15:00` (This case would be multiple arguments).
 
 Leaving it blank is the same as `'regular'` argument. 
 

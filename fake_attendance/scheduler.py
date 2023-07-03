@@ -6,8 +6,6 @@ import os
 import sys
 
 from datetime import datetime
-import json
-from json.decoder import JSONDecodeError
 
 from apscheduler.events import EVENT_JOB_EXECUTED
 from apscheduler.schedulers.background import BackgroundScheduler
@@ -19,6 +17,7 @@ import keyboard
 sys.path.append(os.getcwd())
 
 # pylint: disable=wrong-import-position
+from fake_attendance.abc import BaseClass
 from fake_attendance.fake_check_in import FakeCheckIn
 from fake_attendance.helper import print_with_time
 from fake_attendance.launch_zoom import LaunchZoom
@@ -27,10 +26,11 @@ from fake_attendance.settings import (
     ARGUMENT_MAP,
     ZOOM_ON_HOURS,
     ZOOM_QUIT_HOURS,
-    ZOOM_QUIT_MINUTE)
+    ZOOM_QUIT_MINUTE,
+    INTERRUPT_SEQUENCE)
 # pylint: enable=wrong-import-position
 
-class MyScheduler:
+class MyScheduler(BaseClass):
     'A class that manages the scheduler'
 
     def __init__(self):
@@ -47,6 +47,8 @@ class MyScheduler:
             CronTrigger(hour=TIME_SET['hour'], minute=TIME_SET['minute'])\
             for TIME_SET in self.time_sets
         ])
+        self.print_name = '스케줄러'
+        super().__init__()
 
     def add_jobs(self):
         '''
@@ -71,26 +73,39 @@ class MyScheduler:
     def get_timesets(self):
         'receive argument from command line for which time sets to add to schedule'
         time_sets = None
+        def parse_time(raw_time_sets):
+            'parse time sets from raw list'
+            parsed_time_sets = []
+            for raw in raw_time_sets:
+                try:
+                    time_set = datetime.strptime(raw, '%H:%M')
+                    if len(raw.split(":")[1]) != 2:
+                        raise ValueError("분이 10의 자리 숫자가 아님")
+                    time_set = {'hour': time_set.hour, 'minute': time_set.minute}
+                    parsed_time_sets.append(time_set)
+                except ValueError as error:
+                    print_with_time(f'시간 형식 잘 못 입력함. 이 부분 스킵: {error}')
+            if not parsed_time_sets:
+                print_with_time('모든 입력값 시간 형식 잘 못 입력함. 기본 스케줄 사용')
+                parsed_time_sets = ARGUMENT_MAP['regular']
+
+            return parsed_time_sets
+
         # check argument passed
         if len(sys.argv) > 1:
             # argument as text file
             if '.txt' in sys.argv[1]:
                 filename = sys.argv[1]
                 with open (filename, 'r', encoding='utf-8') as file:
-                    time_sets = [line.strip() for line in file][1:]
-                    time_sets = [datetime.strptime(i, '%H:%M') for i in time_sets]
-                    time_sets = [{'hour': i.hour, 'minute': i.minute} for i in time_sets]
+                    raw_time_sets = [time_set.strip() for time_set in file[1:]]
+                    time_sets = parse_time(raw_time_sets)
             else:
                 # look up time sets map with argument
                 time_sets = ARGUMENT_MAP.get(sys.argv[1])
-                # if no match, check if json
+                # if no match, check if time input
                 if not time_sets:
-                    try:
-                        time_sets = json.loads(sys.argv[1])
-                    except JSONDecodeError as error:
-                        print_with_time(f'JSON 형식 잘 못 입력함. 에러 메시지: {error}')
-                        print_with_time('기본값으로 스케줄 설정')
-                        time_sets = ARGUMENT_MAP['regular']
+                    raw_time_sets = sys.argv[1:]
+                    time_sets = parse_time(raw_time_sets)
         # if no argument
         else:
             # regular day time sets
@@ -98,17 +113,20 @@ class MyScheduler:
 
         return time_sets
 
-    def run(self):
-        'run scheduler'
-        print_with_time('스케줄러 실행')
-        self.add_jobs()
-        self.sched.start()
-        self.print_next_time()
+    def interrupt_from_keyboard(self, interrupt_sequence):
+        'break if sequence is pressed'
         while True:
-            if keyboard.is_pressed('ctrl+alt+c'):
+            if keyboard.is_pressed(interrupt_sequence):
                 print_with_time('키보드로 중단 요청')
                 break
-        self.sched.shutdown(wait=False)
+
+    def run(self):
+        'run scheduler'
+        self.add_jobs() # add all jobs
+        self.sched.start() # start the scheduler
+        self.print_next_time() # print time first job fires
+        self.interrupt_from_keyboard(INTERRUPT_SEQUENCE) # allow quit with keyboard
+        self.sched.shutdown(wait=False) # shutdown scheduler if quit
 
 if __name__ == '__main__':
     MyScheduler().run()
