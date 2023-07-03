@@ -174,8 +174,8 @@ class FakeCheckIn(UseSelenium):
 
     def check_in(self):
         'do the check-in'
-        # wait 3 seconds
-        time.sleep(3)
+        # wait 10 seconds
+        time.sleep(10)
 
         # bool flag
         is_continue = True
