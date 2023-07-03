@@ -54,7 +54,7 @@ class QuitZoom(BaseClass):
         self.connect_and_kill(kill_hidden)
 
         # send email if called at end of session
-        if kill_hidden == False:
+        if not kill_hidden:
             self.notify.record_result(self.result_dict)
             self.notify.write_body()
             self.notify.run()
