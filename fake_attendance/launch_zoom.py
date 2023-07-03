@@ -39,9 +39,10 @@ class LaunchZoom(UseSelenium):
         self.result_dict = {
             ZOOM_UPDATE_POPUP_CLASS: {
                 'name': '줌 업데이트',
-                'content': False},
+                'content': False
+            },
             ZOOM_CLASSROOM_CLASS:{
-                'name': '줌 회의',
+                'name': '줌 회의 입장',
                 'content': False
             },
             ZOOM_AGREE_RECORDING_POPUP_CLASS: {
@@ -58,9 +59,10 @@ class LaunchZoom(UseSelenium):
         self.result_dict = {
             ZOOM_UPDATE_POPUP_CLASS: {
                 'name': '줌 업데이트',
-                'content': False},
+                'content': False
+            },
             ZOOM_CLASSROOM_CLASS:{
-                'name': '줌 회의',
+                'name': '줌 회의 입장',
                 'content': False
             },
             ZOOM_AGREE_RECORDING_POPUP_CLASS: {

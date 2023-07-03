@@ -43,8 +43,14 @@ class Notify(BaseClass):
 
     def write_body(self):
         'write email body with result'
-        # unfoiling nested dictionary
-        result = '\n'.join([f'{key}: {value}' for i in self.result.values() for key, value in i.items()])
+        # unfoiling nested dictionary: 'item1: result1\nitem2: result2'
+        total_result = []
+        for _, ovalue in self.result.items():
+            single_result = []
+            for ivalue in ovalue.values():
+                single_result.append(str(ivalue))
+            total_result.append(': '.join(single_result))
+        result = '\n'.join(total_result)
         body = f'''
         {result}
 
