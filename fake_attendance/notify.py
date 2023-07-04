@@ -30,7 +30,7 @@ from fake_attendance.settings import RESULT_DICTS
 class Notify(BaseClass):
     'A class for sending email on successful QR recognization'
 
-    def __init__(self, job_name):
+    def __init__(self, job_name='job_name'):
         'initialize'
         self.link = ''
         self.result = ''
@@ -108,4 +108,4 @@ class SendEmail:
 # pylint: enable=attribute-defined-outside-init
 
 if __name__ == '__main__':
-    Notify('test').run()
+    Notify().run()
