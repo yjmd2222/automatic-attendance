@@ -37,13 +37,13 @@ class LaunchZoom(SendEmail, UseSelenium):
         'initialize'
         self.hwnd_zoom_classroom = 0
         self.print_name = '줌 실행'
-        SendEmail.instantiate(self)
+        SendEmail.__init__(self)
         super().__init__()
 
     def reset_attributes(self):
         'reset attributes for next run'
         self.hwnd_zoom_classroom = 0
-        SendEmail.instantiate(self)
+        SendEmail.__init__(self)
 
     def quit_zoom(self):
         'quit hidden Zoom windows if any'

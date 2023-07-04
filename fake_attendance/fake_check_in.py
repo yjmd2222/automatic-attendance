@@ -49,7 +49,7 @@ class FakeCheckIn(SendEmail, UseSelenium):
         self.is_wait = False
         self.until = None
         self.print_name = 'QR 체크인'
-        SendEmail.instantiate(self)
+        SendEmail.__init__(self)
         super().__init__()
 
     def reset_attributes(self):
@@ -58,7 +58,7 @@ class FakeCheckIn(SendEmail, UseSelenium):
         self.rect = self.maximize_window(self.hwnd) if self.is_window else [100,100,100,100]
         self.driver = None
         self.is_wait = False
-        SendEmail.instantiate(self)
+        SendEmail.__init__(self)
 
     def check_window(self):
         'check and return window'

@@ -89,15 +89,14 @@ class Notify(BaseClass):
 
         smtp.quit()
 
-# pylint: disable=attribute-defined-outside-init
 # pylint: disable=too-few-public-methods
 class SendEmail:
     'A class for instantiating Notify class'
 
     # pylint: disable=no-member
-    def instantiate(self):
+    def __init__(self):
         '''
-        SendEmail.instantiate(self) method that defines\n
+        SendEmail.__init__(self) method that defines\n
         a notify attribute with an instance of Notify\n
         and a result_dict attribute for multiple purposes
         '''
@@ -105,7 +104,6 @@ class SendEmail:
         self.result_dict: dict = RESULT_DICTS[self.print_name]
     # pylint: enable=no-member
 # pylint: enable=too-few-public-methods
-# pylint: enable=attribute-defined-outside-init
 
 if __name__ == '__main__':
     Notify().run()
