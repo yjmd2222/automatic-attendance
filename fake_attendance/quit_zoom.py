@@ -12,22 +12,16 @@ sys.path.append(os.getcwd())
 # pylint: disable=wrong-import-position
 from fake_attendance.abc import BaseClass
 from fake_attendance.helper import print_with_time
-from fake_attendance.notify import Notify
+from fake_attendance.notify import SendEmail
 from fake_attendance.settings import ZOOM_CLASSROOM_CLASS
 # pylint: enable=wrong-import-position
 
-class QuitZoom(BaseClass):
+class QuitZoom(SendEmail, BaseClass):
     'A class for quitting Zoom'
 
     def __init__(self):
-        self.notify = Notify()
-        self.result_dict = {
-            'quit': {
-                'name': '줌 종료',
-                'content': False
-            }
-        }
         self.print_name = '줌 종료'
+        SendEmail.__init__(self)
         super().__init__()
 
     def connect_and_kill(self, kill_hidden):
