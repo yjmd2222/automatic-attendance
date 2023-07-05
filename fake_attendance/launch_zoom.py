@@ -121,6 +121,7 @@ class LaunchZoom(SendEmail, UseSelenium):
             return False
 
         if check_zoom_visible(self.hwnd_zoom_classroom):
+            self.result_dict[ZOOM_CLASSROOM_CLASS]['content'] = True
             return True
         # if not
         for _ in range(3):
