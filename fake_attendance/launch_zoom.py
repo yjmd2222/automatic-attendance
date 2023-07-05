@@ -21,7 +21,7 @@ from fake_attendance.helper import (
     print_all_windows,
     send_alt_key_and_set_foreground)
 from fake_attendance.quit_zoom import QuitZoom
-from fake_attendance.notify import Notify
+from fake_attendance.notify import SendEmail
 from fake_attendance.settings import (
     ZOOM_AGREE_RECORDING_POPUP_CLASS,
     ZOOM_CLASSROOM_CLASS,
@@ -30,46 +30,20 @@ from fake_attendance.settings import (
     ZOOM_UPDATE_ACTUAL_UPDATE_CLASS)
 # pylint: enable=wrong-import-position
 
-class LaunchZoom(UseSelenium):
+class LaunchZoom(SendEmail, UseSelenium):
     'A class for launching Zoom'
 
     def __init__(self):
         'initialize'
         self.hwnd_zoom_classroom = 0
-        self.result_dict = {
-            ZOOM_UPDATE_POPUP_CLASS: {
-                'name': '줌 업데이트',
-                'content': False
-            },
-            ZOOM_CLASSROOM_CLASS:{
-                'name': '줌 회의 입장',
-                'content': False
-            },
-            ZOOM_AGREE_RECORDING_POPUP_CLASS: {
-                'name': '줌 녹화 동의',
-                'content': False}
-        }
-        self.notify = Notify()
         self.print_name = '줌 실행'
+        SendEmail.__init__(self)
         super().__init__()
 
     def reset_attributes(self):
         'reset attributes for next run'
         self.hwnd_zoom_classroom = 0
-        self.result_dict = {
-            ZOOM_UPDATE_POPUP_CLASS: {
-                'name': '줌 업데이트',
-                'content': False
-            },
-            ZOOM_CLASSROOM_CLASS:{
-                'name': '줌 회의 입장',
-                'content': False
-            },
-            ZOOM_AGREE_RECORDING_POPUP_CLASS: {
-                'name': '줌 녹화 동의',
-                'content': False}
-        }
-        self.notify = Notify()
+        SendEmail.__init__(self)
 
     def quit_zoom(self):
         'quit hidden Zoom windows if any'
@@ -147,6 +121,7 @@ class LaunchZoom(UseSelenium):
             return False
 
         if check_zoom_visible(self.hwnd_zoom_classroom):
+            self.result_dict[ZOOM_CLASSROOM_CLASS]['content'] = True
             return True
         # if not
         for _ in range(3):

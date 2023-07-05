@@ -33,11 +33,11 @@ from fake_attendance.settings import (
     AGREE,
     CHECK_IN,
     SUBMIT)
-from fake_attendance.notify import Notify
+from fake_attendance.notify import SendEmail
 # pylint: enable=wrong-import-position
 
 # pylint: disable=too-many-instance-attributes
-class FakeCheckIn(UseSelenium):
+class FakeCheckIn(SendEmail, UseSelenium):
     'A class for checking QR image and sending email with link'
 
     def __init__(self):
@@ -46,20 +46,10 @@ class FakeCheckIn(UseSelenium):
         self.hwnd = 0
         self.rect = [100,100,100,100]
         self.extension_source = SCREEN_QR_READER_SOURCE
-        self.result_dict = {
-            'link': {
-                'name': 'QR 코드 링크',
-                'content': ''
-            },
-            'result': {
-                'name': '체크인 결과',
-                'content': ''
-            }
-        }
         self.is_wait = False
         self.until = None
-        self.notify = Notify()
         self.print_name = 'QR 체크인'
+        SendEmail.__init__(self)
         super().__init__()
 
     def reset_attributes(self):
@@ -67,18 +57,8 @@ class FakeCheckIn(UseSelenium):
         self.is_window, self.hwnd = self.check_window()
         self.rect = self.maximize_window(self.hwnd) if self.is_window else [100,100,100,100]
         self.driver = None
-        self.result_dict = {
-            'link': {
-                'name': 'QR 코드 링크',
-                'content': ''
-            },
-            'result': {
-                'name': '체크인 결과',
-                'content': ''
-            }
-        }
         self.is_wait = False
-        self.notify = Notify()
+        SendEmail.__init__(self)
 
     def check_window(self):
         'check and return window'

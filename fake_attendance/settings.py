@@ -71,5 +71,41 @@ AGREE = "//*[text()='동의합니다.']"
 CHECK_IN = "//*[text()='출석']"
 SUBMIT = "//*[text()='제출']"
 
+# Notify result dicts
+FAKE_CHECK_IN_DEFAULT_RESULT_DICT = {
+    'link': {
+        'name': 'QR 코드 링크',
+        'content': ''
+    },
+    'result': {
+        'name': '체크인 결과',
+        'content': ''
+    }
+}
+LAUNCH_ZOOM_DEFAULT_RESULT_DICT = {
+    ZOOM_UPDATE_POPUP_CLASS: {
+        'name': '줌 업데이트',
+        'content': False
+    },
+    ZOOM_CLASSROOM_CLASS:{
+        'name': '줌 회의 입장',
+        'content': False
+    },
+    ZOOM_AGREE_RECORDING_POPUP_CLASS: {
+        'name': '줌 녹화 동의',
+        'content': False}
+}
+QUIT_ZOOM_DEFAULT_RESULT_DICT = {
+    'quit': {
+        'name': '줌 종료',
+        'content': False
+    }
+}
+RESULT_DICTS = {
+    'QR 체크인': FAKE_CHECK_IN_DEFAULT_RESULT_DICT,
+    '줌 실행': LAUNCH_ZOOM_DEFAULT_RESULT_DICT,
+    '줌 종료': QUIT_ZOOM_DEFAULT_RESULT_DICT
+}
+
 # misc
 INTERRUPT_SEQUENCE = 'ctrl+alt+c'
