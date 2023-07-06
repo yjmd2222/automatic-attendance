@@ -53,6 +53,8 @@ ARGUMENT_MAP = {
 ZOOM_ON_HOURS = '9,13'
 ZOOM_QUIT_HOURS = '12,18'
 ZOOM_QUIT_MINUTE = 5
+SCHED_QUIT_HOUR = 18
+SCHED_QUIT_MINUTE = 10
 
 # Zoom props
 ZOOM_AGREE_RECORDING_POPUP_CLASS = 'ZPRecordingConsentClass' # '이 회의는 호스트 또는 참가자가 기록 중입니다'

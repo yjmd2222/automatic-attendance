@@ -27,6 +27,8 @@ from fake_attendance.settings import (
     ZOOM_ON_HOURS,
     ZOOM_QUIT_HOURS,
     ZOOM_QUIT_MINUTE,
+    SCHED_QUIT_HOUR,
+    SCHED_QUIT_MINUTE,
     INTERRUPT_SEQUENCE)
 # pylint: enable=wrong-import-position
 
@@ -48,10 +50,13 @@ class MyScheduler(BaseClass):
             CronTrigger(hour=TIME_SET['hour'], minute=TIME_SET['minute'])\
             for TIME_SET in self.time_sets
         ])
+        self.quit_scheduler_job_id = '스케줄러 종료'
         self.job_ids = [
             self.fake_check_in.print_name,
             self.launch_zoom.print_name,
-            self.quit_zoom.print_name]
+            self.quit_zoom.print_name,
+            self.quit_scheduler_job_id]
+        self.is_quit = False
         self.print_name = '스케줄러'
         super().__init__()
 
@@ -60,22 +65,27 @@ class MyScheduler(BaseClass):
         add 1. grab zoom link on screen
             2. launch Zoom
             3. quit Zoom
-            4. print next trigger time for next respective runs
+            4. quit scheduler at 18:10
+            5. print next trigger time for next respective runs
         '''
         self.sched.add_job(self.fake_check_in.run, self.check_in_trigger, id=self.job_ids[0])
         self.sched.add_job(self.launch_zoom.run, 'cron',\
                            hour=ZOOM_ON_HOURS, id=self.job_ids[1])
         self.sched.add_job(self.quit_zoom.run, 'cron',\
                            hour=ZOOM_QUIT_HOURS, minute=ZOOM_QUIT_MINUTE, id=self.job_ids[2])
+        self.sched.add_job(self.quit, 'cron',\
+                           hour=SCHED_QUIT_HOUR, minute=SCHED_QUIT_MINUTE, id=self.job_ids[3])
         self.sched.add_listener(
-            callback = lambda event: self.print_next_time(),
+            callback = self.print_next_time,
             mask = EVENT_JOB_EXECUTED)
 
-    def print_next_time(self):
+    # pylint: disable=unused-argument
+    def print_next_time(self, event=None):
         'print next trigger for next jobs'
         for job_id in self.job_ids:
             next_time = self.sched.get_job(job_id).next_run_time
-            print_with_time(f'다음 {job_id} 스크립트 실행 시각: {next_time.strftime(("%H:%M"))}')
+            print_with_time(f'다음 {job_id} 작업 실행 시각: {next_time.strftime(("%H:%M"))}')
+    # pylint: enable=unused-argument
 
     def get_timesets(self):
         'receive argument from command line for which time sets to add to schedule'
@@ -120,20 +130,29 @@ class MyScheduler(BaseClass):
 
         return time_sets
 
-    def interrupt_from_keyboard(self, interrupt_sequence):
-        'break if sequence is pressed'
+    def quit(self):
+        'quit scheduler'
+        self.sched.remove_all_jobs()
+        self.sched.remove_listener(self.print_next_time)
+        self.is_quit = True
+
+    def wait_for_quit(self, interrupt_sequence):
+        'break if sequence is pressed or end job'
+        def _quit(message):
+            print_with_time(message)
+            self.sched.shutdown(wait=False)
         while True:
             if keyboard.is_pressed(interrupt_sequence):
-                print_with_time('키보드로 중단 요청')
-                break
+                return _quit('키보드로 중단 요청')
+            if self.is_quit:
+                return _quit('스케줄러 종료 시각 도달')
 
     def run(self):
         'run scheduler'
         self.add_jobs() # add all jobs
         self.sched.start() # start the scheduler
         self.print_next_time() # print time first job fires
-        self.interrupt_from_keyboard(INTERRUPT_SEQUENCE) # allow quit with keyboard
-        self.sched.shutdown(wait=False) # shutdown scheduler if quit
+        self.wait_for_quit(INTERRUPT_SEQUENCE) # allow quit with keyboard
 # pylint: enable=too-many-instance-attributes
 
 if __name__ == '__main__':
