@@ -46,7 +46,7 @@ P_D2_5_CHECK_IN_TIMES = unfoil_time_sets(
 )
 ARGUMENT_MAP = {
     'regular': REGULAR_CHECK_IN_TIMES,
-    'section challenge': SC_CHECK_IN_TIMES,
+    'sprint challenge': SC_CHECK_IN_TIMES,
     'project day 1': P_D1_CHECK_IN_TIMES,
     'project days 2-5': P_D2_5_CHECK_IN_TIMES
 }

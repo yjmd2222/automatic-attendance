@@ -59,7 +59,8 @@ class MyScheduler(BaseClass):
         '''
         add 1. grab zoom link on screen
             2. launch Zoom
-            3. print next trigger time for next QR check
+            3. quit Zoom
+            4. print next trigger time for next respective runs
         '''
         self.sched.add_job(self.fake_check_in.run, self.check_in_trigger, id=self.job_ids[0])
         self.sched.add_job(self.launch_zoom.run, 'cron',\
