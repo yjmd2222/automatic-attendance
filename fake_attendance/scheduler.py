@@ -66,7 +66,7 @@ class MyScheduler(BaseClass):
         add 1. grab zoom link on screen
             2. launch Zoom
             3. quit Zoom
-            4. quit scheduler at 18:10
+            4. quit scheduler
             5. print next trigger time for next respective runs
         '''
         self.sched.add_job(self.fake_check_in.run, self.check_in_trigger, id=self.job_ids[0])
