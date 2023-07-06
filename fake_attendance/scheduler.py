@@ -132,14 +132,14 @@ class MyScheduler(BaseClass):
 
     def quit(self):
         'quit scheduler'
-        self.sched.remove_all_jobs()
-        self.sched.remove_listener(self.print_next_time)
         self.is_quit = True
 
     def wait_for_quit(self, interrupt_sequence):
         'break if sequence is pressed or end job'
         def _quit(message):
             print_with_time(message)
+            self.sched.remove_all_jobs()
+            self.sched.remove_listener(self.print_next_time)
             self.sched.shutdown(wait=False)
         while True:
             if keyboard.is_pressed(interrupt_sequence):
