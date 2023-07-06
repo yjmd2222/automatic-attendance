@@ -32,7 +32,7 @@ from fake_attendance.settings import (
 class DownloadExtensionSource(UseSelenium):
     'A class for downloading the source of Screen QR Reader'
 
-    def __init__(self, scheduler:MyScheduler=None):
+    def __init__(self, scheduler:MyScheduler|None=None):
         'initialize'
         self.image = CONTINUE_IMAGE
         self.scheduler = scheduler
