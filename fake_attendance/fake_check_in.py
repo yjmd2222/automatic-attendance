@@ -50,7 +50,7 @@ class FakeCheckIn(SendEmail, UseSelenium):
         self.until = None
         self.print_name = 'QR 체크인'
         SendEmail.__init__(self)
-        super().__init__()
+        UseSelenium.__init__(self)
 
     def reset_attributes(self):
         'reset attributes for next run'

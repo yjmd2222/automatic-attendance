@@ -38,7 +38,7 @@ class LaunchZoom(SendEmail, UseSelenium):
         self.hwnd_zoom_classroom = 0
         self.print_name = '줌 실행'
         SendEmail.__init__(self)
-        super().__init__()
+        UseSelenium.__init__(self)
 
     def reset_attributes(self):
         'reset attributes for next run'
