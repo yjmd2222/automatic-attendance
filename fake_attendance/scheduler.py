@@ -152,7 +152,7 @@ class MyScheduler(BaseClass):
         self.add_jobs() # add all jobs
         self.sched.start() # start the scheduler
         self.print_next_time() # print time first job fires
-        self.wait_for_quit(INTERRUPT_SEQUENCE) # allow quit with keyboard
+        self.wait_for_quit(INTERRUPT_SEQUENCE) # quit with keyboard or at self.quit job time
 # pylint: enable=too-many-instance-attributes
 
 if __name__ == '__main__':
