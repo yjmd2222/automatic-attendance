@@ -22,7 +22,7 @@ class QuitZoom(SendEmail, BaseClass):
     def __init__(self):
         self.print_name = '줌 종료'
         SendEmail.__init__(self)
-        super().__init__()
+        BaseClass.__init__(self)
 
     def connect_and_kill(self, kill_hidden):
         'connect to Zoom conference and kill'
