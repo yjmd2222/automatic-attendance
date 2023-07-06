@@ -6,6 +6,7 @@ import os
 import sys
 
 from datetime import datetime
+import time
 
 from apscheduler.events import EVENT_JOB_EXECUTED
 from apscheduler.schedulers.background import BackgroundScheduler
@@ -136,16 +137,17 @@ class MyScheduler(BaseClass):
 
     def wait_for_quit(self, interrupt_sequence):
         'break if sequence is pressed or end job'
-        def _quit(message):
-            print_with_time(message)
-            self.sched.remove_all_jobs()
-            self.sched.remove_listener(self.print_next_time)
-            self.sched.shutdown(wait=False)
         while True:
             if keyboard.is_pressed(interrupt_sequence):
-                return _quit('키보드로 중단 요청')
-            if self.is_quit:
-                return _quit('스케줄러 종료 시각 도달')
+                print_with_time('키보드로 중단 요청')
+                self.quit()
+                time.sleep(1)
+            elif self.is_quit:
+                print_with_time('스케줄러 종료 요청')
+                self.sched.remove_all_jobs()
+                self.sched.remove_listener(self.print_next_time)
+                self.sched.shutdown(wait=False)
+                break
 
     def run(self):
         'run scheduler'
