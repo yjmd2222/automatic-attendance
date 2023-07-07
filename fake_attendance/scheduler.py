@@ -5,13 +5,13 @@ Scheduler that runs FakeCheckIn and TurnOnCamera
 import os
 import sys
 
-from datetime import datetime
+from datetime import datetime, timedelta
 import time
 
 from apscheduler.events import EVENT_JOB_EXECUTED
 from apscheduler.schedulers.background import BackgroundScheduler
-from apscheduler.triggers.cron import CronTrigger
 from apscheduler.triggers.combining import OrTrigger
+from apscheduler.triggers.interval import IntervalTrigger
 
 import keyboard
 
@@ -38,19 +38,18 @@ class MyScheduler(BaseClass):
     'A class that manages the scheduler'
 
     def __init__(self):
-        '''
-        initialize
-        time_sets = [{'hour': int, 'minute': int},...]
-        '''
+        'initialize'
         self.sched = BackgroundScheduler()
-        self.fake_check_in = FakeCheckIn()
+        self.fake_check_in = FakeCheckIn(self.reschedule)
         self.launch_zoom = LaunchZoom()
         self.quit_zoom = QuitZoom()
-        self.time_sets = self.get_timesets()
+        self.time_sets = self.get_timesets() # [('%H','%M'),...]
         self.check_in_trigger = OrTrigger([
-            CronTrigger(hour=TIME_SET['hour'], minute=TIME_SET['minute'])\
-            for TIME_SET in self.time_sets
-        ])
+            IntervalTrigger(
+                minutes = 5,
+                start_date = time_set,
+                end_date = time_set + timedelta(minutes=30))\
+                    for time_set in self.time_sets])
         self.quit_scheduler_job_id = '스케줄러 종료'
         self.job_ids = [
             self.fake_check_in.print_name,
@@ -88,6 +87,11 @@ class MyScheduler(BaseClass):
             print_with_time(f'다음 {job_id} 작업 실행 시각: {next_time.strftime(("%H:%M"))}')
     # pylint: enable=unused-argument
 
+    def reschedule(self, job_id, trigger):
+        'reschedule so that job with matching job_id will not run until given datetime until'
+        job = self.sched.get_job(job_id)
+        job.reschedule(trigger)
+
     def get_timesets(self):
         'receive argument from command line for which time sets to add to schedule'
         time_sets = None
@@ -96,10 +100,15 @@ class MyScheduler(BaseClass):
             parsed_time_sets = []
             for raw in raw_time_sets:
                 try:
+                    # this line first because input may not even have a colon
                     time_set = datetime.strptime(raw, '%H:%M')
+                    time_set = datetime.now().replace(
+                        hour = time_set.hour,
+                        minute = time_set.minute,
+                        second = 0)
+                    # if no ValueError then check if minutes two digits
                     if len(raw.split(":")[1]) != 2:
                         raise ValueError("분이 10의 자리 숫자가 아님")
-                    time_set = {'hour': time_set.hour, 'minute': time_set.minute}
                     parsed_time_sets.append(time_set)
                 except ValueError as error:
                     print_with_time(f'시간 형식 잘 못 입력함. 이 부분 스킵: {error}')

@@ -7,7 +7,7 @@ import sys
 sys.path.append(os.getcwd())
 
 # pylint: disable=wrong-import-position
-from fake_attendance.helper import get_file_path, extrapolate_time_sets, unfoil_time_sets
+from fake_attendance.helper import get_datetime, get_file_path
 # pylint: enable=wrong-import-position
 
 # Screen QR Reader download
@@ -32,18 +32,10 @@ START_IMAGE = get_file_path('start_video.png', 'images')
 # 11:50, 13:00, 15:50 sprint challenge
 # 10:25(Days 2-5) 11:00(Day 1), 13:00, 15:30 project
 DIFF_MINUTE = 5
-REGULAR_CHECK_IN_TIMES = unfoil_time_sets(
-    [extrapolate_time_sets(*TIME_SET, DIFF_MINUTE) for TIME_SET in [(11,20), (13,11), (15,20)]]
-)
-SC_CHECK_IN_TIMES = unfoil_time_sets(
-    [extrapolate_time_sets(*TIME_SET, DIFF_MINUTE) for TIME_SET in [(11,50), (13,11), (15,50)]]
-)
-P_D1_CHECK_IN_TIMES = unfoil_time_sets(
-    [extrapolate_time_sets(*TIME_SET, DIFF_MINUTE) for TIME_SET in [(11,0), (13,11), (15,20)]]
-)
-P_D2_5_CHECK_IN_TIMES = unfoil_time_sets(
-    [extrapolate_time_sets(*TIME_SET, DIFF_MINUTE) for TIME_SET in [(10,30), (13,11), (15,20)]]
-)
+REGULAR_CHECK_IN_TIMES = [get_datetime(time_set) for time_set in [(11,20-10), (13,1), (15,20-10)]]
+SC_CHECK_IN_TIMES = [get_datetime(time_set) for time_set in [(11,50-10), (13,1), (15,50-10)]]
+P_D1_CHECK_IN_TIMES = [get_datetime(time_set) for time_set in [(11,0-10), (13,1), (15,20-10)]]
+P_D2_5_CHECK_IN_TIMES = [get_datetime(time_set) for time_set in [(10,30-10), (13,1), (15,20-10)]]
 ARGUMENT_MAP = {
     'regular': REGULAR_CHECK_IN_TIMES,
     'sprint challenge': SC_CHECK_IN_TIMES,

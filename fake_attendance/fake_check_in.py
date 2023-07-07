@@ -40,8 +40,9 @@ from fake_attendance.notify import SendEmail
 class FakeCheckIn(SendEmail, UseSelenium):
     'A class for checking QR image and sending email with link'
 
-    def __init__(self):
+    def __init__(self, reschedule=None):
         'initialize'
+        self.reschedule = reschedule
         self.is_window = False
         self.hwnd = 0
         self.rect = [100,100,100,100]
