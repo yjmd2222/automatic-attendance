@@ -149,6 +149,7 @@ class MyScheduler(BaseClass):
     def get_timesets_from_terminal(self):
         'receive argument from command line for which time sets to add to schedule'
         time_sets = None
+
         def parse_time(raw_time_sets):
             'parse time sets from raw list'
             parsed_time_sets = []

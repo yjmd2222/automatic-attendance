@@ -37,16 +37,20 @@ START_IMAGE = get_file_path('start_video.png', 'images')
 # 10:25(Days 2-5) 11:00(Day 1), 13:00, 15:30 project
 DIFF_MINUTE = 5
 REGULAR_CHECK_IN_TIMES = unfoil_time_sets(
-    [extrapolate_time_sets(*TIME_SET, diff_minute=DIFF_MINUTE) for TIME_SET in [(11,20), (13,11), (15,20)]]
+    [extrapolate_time_sets(*TIME_SET, diff_minute=DIFF_MINUTE)\
+     for TIME_SET in [(11,20), (13,11), (15,20)]]
 )
 SC_CHECK_IN_TIMES = unfoil_time_sets(
-    [extrapolate_time_sets(*TIME_SET, diff_minute=DIFF_MINUTE) for TIME_SET in [(11,50), (13,11), (15,50)]]
+    [extrapolate_time_sets(*TIME_SET, diff_minute=DIFF_MINUTE)\
+     for TIME_SET in [(11,50), (13,11), (15,50)]]
 )
 P_D1_CHECK_IN_TIMES = unfoil_time_sets(
-    [extrapolate_time_sets(*TIME_SET, diff_minute=DIFF_MINUTE) for TIME_SET in [(11,0), (13,11), (15,20)]]
+    [extrapolate_time_sets(*TIME_SET, diff_minute=DIFF_MINUTE)\
+     for TIME_SET in [(11,0), (13,11), (15,20)]]
 )
 P_D2_5_CHECK_IN_TIMES = unfoil_time_sets(
-    [extrapolate_time_sets(*TIME_SET, diff_minute=DIFF_MINUTE) for TIME_SET in [(10,30), (13,11), (15,20)]]
+    [extrapolate_time_sets(*TIME_SET, diff_minute=DIFF_MINUTE)\
+     for TIME_SET in [(10,30), (13,11), (15,20)]]
 )
 ARGUMENT_MAP = {
     'regular': REGULAR_CHECK_IN_TIMES,
@@ -54,7 +58,7 @@ ARGUMENT_MAP = {
     'project day 1': P_D1_CHECK_IN_TIMES,
     'project days 2-5': P_D2_5_CHECK_IN_TIMES
 }
-ZOOM_ON_TIMES = [convert_to_datetime(hour) for hour in (9, 13)]
+ZOOM_ON_TIMES = [convert_to_datetime(HOUR) for HOUR in (9, 13)]
 ZOOM_QUIT_TIMES = [convert_to_datetime(*TIME_SET) for TIME_SET in [(12,5), (18,5)]]
 SCHED_QUIT_TIMES = [convert_to_datetime(18, 10)] # conform to the format of other 'times'
 
