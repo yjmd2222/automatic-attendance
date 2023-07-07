@@ -62,6 +62,7 @@ class MyScheduler(BaseClass):
         self.all_triggers = self.map_dict(
             self.job_ids,
             (self.build_trigger(self.all_time_sets[job_id]) for job_id in self.job_ids))
+        self.next_times = {}
         self.is_quit = False
         self.print_name = '스케줄러'
         super().__init__()
@@ -107,8 +108,10 @@ class MyScheduler(BaseClass):
             try:
                 next_time = self.sched.get_job(job_id).next_run_time
                 print_with_time(f'다음 {job_id} 작업 실행 시각: {next_time.strftime(("%H:%M"))}')
+                self.next_times[job_id] = next_time
             except AttributeError:
                 print_with_time(f'오늘 남은 {job_id} 작업 없음')
+                self.next_times[job_id] = None
     # pylint: enable=unused-argument
 
     def drop_runs_until(self, job_id, until):
@@ -191,19 +194,21 @@ class MyScheduler(BaseClass):
 
         return time_sets
 
-    def quit(self):
+    def quit(self, message='스케줄러 종료 시간'):
         'quit scheduler'
+        time.sleep(1)
+        print_with_time(message)
         self.is_quit = True
+        time.sleep(1)
 
     def wait_for_quit(self, interrupt_sequence):
         'break if sequence is pressed or end job'
         while True:
             if keyboard.is_pressed(interrupt_sequence):
-                print_with_time('키보드로 중단 요청')
-                self.quit()
-                time.sleep(1)
-            elif self.is_quit:
-                print_with_time('스케줄러 종료 요청')
+                self.quit('키보드로 중단 요청')
+            elif all((not next_run for next_run in self.next_times.values())):
+                self.quit('남은 작업 없음')
+            if self.is_quit:
                 self.sched.remove_all_jobs()
                 self.sched.remove_listener(self.print_next_time)
                 self.sched.shutdown(wait=False)
