@@ -5,10 +5,11 @@ Scheduler that runs FakeCheckIn and TurnOnCamera
 import os
 import sys
 
-from datetime import datetime, timedelta
+from datetime import datetime
 import time
 
 from apscheduler.events import EVENT_JOB_EXECUTED
+from apscheduler.jobstores.base import JobLookupError
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.combining import OrTrigger
 from apscheduler.triggers.cron import CronTrigger
@@ -25,36 +26,60 @@ from fake_attendance.launch_zoom import LaunchZoom
 from fake_attendance.quit_zoom import QuitZoom
 from fake_attendance.settings import (
     ARGUMENT_MAP,
-    ZOOM_ON_HOURS,
-    ZOOM_QUIT_HOURS,
-    ZOOM_QUIT_MINUTE,
-    SCHED_QUIT_HOUR,
-    SCHED_QUIT_MINUTE,
+    ZOOM_ON_TIMES,
+    ZOOM_QUIT_TIMES,
+    SCHED_QUIT_TIMES,
     INTERRUPT_SEQUENCE)
 # pylint: enable=wrong-import-position
 
 # pylint: disable=too-many-instance-attributes
 class MyScheduler(BaseClass):
     'A class that manages the scheduler'
-
     def __init__(self):
         'initialize'
         self.sched = BackgroundScheduler()
         self.fake_check_in = FakeCheckIn(self.drop_runs_until)
         self.launch_zoom = LaunchZoom()
         self.quit_zoom = QuitZoom()
-        self.time_sets = self.get_timesets() # [('%H','%M'),...]
-        self.check_in_trigger = OrTrigger([CronTrigger(hour=time_set.hour, minute=time_set.minute)\
-                                           for time_set in self.time_sets])
         self.quit_scheduler_job_id = '스케줄러 종료'
         self.job_ids = [
             self.fake_check_in.print_name,
             self.launch_zoom.print_name,
             self.quit_zoom.print_name,
             self.quit_scheduler_job_id]
+        self.all_time_sets = self.map_dict(
+            self.job_ids,
+            (self.get_timesets_from_terminal(),
+             ZOOM_ON_TIMES,
+             ZOOM_QUIT_TIMES,
+             SCHED_QUIT_TIMES))
+        self.all_job_funcs = self.map_dict(
+            self.job_ids,
+            (self.fake_check_in.run,
+             self.launch_zoom.run,
+             self.quit_zoom.run,
+             self.quit))
+        self.all_triggers = self.map_dict(
+            self.job_ids,
+            (self.build_trigger(self.all_time_sets[job_id]) for job_id in self.job_ids))
         self.is_quit = False
         self.print_name = '스케줄러'
         super().__init__()
+
+    def map_dict(self, keys, values):
+        'build dict with given iterables'
+        return {zipped[0]: zipped[1] for zipped in zip(keys, values)}
+
+    def build_trigger(self, time_sets):
+        'build trigger with given time_sets'
+        return OrTrigger(
+            [CronTrigger(
+                year   = time_set.year,
+                month  = time_set.month,
+                day    = time_set.day,
+                hour   = time_set.hour,
+                minute = time_set.minute)\
+                    for time_set in time_sets])
 
     def add_jobs(self):
         '''
@@ -64,13 +89,13 @@ class MyScheduler(BaseClass):
             4. quit scheduler
             5. print next trigger time for next respective runs
         '''
-        self.sched.add_job(self.fake_check_in.run, self.check_in_trigger, id=self.job_ids[0])
-        self.sched.add_job(self.launch_zoom.run, 'cron',\
-                           hour=ZOOM_ON_HOURS, id=self.job_ids[1])
-        self.sched.add_job(self.quit_zoom.run, 'cron',\
-                           hour=ZOOM_QUIT_HOURS, minute=ZOOM_QUIT_MINUTE, id=self.job_ids[2])
-        self.sched.add_job(self.quit, 'cron',\
-                           hour=SCHED_QUIT_HOUR, minute=SCHED_QUIT_MINUTE, id=self.job_ids[3])
+        # first four jobs
+        for job_id in self.job_ids:
+            self.sched.add_job(
+                func = self.all_job_funcs[job_id],
+                trigger = self.all_triggers[job_id],
+                id = job_id)
+        # last job/listener
         self.sched.add_listener(
             callback = self.print_next_time,
             mask = EVENT_JOB_EXECUTED)
@@ -82,29 +107,26 @@ class MyScheduler(BaseClass):
             try:
                 next_time = self.sched.get_job(job_id).next_run_time
                 print_with_time(f'다음 {job_id} 작업 실행 시각: {next_time.strftime(("%H:%M"))}')
-            except:
+            except AttributeError:
                 print_with_time(f'오늘 남은 {job_id} 작업 없음')
     # pylint: enable=unused-argument
 
     def drop_runs_until(self, job_id, until):
         'reschedule so that job with matching job_id will not run until give datetime \'until\''
-        trigger = self.sched.get_job(job_id).trigger
-        triggers = []
-        # if combining
-        if hasattr(trigger, 'triggers'):
-            triggers = trigger.triggers
-        # else
-        else:
-            triggers = [trigger]
-        # drop runs until 'until'
-        triggers = [trigger for trigger in triggers if trigger.start_date > until]
+        # which time sets
+        time_sets = self.all_time_sets[job_id]
+        # dropped the ones before 'until'
+        new_time_sets = [time_set for time_set in time_sets if time_set > until]
+        # variables to pass to self.reschedule
         rescheduled_trigger = None
         is_remove_job = False
         # if next run left
-        if triggers:
-            rescheduled_trigger = OrTrigger([triggers])
+        if new_time_sets:
+            # reschedule
+            rescheduled_trigger = OrTrigger(self.build_trigger(new_time_sets))
         # else
         else:
+            # remove the job
             is_remove_job = True
         self.reschedule(job_id, rescheduled_trigger, is_remove_job)
 
@@ -112,14 +134,16 @@ class MyScheduler(BaseClass):
         'method that is called at the end of drop_runs_until'
         # if no next run
         if is_remove_job:
-            self.sched.remove_job(job_id)
+            try:
+                self.sched.remove_job(job_id)
+            except JobLookupError:
+                print_with_time(f'오늘 남은 {job_id} 작업 없음')
         # else
         else:
             print(rescheduled_trigger)
-            # job.reschedule(rescheduled_trigger)
             self.sched.reschedule_job(job_id, trigger=rescheduled_trigger)
 
-    def get_timesets(self):
+    def get_timesets_from_terminal(self):
         'receive argument from command line for which time sets to add to schedule'
         time_sets = None
         def parse_time(raw_time_sets):

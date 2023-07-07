@@ -48,7 +48,6 @@ class FakeCheckIn(SendEmail, UseSelenium):
         self.rect = [100,100,100,100]
         self.extension_source = SCREEN_QR_READER_SOURCE
         self.is_wait = False
-        self.until = None
         self.print_name = 'QR 체크인'
         SendEmail.__init__(self)
         UseSelenium.__init__(self)
@@ -215,17 +214,12 @@ class FakeCheckIn(SendEmail, UseSelenium):
 
         return is_continue
 
-    def print_wont_run_until(self):
+    def print_wont_run_until(self, until):
         'print that check-in will be ignored until given time'
-        print_with_time(f'기존 출석 확인. {datetime.strftime(self.until, "%H:%M")}까지 출석 체크 실행 안 함')
+        print_with_time(f'기존 출석 확인. {datetime.strftime(until, "%H:%M")}까지 출석 체크 실행 안 함')
 
     def run(self):
-        'run once'
-        # read from self.until to see if QR check should run
-        if self.until and datetime.now().astimezone() < self.until:
-            self.print_wont_run_until()
-            return
-
+        'run whole check-in process'
         # get Zoom window
         self.is_window, self.hwnd = self.check_window()
         # if it is visible
@@ -248,10 +242,6 @@ class FakeCheckIn(SendEmail, UseSelenium):
         if not is_qr:
             print_with_time('QR 코드 없음. 현 세션 완료')
             self.driver.quit()
-            ###
-            self.until = datetime.now().astimezone() + timedelta(minutes=30)
-            self.print_wont_run_until()
-            self.drop_runs_until(self.print_name, self.until)
             return
 
         # otherwise check in
@@ -276,11 +266,11 @@ class FakeCheckIn(SendEmail, UseSelenium):
         self.driver.quit()
         # maximize Zoom window on exit
         win32gui.MoveWindow(self.hwnd, *self.rect, True)
-        # set self.until to make sure same job does not run within 30 minutes upon completion
+        # make sure same job does not run within 30 minutes upon completion
         if self.is_wait:
-            self.until = datetime.now().astimezone() + timedelta(minutes=30)
-            self.print_wont_run_until()
-            self.drop_runs_until(self.print_name, self.until)
+            until = datetime.now() + timedelta(minutes=30)
+            self.drop_runs_until(self.print_name, until)
+            self.print_wont_run_until(until)
         else:
             print_with_time('QR 코드 확인 후 출석 체크 실패')
         self.reset_attributes()
