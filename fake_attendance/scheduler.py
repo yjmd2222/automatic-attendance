@@ -11,7 +11,7 @@ import time
 from apscheduler.events import EVENT_JOB_EXECUTED
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.combining import OrTrigger
-from apscheduler.triggers.interval import IntervalTrigger
+from apscheduler.triggers.cron import CronTrigger
 
 import keyboard
 
@@ -40,16 +40,12 @@ class MyScheduler(BaseClass):
     def __init__(self):
         'initialize'
         self.sched = BackgroundScheduler()
-        self.fake_check_in = FakeCheckIn(self.reschedule)
+        self.fake_check_in = FakeCheckIn(self.drop_runs_until)
         self.launch_zoom = LaunchZoom()
         self.quit_zoom = QuitZoom()
         self.time_sets = self.get_timesets() # [('%H','%M'),...]
-        self.check_in_trigger = OrTrigger([
-            IntervalTrigger(
-                minutes = 5,
-                start_date = time_set,
-                end_date = time_set + timedelta(minutes=30))\
-                    for time_set in self.time_sets])
+        self.check_in_trigger = OrTrigger([CronTrigger(hour=time_set.hour, minute=time_set.minute)\
+                                           for time_set in self.time_sets])
         self.quit_scheduler_job_id = '스케줄러 종료'
         self.job_ids = [
             self.fake_check_in.print_name,
@@ -83,14 +79,45 @@ class MyScheduler(BaseClass):
     def print_next_time(self, event=None):
         'print next trigger for next jobs'
         for job_id in self.job_ids:
-            next_time = self.sched.get_job(job_id).next_run_time
-            print_with_time(f'다음 {job_id} 작업 실행 시각: {next_time.strftime(("%H:%M"))}')
+            try:
+                next_time = self.sched.get_job(job_id).next_run_time
+                print_with_time(f'다음 {job_id} 작업 실행 시각: {next_time.strftime(("%H:%M"))}')
+            except:
+                print_with_time(f'오늘 남은 {job_id} 작업 없음')
     # pylint: enable=unused-argument
 
-    def reschedule(self, job_id, trigger):
-        'reschedule so that job with matching job_id will not run until given datetime until'
-        job = self.sched.get_job(job_id)
-        job.reschedule(trigger)
+    def drop_runs_until(self, job_id, until):
+        'reschedule so that job with matching job_id will not run until give datetime \'until\''
+        trigger = self.sched.get_job(job_id).trigger
+        triggers = []
+        # if combining
+        if hasattr(trigger, 'triggers'):
+            triggers = trigger.triggers
+        # else
+        else:
+            triggers = [trigger]
+        # drop runs until 'until'
+        triggers = [trigger for trigger in triggers if trigger.start_date > until]
+        rescheduled_trigger = None
+        is_remove_job = False
+        # if next run left
+        if triggers:
+            rescheduled_trigger = OrTrigger([triggers])
+        # else
+        else:
+            is_remove_job = True
+        self.reschedule(job_id, rescheduled_trigger, is_remove_job)
+
+    def reschedule(self, job_id, rescheduled_trigger, is_remove_job):
+        'method that is called at the end of drop_runs_until'
+        # if no next run
+        if is_remove_job:
+            self.sched.remove_job(job_id)
+        # else
+        else:
+            print(rescheduled_trigger)
+            # job.reschedule(rescheduled_trigger)
+            self.sched.reschedule_job(job_id, trigger=rescheduled_trigger)
 
     def get_timesets(self):
         'receive argument from command line for which time sets to add to schedule'

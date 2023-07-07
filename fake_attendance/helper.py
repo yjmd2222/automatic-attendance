@@ -4,7 +4,7 @@ Helper methods
 
 import os
 
-from datetime import datetime
+from datetime import datetime, timedelta
 import time
 
 import pyautogui
@@ -44,19 +44,14 @@ def get_last_match(image):
 
     return positions[-1]
 
-def get_datetime(raw_time_set):
-    'return datetime object for given hour and minute'
-    if raw_time_set[1] >= 0:
-        time_set = datetime.now().replace(
-            hour = raw_time_set[0],
-            minute = raw_time_set[1],
-            second = 0)
-    else:
-        time_set = datetime.now().replace(
-            hour = raw_time_set[0] - 1,
-            minute = raw_time_set[1] + 60,
-            second = 0)
-    return time_set
+def extrapolate_time_sets(hour, minute, diff_minute=5):
+    'return time sets diff_min and 2*diff_min minutes before and after given time'
+    input_time = datetime.now().replace(hour=hour, minute=minute)
+    return [input_time + timedelta(minutes=diff_minute*i) for i in range(-2, 3)]
+
+def unfoil_time_sets(time_sets_outer):
+    'return unfoiled time sets'
+    return [time_set for time_sets in time_sets_outer for time_set in time_sets]
 
 def print_with_time(*args):
     'print with time in %H:%M:%S format'
