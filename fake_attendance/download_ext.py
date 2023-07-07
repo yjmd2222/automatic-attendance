@@ -7,7 +7,6 @@ import sys
 
 import time
 
-from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 
 import pyautogui
@@ -49,13 +48,12 @@ class DownloadExtensionSource(UseSelenium):
         Currently bypassing download warning seems impossible,
         so bypass options are not used.
         '''
-        options = Options()
+        options = super().create_selenium_options()
         options.add_experimental_option('prefs', {
           "download.default_directory": os.getcwd(),
           "download.prompt_for_download": False,
           "download.directory_upgrade": True
           })
-        options.add_experimental_option('excludeSwitches', ['enable-logging'])
 
         return options
 

@@ -11,7 +11,6 @@ import time
 import win32gui
 
 from selenium.common.exceptions import NoSuchElementException
-from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 
 sys.path.append(os.getcwd())
@@ -116,7 +115,7 @@ class FakeCheckIn(SendEmail, UseSelenium):
 
     def create_selenium_options(self):
         'declare options for Selenium driver'
-        options = Options()
+        options = UseSelenium.create_selenium_options(self)
         # Screen QR Reader source required
         options.add_extension(self.extension_source)
         # automatically select Zoom meeting

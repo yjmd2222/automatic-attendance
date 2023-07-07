@@ -20,6 +20,7 @@ sys.path.append(os.getcwd())
 
 # pylint: disable=wrong-import-position
 from fake_attendance.abc import BaseClass
+from fake_attendance.arg_parse import args
 from fake_attendance.fake_check_in import FakeCheckIn
 from fake_attendance.helper import print_with_time
 from fake_attendance.launch_zoom import LaunchZoom
@@ -37,6 +38,7 @@ class MyScheduler(BaseClass):
     'A class that manages the scheduler'
     def __init__(self):
         'initialize'
+        self.args = args
         self.sched = BackgroundScheduler()
         self.fake_check_in = FakeCheckIn(self.drop_runs_until)
         self.launch_zoom = LaunchZoom()
@@ -148,7 +150,7 @@ class MyScheduler(BaseClass):
 
     def get_timesets_from_terminal(self):
         'receive argument from command line for which time sets to add to schedule'
-        time_sets = None
+        time_sets = []
 
         def parse_time(raw_time_sets):
             'parse time sets from raw list'
@@ -174,22 +176,21 @@ class MyScheduler(BaseClass):
             return parsed_time_sets
 
         # check argument passed
-        if len(sys.argv) > 1:
-            # argument as text file
-            if '.txt' in sys.argv[1]:
-                filename = sys.argv[1]
-                with open (filename, 'r', encoding='utf-8') as file:
+        if self.args:
+            # text file
+            if self.args.textfile and '.txt' in self.args.textfile:
+                with open (self.args.textfile, 'r', encoding='utf-8') as file:
                     raw_time_sets = [time_set.strip() for time_set in file[1:]]
-                    time_sets = parse_time(raw_time_sets)
-            else:
+                    time_sets.extend(parse_time(raw_time_sets))
+            # predefine time sets
+            if self.args.predefined:
                 # look up time sets map with argument
-                time_sets = ARGUMENT_MAP.get(sys.argv[1])
+                time_sets.extend(ARGUMENT_MAP.get(self.args.predefined))
                 # if no match, check if time input
-                if not time_sets:
-                    raw_time_sets = sys.argv[1:]
-                    time_sets = parse_time(raw_time_sets)
-        # if no argument
-        else:
+            if self.args.time:
+                time_sets.extend(parse_time(self.args.time))
+        # if time_sets empty
+        if not time_sets:
             # regular day time sets
             time_sets = ARGUMENT_MAP['regular']
 
