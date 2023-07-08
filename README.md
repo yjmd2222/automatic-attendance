@@ -22,11 +22,13 @@ Note: If the module fails to download the Chrome extension source, you can try d
 Run `python -m fake_attendance` for download, Zoom launch, and check-in. Read [How it works and why](#how-it-works-and-why) for explanation.
 
 To change the QR checking schedule, you can run add an argument as either:
-- one of `'regular'`, `'sprint challenge'`, `'project day 1'`, and `'project days 2-5'` (See [settings.py](fake_attendance/settings.py) for actual timings.)
-- a text file that contains a 24-hour format time sets, such as [test_times.txt](test_times.txt)
-- or a series of time sets, such as `10:00 15:00` (This case would be multiple arguments).
+- `-p` optional argument; one of `'regular'`, `'sprint challenge'`, `'project day 1'`, and `'project days 2-5'` (See [settings.py](fake_attendance/settings.py) for actual timings.)
+- `-t` optional argument; a text file that contains a 24-hour format time sets, such as [test_times.txt](test_times.txt)
+- or positional argument; a series of time sets, such as `10:00 15:00` (This case would be multiple arguments).
 
-Leaving it blank is the same as `'regular'` argument. 
+Leaving it blank is the same as `'regular'` argument.
+
+Type `python -m fake_attendance -h` for more information. Note that arguments are parsed in the listed order above, ignoring others when passed correctly.
 
 For a single test to fire right away, run `python -m fake_attendance.fake_check_in`.
 

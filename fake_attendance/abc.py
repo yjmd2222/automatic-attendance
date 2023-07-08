@@ -5,6 +5,7 @@ abstraction because why not
 from abc import ABC, abstractmethod
 
 from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
 
@@ -12,7 +13,9 @@ import win32con
 import win32gui
 
 # pylint: disable=wrong-import-position
+from fake_attendance.arg_parse import args
 from fake_attendance.helper import decorator_start_end
+from fake_attendance.settings import VERBOSITY__INFO
 # pylint: enable=wrong-import-position
 
 # pylint: disable=too-few-public-methods
@@ -50,6 +53,10 @@ class UseSelenium(BaseClass):
     @abstractmethod
     def create_selenium_options(self):
         'declare options for Selenium driver.'
+        options = Options()
+        if args.verbosity is not None and args.verbosity == VERBOSITY__INFO:
+            options.add_experimental_option('excludeSwitches', ['enable-logging'])
+        return options
 
     def initialize_selenium(self, options=None):
         'initialize Selenium and return driver'

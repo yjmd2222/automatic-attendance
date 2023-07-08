@@ -44,11 +44,14 @@ def get_last_match(image):
 
     return positions[-1]
 
-def extrapolate_time_sets(hour, minute, diff_minute=5):
+def convert_to_datetime(hour, minute=0, second=0):
+    'convert given time to datetime object'
+    return datetime.now().replace(hour=hour, minute=minute, second=second)
+
+def extrapolate_time_sets(hour, minute, second=0, diff_minute=5):
     'return time sets diff_min and 2*diff_min minutes before and after given time'
-    input_time = datetime.now().replace(hour=hour, minute=minute)
-    time_list = [input_time + timedelta(minutes=diff_minute*i) for i in range(-2, 3)]
-    return [{'hour': time_set.hour, 'minute': time_set.minute} for time_set in time_list]
+    input_time = convert_to_datetime(hour, minute, second)
+    return [input_time + timedelta(minutes=diff_minute*i) for i in range(-2, 3)]
 
 def unfoil_time_sets(time_sets_outer):
     'return unfoiled time sets'
