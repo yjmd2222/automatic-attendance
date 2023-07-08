@@ -175,20 +175,21 @@ class MyScheduler(BaseClass):
 
             return parsed_time_sets
 
-        # check argument passed
+        # check argument passed. overrided in the order of predefined, text file, and time input
         if self.args:
-            # text file
-            if self.args.textfile and '.txt' in self.args.textfile:
-                with open (self.args.textfile, 'r', encoding='utf-8') as file:
-                    raw_time_sets = [time_set.strip() for time_set in file[1:]]
-                    time_sets.extend(parse_time(raw_time_sets))
-            # predefine time sets
+            # predefined time sets
             if self.args.predefined:
                 # look up time sets map with argument
-                time_sets.extend(ARGUMENT_MAP.get(self.args.predefined))
-                # if no match, check if time input
-            if self.args.time:
-                time_sets.extend(parse_time(self.args.time))
+                time_sets = ARGUMENT_MAP.get(self.args.predefined)
+            # text file
+            print(self.args.textfile)
+            if not time_sets and self.args.textfile and '.txt' in self.args.textfile:
+                with open (self.args.textfile, 'r', encoding='utf-8') as file:
+                    raw_time_sets = [time_set.strip() for time_set in file.readlines()[1:]]
+                    time_sets = parse_time(raw_time_sets)
+                # check if time input
+            if not time_sets and self.args.time:
+                time_sets = parse_time(self.args.time)
         # if time_sets empty
         if not time_sets:
             # regular day time sets
