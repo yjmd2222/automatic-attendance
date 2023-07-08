@@ -15,6 +15,7 @@ import win32gui
 # pylint: disable=wrong-import-position
 from fake_attendance.arg_parse import args
 from fake_attendance.helper import decorator_start_end
+from fake_attendance.settings import VERBOSITY__INFO
 # pylint: enable=wrong-import-position
 
 # pylint: disable=too-few-public-methods
@@ -53,7 +54,7 @@ class UseSelenium(BaseClass):
     def create_selenium_options(self):
         'declare options for Selenium driver.'
         options = Options()
-        if args.verbosity is not None and args.verbosity == 0:
+        if args.verbosity is not None and args.verbosity == VERBOSITY__INFO:
             options.add_experimental_option('excludeSwitches', ['enable-logging'])
         return options
 

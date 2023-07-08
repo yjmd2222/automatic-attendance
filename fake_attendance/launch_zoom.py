@@ -28,7 +28,8 @@ from fake_attendance.settings import (
     ZOOM_CLASSROOM_CLASS,
     ZOOM_UPDATE_POPUP_CLASS,
     ZOOM_UPDATE_DOWNLOAD_CLASS,
-    ZOOM_UPDATE_ACTUAL_UPDATE_CLASS)
+    ZOOM_UPDATE_ACTUAL_UPDATE_CLASS,
+    VERBOSITY__INFO)
 # pylint: enable=wrong-import-position
 
 class LaunchZoom(SendEmail, UseSelenium):
@@ -62,7 +63,7 @@ class LaunchZoom(SendEmail, UseSelenium):
         adds an option to disable logging if -v 0 optional arg is given
         '''
         options = UseSelenium.create_selenium_options(self)\
-            if args.verbosity is not None and args.verbosity == 0 else None
+            if args.verbosity is not None and args.verbosity == VERBOSITY__INFO else None
         return options
 
     def connect(self):

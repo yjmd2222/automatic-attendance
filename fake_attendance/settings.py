@@ -117,3 +117,4 @@ RESULT_DICTS = {
 
 # misc
 INTERRUPT_SEQUENCE = 'ctrl+alt+c'
+VERBOSITY__INFO = 3
