@@ -7,7 +7,6 @@ import sys
 
 import time
 
-from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 
 import pyautogui
@@ -32,7 +31,7 @@ from fake_attendance.settings import (
 class DownloadExtensionSource(UseSelenium):
     'A class for downloading the source of Screen QR Reader'
 
-    def __init__(self, scheduler:MyScheduler=None):
+    def __init__(self, scheduler:MyScheduler|None=None):
         'initialize'
         self.image = CONTINUE_IMAGE
         self.scheduler = scheduler
@@ -49,13 +48,12 @@ class DownloadExtensionSource(UseSelenium):
         Currently bypassing download warning seems impossible,
         so bypass options are not used.
         '''
-        options = Options()
+        options = super().create_selenium_options()
         options.add_experimental_option('prefs', {
           "download.default_directory": os.getcwd(),
           "download.prompt_for_download": False,
           "download.directory_upgrade": True
           })
-        options.add_experimental_option('excludeSwitches', ['enable-logging'])
 
         return options
 

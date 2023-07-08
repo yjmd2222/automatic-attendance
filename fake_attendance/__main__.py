@@ -13,4 +13,5 @@ if __name__ == '__main__':
 
     download.run()
     scheduler.run()
+    print('right before sys.exit()')
     sys.exit()

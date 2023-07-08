@@ -14,6 +14,7 @@ sys.path.append(os.getcwd())
 
 # pylint: disable=wrong-import-position
 from fake_attendance.abc import UseSelenium
+from fake_attendance.arg_parse import args
 from fake_attendance.info import ZOOM_LINK
 from fake_attendance.helper import (
     bring_chrome_to_front,
@@ -27,7 +28,8 @@ from fake_attendance.settings import (
     ZOOM_CLASSROOM_CLASS,
     ZOOM_UPDATE_POPUP_CLASS,
     ZOOM_UPDATE_DOWNLOAD_CLASS,
-    ZOOM_UPDATE_ACTUAL_UPDATE_CLASS)
+    ZOOM_UPDATE_ACTUAL_UPDATE_CLASS,
+    VERBOSITY__INFO)
 # pylint: enable=wrong-import-position
 
 class LaunchZoom(SendEmail, UseSelenium):
@@ -56,8 +58,13 @@ class LaunchZoom(SendEmail, UseSelenium):
             time.sleep(10)
 
     def create_selenium_options(self):
-        'not implemented'
-        return None
+        '''
+        declare options for Selenium driver\n
+        adds an option to disable logging if -v 0 optional arg is given
+        '''
+        options = UseSelenium.create_selenium_options(self)\
+            if args.verbosity is not None and args.verbosity == VERBOSITY__INFO else None
+        return options
 
     def connect(self):
         'connect to Zoom conference'
@@ -75,7 +82,8 @@ class LaunchZoom(SendEmail, UseSelenium):
     def launch_zoom(self):
         'launch method'
         # initialize driver
-        self.driver = self.initialize_selenium()
+        options = self.create_selenium_options()
+        self.driver = self.initialize_selenium(options)
 
         # launch Zoom link
         print_with_time('줌 입장 시작')
