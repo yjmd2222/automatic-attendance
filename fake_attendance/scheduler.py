@@ -214,7 +214,7 @@ class MyScheduler(BaseClass):
             if self.is_quit:
                 self.sched.remove_all_jobs()
                 self.sched.remove_listener(self.print_next_time)
-                self.sched.shutdown(wait=False)
+                self.sched.shutdown()
                 break
 
     def run(self):

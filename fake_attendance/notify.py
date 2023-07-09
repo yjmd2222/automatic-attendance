@@ -30,11 +30,11 @@ from fake_attendance.settings import RESULT_DICTS
 class Notify(BaseClass):
     'A class for sending email on successful QR recognization'
 
-    def __init__(self, job_name='job_name'):
+    def __init__(self, job_id='job_id'):
         'initialize'
         self.link = ''
         self.result = ''
-        self.job_name = job_name
+        self.job_id = job_id
         self.body = ''
         self.print_name = '이메일 발송'
         super().__init__()
@@ -80,7 +80,7 @@ class Notify(BaseClass):
             return
 
         msg = MIMEText(self.body)
-        msg['Subject'] = f'!!fake-attendance {self.job_name}\
+        msg['Subject'] = f'!!fake-attendance {self.job_id}\
             {datetime.now().strftime(r"%Y-%m-%d %H:%M")}!!'
 
         smtp.sendmail(EMAIL_ADDRESS, EMAIL_ADDRESS, msg.as_string())
