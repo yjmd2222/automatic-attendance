@@ -5,6 +5,11 @@
 # Fake attendance script for you-know-what
 For educational purposes only
 
+# A message, mostly for myself
+It is complete (well, for windows 10/11 and none else because that's the only OS this script supports). What I have been doing since July 3 is not related to functionality; I was trying to improve code style and teach myself various techniques. But now it is becoming more 'coding to code' instead of 'adding necessary features.' I probably should not focus on this much because there are other things to learn.
+
+If anyone comes across an idea for a new, necessary feature, please let me know.
+
 ## Requirements
 Windows 10 or higher. If you want to use it as is, Windows 11 with default settings in Korean.
 
