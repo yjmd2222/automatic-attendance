@@ -49,14 +49,14 @@ class UseSelenium(BaseClass):
         '''
         super().__init__()
         self.driver = None
+        self.verbosity = args.verbosity
 
     @abstractmethod
     def create_selenium_options(self):
         'declare options for Selenium driver.'
-        if args.verbosity is not None and args.verbosity == VERBOSITY__INFO:
-            options = Options()
+        options = Options()
+        if self.verbosity is not None and self.verbosity == VERBOSITY__INFO:
             options.add_experimental_option('excludeSwitches', ['enable-logging'])
-        else: options = None
         return options
 
     def initialize_selenium(self, options=None):
