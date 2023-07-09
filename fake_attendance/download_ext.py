@@ -95,8 +95,7 @@ class DownloadExtensionSource(UseSelenium):
             return
 
         # init selenium
-        options = self.create_selenium_options()
-        self.driver = self.initialize_selenium(options)
+        self.driver = self.initialize_selenium()
 
         # track current directory list
         cur_listdir = os.listdir()
