@@ -226,8 +226,7 @@ class FakeCheckIn(SendEmail, UseSelenium):
             # get max rect
             self.rect = self.maximize_window(self.hwnd)
             # init selenium
-            options = self.create_selenium_options()
-            self.driver = self.initialize_selenium(options)
+            self.driver = self.initialize_selenium()
         # if not
         else:
             # quit
@@ -254,17 +253,16 @@ class FakeCheckIn(SendEmail, UseSelenium):
         else:
             self.result_dict['result']['content'] = '실패'
             self.is_wait = False
-
         self.notify.record_result(self.result_dict)
-
         self.notify.write_body()
-
         self.notify.run()
 
         # quit Selenium
         self.driver.quit()
+
         # maximize Zoom window on exit
         win32gui.MoveWindow(self.hwnd, *self.rect, True)
+
         # make sure same job does not run within 30 minutes upon completion
         if self.is_wait:
             until = datetime.now() + timedelta(minutes=30)

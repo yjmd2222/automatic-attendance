@@ -51,17 +51,21 @@ class UseSelenium(BaseClass):
         self.driver = None
         self.verbosity = args.verbosity
 
-    @abstractmethod
     def create_selenium_options(self):
-        'declare options for Selenium driver.'
+        '''
+        declare options for Selenium driver\n
+        adds an option to disable logging if -v 3 optional arg is given\n
+        or return None
+        '''
         options = Options()
         if self.verbosity is not None and self.verbosity == VERBOSITY__INFO:
             options.add_experimental_option('excludeSwitches', ['enable-logging'])
         return options
 
-    def initialize_selenium(self, options=None):
+    def initialize_selenium(self):
         'initialize Selenium and return driver'
         auto_driver = Service(ChromeDriverManager().install())
+        options = self.create_selenium_options()
 
         return webdriver.Chrome(service=auto_driver, options=options)
 

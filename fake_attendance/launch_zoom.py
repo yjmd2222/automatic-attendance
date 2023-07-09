@@ -27,8 +27,7 @@ from fake_attendance.settings import (
     ZOOM_CLASSROOM_CLASS,
     ZOOM_UPDATE_POPUP_CLASS,
     ZOOM_UPDATE_DOWNLOAD_CLASS,
-    ZOOM_UPDATE_ACTUAL_UPDATE_CLASS,
-    VERBOSITY__INFO)
+    ZOOM_UPDATE_ACTUAL_UPDATE_CLASS)
 # pylint: enable=wrong-import-position
 
 class LaunchZoom(SendEmail, UseSelenium):
@@ -56,18 +55,6 @@ class LaunchZoom(SendEmail, UseSelenium):
             # if something quit, wait for quitting to finish
             time.sleep(10)
 
-    def create_selenium_options(self):
-        '''
-        declare options for Selenium driver\n
-        adds an option to disable logging if -v 3 optional arg is given\n
-        or return None
-        '''
-        if self.verbosity is not None and self.verbosity == VERBOSITY__INFO:
-            options = UseSelenium.create_selenium_options(self)
-        else:
-            options = None
-        return options
-
     def connect(self):
         'connect to Zoom conference'
         # check presence of Zoom conference
@@ -84,8 +71,7 @@ class LaunchZoom(SendEmail, UseSelenium):
     def launch_zoom(self):
         'launch method'
         # initialize driver
-        options = self.create_selenium_options()
-        self.driver = self.initialize_selenium(options)
+        self.driver = self.initialize_selenium()
 
         # launch Zoom link
         print_with_time('줌 입장 시작')
