@@ -128,7 +128,7 @@ class MyScheduler(BaseClass):
         # if next run left
         if new_time_sets:
             # reschedule
-            rescheduled_trigger = OrTrigger(self.build_trigger(new_time_sets))
+            rescheduled_trigger = self.build_trigger(new_time_sets)
         # else
         else:
             # remove the job
@@ -145,7 +145,6 @@ class MyScheduler(BaseClass):
                 print_with_time(f'오늘 남은 {job_id} 작업 없음')
         # else
         else:
-            print(rescheduled_trigger)
             self.sched.reschedule_job(job_id, trigger=rescheduled_trigger)
 
     def get_timesets_from_terminal(self):
