@@ -196,6 +196,8 @@ class FakeCheckIn(SendEmail, UseSelenium):
         # get inner document link
         # Should have successfully logged in. Now pass set link to pass to Notify
         self.result_dict['link']['content'] = self.driver.current_url if is_continue else '발견 실패'
+        # need to debug which iframe is present. may match a blank iframe
+        time.sleep(20)
         is_continue = self.selenium_action(is_continue, By.TAG_NAME, 10,\
                     how='get_iframe', element=IFRAME)
 
@@ -264,13 +266,13 @@ class FakeCheckIn(SendEmail, UseSelenium):
         win32gui.MoveWindow(self.hwnd, *self.rect, True)
 
         # make sure same job does not run within 30 minutes upon completion
-        if self.sched_drop_runs_until:
-            if self.is_wait:
+        if self.is_wait:
+            if self.sched_drop_runs_until:
                 until = datetime.now() + timedelta(minutes=30)
                 self.sched_drop_runs_until(self.print_name, until)
                 self.print_wont_run_until(until)
-            else:
-                print_with_time('QR 코드 확인 후 출석 체크 실패')
+        else:
+            print_with_time('QR 코드 확인 후 출석 체크 실패')
         self.reset_attributes()
         return
 # pylint: enable=too-many-instance-attributes
