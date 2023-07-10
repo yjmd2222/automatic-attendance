@@ -39,9 +39,9 @@ from fake_attendance.notify import SendEmail
 class FakeCheckIn(SendEmail, UseSelenium):
     'A class for checking QR image and sending email with link'
 
-    def __init__(self, drop_runs_until=None):
+    def __init__(self, sched_drop_runs_until=None):
         'initialize'
-        self.drop_runs_until = drop_runs_until
+        self.sched_drop_runs_until = sched_drop_runs_until
         self.is_window = False
         self.hwnd = 0
         self.rect = [100,100,100,100]
@@ -196,6 +196,8 @@ class FakeCheckIn(SendEmail, UseSelenium):
         # get inner document link
         # Should have successfully logged in. Now pass set link to pass to Notify
         self.result_dict['link']['content'] = self.driver.current_url if is_continue else '발견 실패'
+        # need to debug which iframe is present. may match a blank iframe
+        time.sleep(20)
         is_continue = self.selenium_action(is_continue, By.TAG_NAME, 10,\
                     how='get_iframe', element=IFRAME)
 
@@ -265,9 +267,10 @@ class FakeCheckIn(SendEmail, UseSelenium):
 
         # make sure same job does not run within 30 minutes upon completion
         if self.is_wait:
-            until = datetime.now() + timedelta(minutes=30)
-            self.drop_runs_until(self.print_name, until)
-            self.print_wont_run_until(until)
+            if self.sched_drop_runs_until:
+                until = datetime.now() + timedelta(minutes=30)
+                self.sched_drop_runs_until(self.print_name, until)
+                self.print_wont_run_until(until)
         else:
             print_with_time('QR 코드 확인 후 출석 체크 실패')
         self.reset_attributes()
