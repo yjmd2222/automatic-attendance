@@ -39,9 +39,9 @@ from fake_attendance.notify import SendEmail
 class FakeCheckIn(SendEmail, UseSelenium):
     'A class for checking QR image and sending email with link'
 
-    def __init__(self, drop_runs_until=None):
+    def __init__(self, sched_drop_runs_until=None):
         'initialize'
-        self.drop_runs_until = drop_runs_until
+        self.sched_drop_runs_until = sched_drop_runs_until
         self.is_window = False
         self.hwnd = 0
         self.rect = [100,100,100,100]
@@ -264,9 +264,9 @@ class FakeCheckIn(SendEmail, UseSelenium):
         win32gui.MoveWindow(self.hwnd, *self.rect, True)
 
         # make sure same job does not run within 30 minutes upon completion
-        if self.is_wait:
+        if self.is_wait and self.sched_drop_runs_until:
             until = datetime.now() + timedelta(minutes=30)
-            self.drop_runs_until(self.print_name, until)
+            self.sched_drop_runs_until(self.print_name, until)
             self.print_wont_run_until(until)
         else:
             print_with_time('QR 코드 확인 후 출석 체크 실패')
