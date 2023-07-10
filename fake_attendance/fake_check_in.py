@@ -264,12 +264,13 @@ class FakeCheckIn(SendEmail, UseSelenium):
         win32gui.MoveWindow(self.hwnd, *self.rect, True)
 
         # make sure same job does not run within 30 minutes upon completion
-        if self.is_wait and self.sched_drop_runs_until:
-            until = datetime.now() + timedelta(minutes=30)
-            self.sched_drop_runs_until(self.print_name, until)
-            self.print_wont_run_until(until)
-        else:
-            print_with_time('QR 코드 확인 후 출석 체크 실패')
+        if self.sched_drop_runs_until:
+            if self.is_wait:
+                until = datetime.now() + timedelta(minutes=30)
+                self.sched_drop_runs_until(self.print_name, until)
+                self.print_wont_run_until(until)
+            else:
+                print_with_time('QR 코드 확인 후 출석 체크 실패')
         self.reset_attributes()
         return
 # pylint: enable=too-many-instance-attributes
