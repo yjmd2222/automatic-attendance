@@ -167,7 +167,7 @@ class FakeCheckIn(SendEmail, UseSelenium):
             except NoSuchElementException:
                 search_fail_message = f'{kwargs["element"]} 찾기 실패'
                 if i == 3:
-                    print_with_time(f'{search_fail_message}. 재시도 전부 실패. 현 상태에서 이메일 발송')
+                    print_with_time(search_fail_message)
                     break
                 print_with_time(f'{search_fail_message}. {sleep}초 후 재시도')
                 time.sleep(sleep)
@@ -178,6 +178,7 @@ class FakeCheckIn(SendEmail, UseSelenium):
                 print_with_time(f'how kwarg의 인자값 알맞게 입력했는지 확인 필요. 입력: {kwargs["how"]}')
                 break
 
+        print_with_time('출석 체크 실패. 현 상태에서 이메일 발송')
         return False
     # pylint: enable=too-many-branches
 
@@ -211,7 +212,7 @@ class FakeCheckIn(SendEmail, UseSelenium):
         # # need to debug which iframe is present. may match a blank iframe
         # time.sleep(20)
         is_continue = self.selenium_action(is_continue, By.TAG_NAME, 10,\
-                    how='get_iframe', element=IFRAME)
+                        how='get_iframe', element=IFRAME)
 
         # agree to check in
         is_continue = self.selenium_action(is_continue, By.XPATH, 3,\
@@ -278,13 +279,10 @@ class FakeCheckIn(SendEmail, UseSelenium):
         win32gui.MoveWindow(self.hwnd, *self.rect, True)
 
         # make sure same job does not run within 30 minutes upon completion
-        if self.is_wait:
-            if self.sched_drop_runs_until:
-                until = datetime.now() + timedelta(minutes=30)
-                self.sched_drop_runs_until(self.print_name, until)
-                self.print_wont_run_until(until)
-        else:
-            print_with_time('QR 코드 확인 후 출석 체크 실패')
+        if self.is_wait and self.sched_drop_runs_until:
+            until = datetime.now() + timedelta(minutes=30)
+            self.sched_drop_runs_until(self.print_name, until)
+            self.print_wont_run_until(until)
         self.reset_attributes()
         return
 # pylint: enable=too-many-instance-attributes
