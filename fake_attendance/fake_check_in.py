@@ -137,36 +137,46 @@ class FakeCheckIn(SendEmail, UseSelenium):
         # check three times
         for i in range(1, 3+1):
             try:
-                element = self.driver.find_element(by_which, kwargs['element'])
-                if kwargs['how'] == 'click':
-                    element.click()
-                elif kwargs['how'] == 'input':
-                    element.send_keys(kwargs['input_text'])
-                elif kwargs['how'] == 'get_iframe':
-                    iframe_url = element.get_attribute('src')
-                    self.driver.get(iframe_url)
-                elif kwargs['how'] == 'submit':
-                    self.driver.execute_script('arguments[0].click();', element)
+                # check if match pattern in src for iframes
+                if kwargs['how'] == 'get_iframe':
+                    is_valid_iframe = None
+                    iframe_urls = [element.get_attribute('src') for element\
+                                   in self.driver.find_elements(by_which, 'get_iframe')]
+                    iframe_urls = [iframe_url for iframe_url in iframe_urls if iframe_url]
+                    for iframe_url in iframe_urls:
+                        if iframe_url and 'codestates.typeform' in iframe_url:
+                            is_valid_iframe = True
+                            self.driver.get(iframe_url)
+                            break
+                    if not is_valid_iframe:
+                        raise NoSuchElementException
                 else:
-                    assert kwargs['how'] in ['click', 'input', 'get_iframe', 'submit']
+                    element = self.driver.find_element(by_which, kwargs['element'])
+                    if kwargs['how'] == 'click':
+                        element.click()
+                    elif kwargs['how'] == 'input':
+                        element.send_keys(kwargs['input_text'])
+                    elif kwargs['how'] == 'submit':
+                        self.driver.execute_script('arguments[0].click();', element)
+                    else:
+                        assert kwargs['how'] in ['click', 'input', 'get_iframe', 'submit']
                 print_with_time(f'{kwargs["element"]} 찾기 성공. {sleep}초 후 다음 단계로 진행')
                 time.sleep(sleep)
                 return True
             except NoSuchElementException:
                 search_fail_message = f'{kwargs["element"]} 찾기 실패'
                 if i == 3:
-                    print_with_time(search_fail_message)
+                    print_with_time(f'{search_fail_message}. 재시도 전부 실패. 현 상태에서 이메일 발송')
                     break
-                print_with_time(search_fail_message + f'. {sleep}초 후 재시도')
+                print_with_time(f'{search_fail_message}. {sleep}초 후 재시도')
                 time.sleep(sleep)
             except KeyError as error:
-                print_with_time(f'kwarg의 매개변수 알맞게 입력했는지 확인 필요. 조회 실패: {error}, 입력: {list(kwargs)}')
+                print_with_time(f'kwarg의 키워드 알맞게 입력했는지 확인 필요. 조회 실패: {error}')
                 break
             except AssertionError:
                 print_with_time(f'how kwarg의 인자값 알맞게 입력했는지 확인 필요. 입력: {kwargs["how"]}')
                 break
 
-        print_with_time('재시도 전부 실패. 현 상태에서 이메일 발송')
         return False
 
     def check_in(self):
@@ -196,8 +206,8 @@ class FakeCheckIn(SendEmail, UseSelenium):
         # get inner document link
         # Should have successfully logged in. Now pass set link to pass to Notify
         self.result_dict['link']['content'] = self.driver.current_url if is_continue else '발견 실패'
-        # need to debug which iframe is present. may match a blank iframe
-        time.sleep(20)
+        # # need to debug which iframe is present. may match a blank iframe
+        # time.sleep(20)
         is_continue = self.selenium_action(is_continue, By.TAG_NAME, 10,\
                     how='get_iframe', element=IFRAME)
 

@@ -57,10 +57,13 @@ def unfoil_time_sets(time_sets_outer):
     'return unfoiled time sets'
     return [time_set for time_sets in time_sets_outer for time_set in time_sets]
 
-def print_with_time(*args):
-    'print with time in %H:%M:%S format'
+def print_with_time(*args, **kwargs):
+    '''
+    uses built-in print function with time in %H:%M:%S format in start of message\n
+    arguments for 'print()' can be specified in **kwargs fashion
+    '''
     now = datetime.strftime(datetime.now(), '%H:%M:%S')
-    print(now, *args)
+    print(now, *args, **kwargs)
 
 def send_alt_key_and_set_foreground(hwnd):
     '''
