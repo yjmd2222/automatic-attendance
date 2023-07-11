@@ -123,6 +123,7 @@ class FakeCheckIn(SendEmail, UseSelenium):
 
         return options
 
+    # pylint: disable=too-many-branches
     def selenium_action(self, is_continue, by_which, sleep, **kwargs):
         '''
         selenium action method\n
@@ -178,6 +179,7 @@ class FakeCheckIn(SendEmail, UseSelenium):
                 break
 
         return False
+    # pylint: enable=too-many-branches
 
     def check_in(self):
         'do the check-in'
