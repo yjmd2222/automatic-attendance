@@ -12,6 +12,8 @@ import win32gui
 
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.common.by import By
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.support.ui import WebDriverWait
 
 sys.path.append(os.getcwd())
 
@@ -141,8 +143,10 @@ class FakeCheckIn(SendEmail, UseSelenium):
                 # check if match pattern in src for iframes
                 if kwargs['how'] == 'get_iframe':
                     is_valid_iframe = None
-                    iframe_urls = [element.get_attribute('src') for element\
-                                   in self.driver.find_elements(by_which, 'get_iframe')]
+                    WebDriverWait(self.driver, 10).until(
+                        EC.presence_of_all_elements_located((by_which, kwargs['element'])))
+                    iframe_urls = [element.get_attribute('src') for element
+                                   in self.driver.find_elements(by_which, kwargs['element'])]
                     iframe_urls = [iframe_url for iframe_url in iframe_urls if iframe_url]
                     for iframe_url in iframe_urls:
                         if iframe_url and 'codestates.typeform' in iframe_url:

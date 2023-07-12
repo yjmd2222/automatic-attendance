@@ -71,7 +71,7 @@ ZOOM_UPDATE_ACTUAL_UPDATE_CLASS = 'zoom.us Installer Engine'
 
 # Check-in props
 LOGIN_WITH_KAKAO_BUTTON = 'login-form__button-title.css-caslt6'
-ID_INPUT_BOX = 'loginKey--1'
+ID_INPUT_BOX = 'loginId--1'
 PASSWORD_INPUT_BOX = 'password--2'
 LOGIN_BUTTON = 'btn_g.highlight.submit'
 IFRAME = 'iframe'
