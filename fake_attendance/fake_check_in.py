@@ -210,11 +210,10 @@ class FakeCheckIn(SendEmail, UseSelenium):
         is_continue = self.selenium_action(is_continue, By.CLASS_NAME, 10,\
                         how='click', element=LOGIN_BUTTON)
 
-        # get inner document link
         # Should have successfully logged in. Now pass set link to pass to Notify
         self.result_dict['link']['content'] = self.driver.current_url if is_continue else '발견 실패'
-        # # need to debug which iframe is present. may match a blank iframe
-        # time.sleep(20)
+
+        # get inner document link
         is_continue = self.selenium_action(is_continue, By.TAG_NAME, 10,\
                         how='get_iframe', element=IFRAME)
 
