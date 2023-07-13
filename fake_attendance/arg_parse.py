@@ -8,7 +8,7 @@ import argparse
 from fake_attendance.settings import VERBOSITY__INFO
 # pylint: enable=wrong-import-position
 
-parser = argparse.ArgumentParser(description='자동 출석 프로그램')
+parser = argparse.ArgumentParser(description='자동 출석 프로그램. -p, -t, time 중 하나만 선택')
 
 parser.add_argument('time', type=str, nargs='*', help=r'%%H:%%M 형식으로 QR 체크 시간 입력')
 parser.add_argument('-p', '--predefined', type=str,\

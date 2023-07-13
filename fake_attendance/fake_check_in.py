@@ -147,7 +147,6 @@ class FakeCheckIn(SendEmail, UseSelenium):
                         EC.presence_of_all_elements_located((by_which, kwargs['element'])))
                     iframe_urls = [element.get_attribute('src') for element
                                    in self.driver.find_elements(by_which, kwargs['element'])]
-                    iframe_urls = [iframe_url for iframe_url in iframe_urls if iframe_url]
                     for iframe_url in iframe_urls:
                         if iframe_url and 'codestates.typeform' in iframe_url:
                             is_valid_iframe = True
