@@ -12,6 +12,8 @@ import win32gui
 
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.common.by import By
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.support.ui import WebDriverWait
 
 sys.path.append(os.getcwd())
 
@@ -123,6 +125,7 @@ class FakeCheckIn(SendEmail, UseSelenium):
 
         return options
 
+    # pylint: disable=too-many-branches
     def selenium_action(self, is_continue, by_which, sleep, **kwargs):
         '''
         selenium action method\n
@@ -137,18 +140,31 @@ class FakeCheckIn(SendEmail, UseSelenium):
         # check three times
         for i in range(1, 3+1):
             try:
-                element = self.driver.find_element(by_which, kwargs['element'])
-                if kwargs['how'] == 'click':
-                    element.click()
-                elif kwargs['how'] == 'input':
-                    element.send_keys(kwargs['input_text'])
-                elif kwargs['how'] == 'get_iframe':
-                    iframe_url = element.get_attribute('src')
-                    self.driver.get(iframe_url)
-                elif kwargs['how'] == 'submit':
-                    self.driver.execute_script('arguments[0].click();', element)
+                # check if match pattern in src for iframes
+                if kwargs['how'] == 'get_iframe':
+                    is_valid_iframe = None
+                    WebDriverWait(self.driver, 10).until(
+                        EC.presence_of_all_elements_located((by_which, kwargs['element'])))
+                    iframe_urls = [element.get_attribute('src') for element
+                                   in self.driver.find_elements(by_which, kwargs['element'])]
+                    iframe_urls = [iframe_url for iframe_url in iframe_urls if iframe_url]
+                    for iframe_url in iframe_urls:
+                        if iframe_url and 'codestates.typeform' in iframe_url:
+                            is_valid_iframe = True
+                            self.driver.get(iframe_url)
+                            break
+                    if not is_valid_iframe:
+                        raise NoSuchElementException
                 else:
-                    assert kwargs['how'] in ['click', 'input', 'get_iframe', 'submit']
+                    element = self.driver.find_element(by_which, kwargs['element'])
+                    if kwargs['how'] == 'click':
+                        element.click()
+                    elif kwargs['how'] == 'input':
+                        element.send_keys(kwargs['input_text'])
+                    elif kwargs['how'] == 'submit':
+                        self.driver.execute_script('arguments[0].click();', element)
+                    else:
+                        assert kwargs['how'] in ['click', 'input', 'get_iframe', 'submit']
                 print_with_time(f'{kwargs["element"]} 찾기 성공. {sleep}초 후 다음 단계로 진행')
                 time.sleep(sleep)
                 return True
@@ -157,17 +173,18 @@ class FakeCheckIn(SendEmail, UseSelenium):
                 if i == 3:
                     print_with_time(search_fail_message)
                     break
-                print_with_time(search_fail_message + f'. {sleep}초 후 재시도')
+                print_with_time(f'{search_fail_message}. {sleep}초 후 재시도')
                 time.sleep(sleep)
             except KeyError as error:
-                print_with_time(f'kwarg의 매개변수 알맞게 입력했는지 확인 필요. 조회 실패: {error}, 입력: {list(kwargs)}')
+                print_with_time(f'kwarg의 키워드 알맞게 입력했는지 확인 필요. 조회 실패: {error}')
                 break
             except AssertionError:
                 print_with_time(f'how kwarg의 인자값 알맞게 입력했는지 확인 필요. 입력: {kwargs["how"]}')
                 break
 
-        print_with_time('재시도 전부 실패. 현 상태에서 이메일 발송')
+        print_with_time('출석 체크 실패. 현 상태에서 이메일 발송')
         return False
+    # pylint: enable=too-many-branches
 
     def check_in(self):
         'do the check-in'
@@ -193,13 +210,12 @@ class FakeCheckIn(SendEmail, UseSelenium):
         is_continue = self.selenium_action(is_continue, By.CLASS_NAME, 10,\
                         how='click', element=LOGIN_BUTTON)
 
-        # get inner document link
         # Should have successfully logged in. Now pass set link to pass to Notify
         self.result_dict['link']['content'] = self.driver.current_url if is_continue else '발견 실패'
-        # need to debug which iframe is present. may match a blank iframe
-        time.sleep(20)
+
+        # get inner document link
         is_continue = self.selenium_action(is_continue, By.TAG_NAME, 10,\
-                    how='get_iframe', element=IFRAME)
+                        how='get_iframe', element=IFRAME)
 
         # agree to check in
         is_continue = self.selenium_action(is_continue, By.XPATH, 3,\
@@ -266,13 +282,10 @@ class FakeCheckIn(SendEmail, UseSelenium):
         win32gui.MoveWindow(self.hwnd, *self.rect, True)
 
         # make sure same job does not run within 30 minutes upon completion
-        if self.is_wait:
-            if self.sched_drop_runs_until:
-                until = datetime.now() + timedelta(minutes=30)
-                self.sched_drop_runs_until(self.print_name, until)
-                self.print_wont_run_until(until)
-        else:
-            print_with_time('QR 코드 확인 후 출석 체크 실패')
+        if self.is_wait and self.sched_drop_runs_until:
+            until = datetime.now() + timedelta(minutes=30)
+            self.sched_drop_runs_until(self.print_name, until)
+            self.print_wont_run_until(until)
         self.reset_attributes()
         return
 # pylint: enable=too-many-instance-attributes
