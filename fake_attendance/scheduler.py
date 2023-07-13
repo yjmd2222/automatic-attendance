@@ -38,7 +38,6 @@ class MyScheduler(BaseClass):
     'A class that manages the scheduler'
     def __init__(self):
         'initialize'
-        self.args = args
         self.sched = BackgroundScheduler()
         self.fake_check_in = FakeCheckIn(self.drop_runs_until)
         self.launch_zoom = LaunchZoom()
@@ -175,20 +174,23 @@ class MyScheduler(BaseClass):
             return parsed_time_sets
 
         # check argument passed. overrided in the order of predefined, text file, and time input
-        if self.args:
+        if args:
             # predefined time sets
-            if self.args.predefined:
+            if args.predefined:
                 # look up time sets map with argument
-                time_sets = ARGUMENT_MAP.get(self.args.predefined)
+                try:
+                    time_sets = ARGUMENT_MAP[args.predefined]
+                    print_with_time(f'사전 정의 스케줄: {args.predefined}')
+                except KeyError:
+                    print_with_time(f'사전 정의 스케줄 옵션 잘 못 입력함. {list(ARGUMENT_MAP)} 중 입력')
             # text file
-            print(self.args.textfile)
-            if not time_sets and self.args.textfile and '.txt' in self.args.textfile:
-                with open (self.args.textfile, 'r', encoding='utf-8') as file:
+            if not time_sets and args.textfile and '.txt' in args.textfile:
+                with open (args.textfile, 'r', encoding='utf-8') as file:
                     raw_time_sets = [time_set.strip() for time_set in file.readlines()[1:]]
                     time_sets = parse_time(raw_time_sets)
                 # check if time input
-            if not time_sets and self.args.time:
-                time_sets = parse_time(self.args.time)
+            if not time_sets and args.time:
+                time_sets = parse_time(args.time)
         # if time_sets empty
         if not time_sets:
             # regular day time sets
