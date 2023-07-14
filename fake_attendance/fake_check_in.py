@@ -34,11 +34,11 @@ from fake_attendance.settings import (
     AGREE,
     CHECK_IN,
     SUBMIT)
-from fake_attendance.notify import SendEmail
+from fake_attendance.notify import PrepareSendEmail
 # pylint: enable=wrong-import-position
 
 # pylint: disable=too-many-instance-attributes
-class FakeCheckIn(SendEmail, UseSelenium):
+class FakeCheckIn(PrepareSendEmail, UseSelenium):
     'A class for checking QR image and sending email with link'
 
     def __init__(self, sched_drop_runs_until=None):
@@ -50,7 +50,8 @@ class FakeCheckIn(SendEmail, UseSelenium):
         self.extension_source = SCREEN_QR_READER_SOURCE
         self.is_wait = False
         self.print_name = 'QR 체크인'
-        SendEmail.__init__(self)
+        PrepareSendEmail.define_attributes(self)
+        PrepareSendEmail.decorate_run(self)
         UseSelenium.__init__(self)
 
     def reset_attributes(self):
@@ -59,7 +60,7 @@ class FakeCheckIn(SendEmail, UseSelenium):
         self.rect = self.maximize_window(self.hwnd) if self.is_window else [100,100,100,100]
         self.driver = None
         self.is_wait = False
-        SendEmail.__init__(self)
+        PrepareSendEmail.define_attributes(self)
 
     def check_window(self):
         'check and return window'
@@ -230,10 +231,6 @@ class FakeCheckIn(SendEmail, UseSelenium):
 
         return is_continue
 
-    def print_wont_run_until(self, until):
-        'print that check-in will be ignored until given time'
-        print_with_time(f'기존 출석 확인. {datetime.strftime(until, "%H:%M")}까지 출석 체크 실행 안 함')
-
     def run(self):
         'run whole check-in process'
         # get Zoom window
@@ -263,16 +260,13 @@ class FakeCheckIn(SendEmail, UseSelenium):
         print_with_time('QR 코드 확인. 출석 체크 진행')
         check_in_result = self.check_in()
 
-        # send email
+        # update result
         if check_in_result:
             self.result_dict['result']['content'] = '성공'
             self.is_wait = True
         else:
             self.result_dict['result']['content'] = '실패'
             self.is_wait = False
-        self.notify.record_result(self.result_dict)
-        self.notify.write_body()
-        self.notify.run()
 
         # quit Selenium
         self.driver.quit()
@@ -284,8 +278,7 @@ class FakeCheckIn(SendEmail, UseSelenium):
         if self.is_wait and self.sched_drop_runs_until:
             until = datetime.now() + timedelta(minutes=30)
             self.sched_drop_runs_until(self.print_name, until)
-            self.print_wont_run_until(until)
-        self.reset_attributes()
+            print_with_time(f'출석 확인. {datetime.strftime(until, "%H:%M")}까지 출석 체크 실행 안 함')
         return
 # pylint: enable=too-many-instance-attributes
 
