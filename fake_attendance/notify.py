@@ -33,34 +33,29 @@ class Notify(BaseClass):
     def __init__(self, job_id='job_id'):
         'initialize'
         self.link = ''
-        self.result = ''
         self.job_id = job_id
-        self.body = ''
         self.print_name = '이메일 발송'
         super().__init__()
 
-    def record_result(self, result):
-        'record result'
-        self.result = result
-
-    def write_body(self):
+    def write_body(self, result):
         'write email body with result'
-        # unfoiling nested dictionary: 'item1: result1\nitem2: result2'
-        total_result = []
-        for _, ovalue in self.result.items():
-            single_result = []
-            for ivalue in ovalue.values():
-                single_result.append(str(ivalue))
-            total_result.append(': '.join(single_result))
-        result = '\n'.join(total_result)
+        if isinstance(result, dict):
+            # unfoiling nested dictionary: 'item1: result1\nitem2: result2'
+            total_result = []
+            for _, ovalue in result.items():
+                single_result = []
+                for ivalue in ovalue.values():
+                    single_result.append(str(ivalue))
+                total_result.append(': '.join(single_result))
+            result = '\n        '.join(total_result)
         body = f'''
         {result}
 
         credit: yjmd2222's fake-attendance project https://github.com/yjmd2222/fake-attendance
         '''
-        self.body = dedent(body).strip()
+        return dedent(body).strip()
 
-    def run(self):
+    def send_email(self, body):
         'send email'
         try:
             smtp = smtplib.SMTP(SMTP_HOST, SMTP_PORT)
@@ -79,7 +74,7 @@ class Notify(BaseClass):
             print_with_time('이메일 로그인 정보 확인 필요')
             return
 
-        msg = MIMEText(self.body)
+        msg = MIMEText(body)
         msg['Subject'] = f'!!fake-attendance {self.job_id}\
             {datetime.now().strftime(r"%Y-%m-%d %H:%M")}!!'
 
@@ -89,14 +84,21 @@ class Notify(BaseClass):
 
         smtp.quit()
 
+    def run(self, result:dict=None):
+        'run'
+        # write email body
+        body = self.write_body(result)
+        # send email
+        self.send_email(body)
+
 # pylint: disable=too-few-public-methods
-class SendEmail:
+class PrepareSendEmail:
     'A class for instantiating Notify class'
 
     # pylint: disable=no-member
     def __init__(self):
         '''
-        SendEmail.__init__(self) method that defines\n
+        PrepareSendEmail.__init__(self) method that defines\n
         a notify attribute with an instance of Notify\n
         and a result_dict attribute for multiple purposes
         '''
