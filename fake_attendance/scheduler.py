@@ -5,7 +5,6 @@ Scheduler that runs FakeCheckIn and TurnOnCamera
 import os
 import sys
 
-from datetime import datetime
 import time
 
 from apscheduler.events import EVENT_JOB_EXECUTED
@@ -152,66 +151,71 @@ class MyScheduler(BaseClass):
 
         def parse_time(raw_time_sets):
             'parse time sets from raw list'
+            # pylint: disable=wrong-import-position,import-outside-toplevel
+            from fake_attendance.helper import convert_to_datetime
+            # pylint: enable=wrong-import-position,import-outside-toplevel
             parsed_time_sets = []
+            is_success = None
             for raw in raw_time_sets:
                 try:
                     # this line first because input may not even have a colon
-                    time_set = datetime.strptime(raw, '%H:%M')
-                    time_set = datetime.now().replace(
-                        hour = time_set.hour,
-                        minute = time_set.minute,
-                        second = 0)
+                    time_set = convert_to_datetime(raw)
                     # if no ValueError then check if minutes two digits
                     if len(raw.split(":")[1]) != 2:
                         raise ValueError("분이 10의 자리 숫자가 아님")
                     parsed_time_sets.append(time_set)
                 except ValueError as error:
-                    print_with_time(f'시간 형식 잘 못 입력함. 이 부분 스킵: {error}')
-            if not parsed_time_sets:
-                print_with_time('모든 입력값 시간 형식 잘 못 입력함. 기본 스케줄 사용')
-                parsed_time_sets = ARGUMENT_MAP['regular']
+                    print_with_time(f'시간 \'%H:%M\' 형식으로 입력해야 함. 이 부분 스킵: {error}')
+            if parsed_time_sets:
+                is_success = 'true'
+            else:
+                print_with_time('모든 입력값 시간 형식 잘 못 입력함')
+                is_success = 'false'
 
-            return parsed_time_sets
+            return parsed_time_sets, is_success
 
         # check argument passed. overrided in the order of predefined, text file, and time input
         if args:
+            # this str will be checked whether to extrapolate or not
+            is_success = 'false'
             # predefined time sets
             if args.predefined:
                 # look up time sets map with argument
                 try:
                     time_sets = ARGUMENT_MAP[args.predefined]
                     print_with_time(f'사전 정의 스케줄: {args.predefined}')
+                    is_success = 'pass'
                 except KeyError:
-                    print_with_time(f'사전 정의 스케줄 옵션 잘 못 입력함. {list(ARGUMENT_MAP)} 중 입력')
+                    print_with_time(f'사전 정의 스케줄 옵션 잘 못 입력함. {list(ARGUMENT_MAP)} 중 입력해야 함')
+                    is_success = 'false'
             # text file
-            if not time_sets and args.textfile and '.txt' in args.textfile:
+            if is_success == 'false' and (args.textfile and '.txt' in args.textfile):
                 with open (args.textfile, 'r', encoding='utf-8') as file:
                     raw_time_sets = [time_set.strip() for time_set in file.readlines()[1:]]
-                    time_sets = parse_time(raw_time_sets)
-                # check if time input
-            if not time_sets and args.time:
-                time_sets = parse_time(args.time)
-            if time_sets and args.extrapolate:
-                # pylint: disable=wrong-import-position,import-outside-toplevel
-                from fake_attendance.helper import (
-                    convert_to_str,
-                    extrapolate_time_sets,
-                    unfoil_time_sets)
-                # pylint: enable=wrong-import-position,import-outside-toplevel
-                time_sets = unfoil_time_sets(
-                    [extrapolate_time_sets(*convert_to_str(time_set), diff_minute=5)\
-                    for time_set in time_sets]
-                )
+                    time_sets, is_success = parse_time(raw_time_sets)
+            # check time input
+            if is_success == 'false' and args.time:
+                time_sets, is_success = parse_time(args.time)
+            if args.extrapolate:
+                if is_success == 'true':
+                    # pylint: disable=wrong-import-position,import-outside-toplevel
+                    from fake_attendance.helper import extrapolate_time_sets, unfoil_time_sets
+                    # pylint: enable=wrong-import-position,import-outside-toplevel
+                    time_sets = unfoil_time_sets(
+                        [extrapolate_time_sets(time_set) for time_set in time_sets]
+                    )
+                else: # currently pass or false
+                    print_with_time('기본 스케줄은 5분 offset 적용 안 함')
         # if time_sets empty
         if not time_sets:
             # regular day time sets
+            print_with_time('기본 스케줄(regular) 사용')
             time_sets = ARGUMENT_MAP['regular']
 
         return time_sets
 
     def quit(self, message='스케줄러 종료 시간'):
         'quit scheduler'
-        time.sleep(1)
         print_with_time(message)
         self.is_quit = True
         time.sleep(1)
