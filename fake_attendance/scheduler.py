@@ -176,6 +176,8 @@ class MyScheduler(BaseClass):
 
         # check argument passed. overrided in the order of predefined, text file, and time input
         if args:
+            # this str will be checked whether to extrapolate or not
+            is_success = ''
             # predefined time sets
             if args.predefined:
                 # look up time sets map with argument
@@ -191,7 +193,7 @@ class MyScheduler(BaseClass):
                 with open (args.textfile, 'r', encoding='utf-8') as file:
                     raw_time_sets = [time_set.strip() for time_set in file.readlines()[1:]]
                     time_sets, is_success = parse_time(raw_time_sets)
-                # check if time input
+            # check time input
             if is_success == 'false' and args.time:
                 time_sets, is_success = parse_time(args.time)
             if args.extrapolate:
