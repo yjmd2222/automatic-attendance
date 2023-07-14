@@ -44,18 +44,23 @@ def get_last_match(image):
 
     return positions[-1]
 
-def convert_to_datetime(hour, minute=0, second=0):
-    'convert given time to datetime object'
-    return datetime.now().replace(hour=hour, minute=minute, second=second)
+def convert_to_datetime(time_, format_='%H:%M'):
+    'convert given time to datetime.datetime for today\'s date'
+    time_ = datetime.strptime(time_, format_)
+    time_ = datetime.now().replace(
+        hour = time_.hour,
+        minute = time_.minute,
+        second = 0)
+    return time_
 
-def convert_to_str(datetime_):
-    'convert given datetime to str'
-    return datetime_.hour, datetime_.minute, datetime_.second
-
-def extrapolate_time_sets(hour, minute, second=0, diff_minute=5):
-    'return time sets diff_min and 2*diff_min minutes before and after given time'
-    input_time = convert_to_datetime(hour, minute, second)
-    return [input_time + timedelta(minutes=diff_minute*i) for i in range(-2, 3)]
+def extrapolate_time_sets(time_:str|datetime, diff_minute=5, format_='%H:%M'):
+    '''
+    return time sets diff_min and 2*diff_min minutes before and after given time\n
+    converts 'time_' to datetime.datetime if type str
+    '''
+    if isinstance(time_, str):
+        time_ = convert_to_datetime(time_, format_)
+    return [time_ + timedelta(minutes=diff_minute*i) for i in range(-2, 3)]
 
 def unfoil_time_sets(time_sets_outer):
     'return unfoiled time sets'
