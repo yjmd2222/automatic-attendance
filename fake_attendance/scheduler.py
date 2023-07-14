@@ -165,7 +165,7 @@ class MyScheduler(BaseClass):
                         raise ValueError("분이 10의 자리 숫자가 아님")
                     parsed_time_sets.append(time_set)
                 except ValueError as error:
-                    print_with_time(f'시간 형식 잘 못 입력함. \'%H:%M\' 형식으로 입력해야 함. 이 부분 스킵: {error}')
+                    print_with_time(f'시간 \'%H:%M\' 형식으로 입력해야 함. 이 부분 스킵: {error}')
             if parsed_time_sets:
                 is_success = 'true'
             else:
