@@ -58,7 +58,7 @@ ARGUMENT_MAP = {
     'project day 1': P_D1_CHECK_IN_TIMES,
     'project days 2-5': P_D2_5_CHECK_IN_TIMES
 }
-ZOOM_ON_TIMES = [convert_to_datetime(str(HOUR), format_='%H') for HOUR in (9, 13)]
+ZOOM_ON_TIMES = [convert_to_datetime(TIME_) for TIME_ in ['8:59', '12:59']]
 ZOOM_QUIT_TIMES = [convert_to_datetime(TIME_) for TIME_ in ['12:05', '18:05']]
 SCHED_QUIT_TIMES = [convert_to_datetime('18:10')] # conform to the format of other 'times'
 

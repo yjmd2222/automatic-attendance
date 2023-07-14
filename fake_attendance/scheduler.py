@@ -177,7 +177,7 @@ class MyScheduler(BaseClass):
         # check argument passed. overrided in the order of predefined, text file, and time input
         if args:
             # this str will be checked whether to extrapolate or not
-            is_success = ''
+            is_success = 'false'
             # predefined time sets
             if args.predefined:
                 # look up time sets map with argument
