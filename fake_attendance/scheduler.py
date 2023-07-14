@@ -19,7 +19,7 @@ sys.path.append(os.getcwd())
 
 # pylint: disable=wrong-import-position
 from fake_attendance.abc import BaseClass
-from fake_attendance.arg_parse import args
+from fake_attendance.arg_parse import parsed_args
 from fake_attendance.fake_check_in import FakeCheckIn
 from fake_attendance.helper import print_with_time
 from fake_attendance.launch_zoom import LaunchZoom
@@ -175,28 +175,28 @@ class MyScheduler(BaseClass):
             return parsed_time_sets, is_success
 
         # check argument passed. overrided in the order of predefined, text file, and time input
-        if args:
+        if parsed_args:
             # this str will be checked whether to extrapolate or not
             is_success = 'false'
             # predefined time sets
-            if args.predefined:
+            if parsed_args.predefined:
                 # look up time sets map with argument
                 try:
-                    time_sets = ARGUMENT_MAP[args.predefined]
-                    print_with_time(f'사전 정의 스케줄: {args.predefined}')
+                    time_sets = ARGUMENT_MAP[parsed_args.predefined]
+                    print_with_time(f'사전 정의 스케줄: {parsed_args.predefined}')
                     is_success = 'pass'
                 except KeyError:
                     print_with_time(f'사전 정의 스케줄 옵션 잘 못 입력함. {list(ARGUMENT_MAP)} 중 입력해야 함')
                     is_success = 'false'
             # text file
-            if is_success == 'false' and (args.textfile and '.txt' in args.textfile):
-                with open (args.textfile, 'r', encoding='utf-8') as file:
+            if is_success == 'false' and (parsed_args.textfile and '.txt' in parsed_args.textfile):
+                with open (parsed_args.textfile, 'r', encoding='utf-8') as file:
                     raw_time_sets = [time_set.strip() for time_set in file.readlines()[1:]]
                     time_sets, is_success = parse_time(raw_time_sets)
             # check time input
-            if is_success == 'false' and args.time:
-                time_sets, is_success = parse_time(args.time)
-            if args.extrapolate:
+            if is_success == 'false' and parsed_args.time:
+                time_sets, is_success = parse_time(parsed_args.time)
+            if parsed_args.extrapolate:
                 if is_success == 'true':
                     # pylint: disable=wrong-import-position,import-outside-toplevel
                     from fake_attendance.helper import extrapolate_time_sets, unfoil_time_sets

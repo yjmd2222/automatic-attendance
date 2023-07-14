@@ -18,4 +18,4 @@ parser.add_argument('-e', '--extrapolate', action='store_true',
                     help='입력한 시간 포함 주위 5분, 10분 단위로 출석 체크')
 parser.add_argument('-v', '--verbosity', type=int, default=VERBOSITY__INFO, help='출력메시지 선택. 기본값 3')
 
-args = parser.parse_args()
+parsed_args = parser.parse_args()
