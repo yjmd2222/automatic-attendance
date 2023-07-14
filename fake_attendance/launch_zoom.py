@@ -37,13 +37,14 @@ class LaunchZoom(PrepareSendEmail, UseSelenium):
         'initialize'
         self.hwnd_zoom_classroom = 0
         self.print_name = '줌 실행'
-        PrepareSendEmail.__init__(self)
+        PrepareSendEmail.define_attributes(self)
+        PrepareSendEmail.decorate_run(self)
         UseSelenium.__init__(self)
 
     def reset_attributes(self):
         'reset attributes for next run'
         self.hwnd_zoom_classroom = 0
-        PrepareSendEmail.__init__(self)
+        PrepareSendEmail.define_attributes(self)
 
     def quit_zoom(self):
         'quit hidden Zoom windows if any'
@@ -201,13 +202,9 @@ class LaunchZoom(PrepareSendEmail, UseSelenium):
             self.process_popup(ZOOM_AGREE_RECORDING_POPUP_CLASS, reverse=True, send_alt=True)
             print_with_time('동의 재확인')
             self.process_popup(ZOOM_AGREE_RECORDING_POPUP_CLASS, reverse=True, send_alt=True)
-        # send email
-        self.notify.run(self.result_dict)
         # maximize if everything done correctly
         if self.result_dict[ZOOM_AGREE_RECORDING_POPUP_CLASS]['content']:
             self.maximize_window(self.hwnd_zoom_classroom)
-        # reset attributes for next run
-        self.reset_attributes()
 
 if __name__ == '__main__':
     LaunchZoom().run()

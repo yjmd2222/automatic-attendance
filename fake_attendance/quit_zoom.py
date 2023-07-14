@@ -21,8 +21,11 @@ class QuitZoom(PrepareSendEmail, BaseClass):
 
     def __init__(self):
         self.print_name = '줌 종료'
-        PrepareSendEmail.__init__(self)
+        PrepareSendEmail.define_attributes(self)
         BaseClass.__init__(self)
+
+    def reset_attributes(self):
+        'not implemented'
 
     def connect_and_kill(self, kill_hidden):
         'connect to Zoom conference and kill'

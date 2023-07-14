@@ -25,7 +25,7 @@ class BaseClass(ABC):
     # pylint: disable=no-member
     @abstractmethod
     def __init__(self):
-        'BaseClass.__init__(self) method that decorates self.run to print start and end of it'
+        'BaseClass.__init__() that decorates self.run() to print start and end of it'
         # to be used with super().__init__() in subclass
         self.run = decorator_start_end(self.print_name)(self.run)
     # pylint: enable=no-member
@@ -43,8 +43,9 @@ class UseSelenium(BaseClass):
     @abstractmethod
     def __init__(self):
         '''
-        UseSelenium.__init__(self) method that defines an empty Selenium self.driver attribute.\n
-        Also inherits from BaseClass.__init__() method that decorates self.run to print start and\n
+        UseSelenium.__init__() that defines an empty Selenium self.driver\n
+        and self.verbosity attributes.\n
+        Also inherits from BaseClass.__init__() that decorates self.run to print start and\n
         end of it
         '''
         super().__init__()

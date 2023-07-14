@@ -91,21 +91,36 @@ class Notify(BaseClass):
         # send email
         self.send_email(body)
 
-# pylint: disable=too-few-public-methods
 class PrepareSendEmail:
     'A class for instantiating Notify class'
 
-    # pylint: disable=no-member
-    def __init__(self):
+    # pylint: disable=attribute-defined-outside-init,no-member
+    def define_attributes(self):
         '''
-        PrepareSendEmail.__init__(self) method that defines\n
+        PrepareSendEmail.define_attributes() that defines\n
         a notify attribute with an instance of Notify\n
         and a result_dict attribute for multiple purposes
         '''
         self.notify = Notify(self.print_name)
         self.result_dict: dict = RESULT_DICTS[self.print_name]
+
+    def decorator_send_email_reset(self, func):
+        'decorator for sending email and resetting attributes'
+        def wrapper(*args, **kwargs):
+            func(*args, **kwargs)
+            self.notify.run(self.result_dict)
+            self.reset_attributes()
+        return wrapper
     # pylint: enable=no-member
-# pylint: enable=too-few-public-methods
+
+    def decorate_run(self):
+        '''PrepareSendEmail.decorate_run() that decorates self.run()\n
+        to send email and reset attributes'''
+        self.run = self.decorator_send_email_reset(self.run)
+    # pylint: enable=attribute-defined-outside-init
+
+    def reset_attributes(self):
+        'base method for resetting attributes at the end'
 
 if __name__ == '__main__':
     Notify().run()

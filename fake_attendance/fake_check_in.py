@@ -50,7 +50,8 @@ class FakeCheckIn(PrepareSendEmail, UseSelenium):
         self.extension_source = SCREEN_QR_READER_SOURCE
         self.is_wait = False
         self.print_name = 'QR 체크인'
-        PrepareSendEmail.__init__(self)
+        PrepareSendEmail.define_attributes(self)
+        PrepareSendEmail.decorate_run(self)
         UseSelenium.__init__(self)
 
     def reset_attributes(self):
@@ -59,7 +60,7 @@ class FakeCheckIn(PrepareSendEmail, UseSelenium):
         self.rect = self.maximize_window(self.hwnd) if self.is_window else [100,100,100,100]
         self.driver = None
         self.is_wait = False
-        PrepareSendEmail.__init__(self)
+        PrepareSendEmail.define_attributes(self)
 
     def check_window(self):
         'check and return window'
@@ -259,14 +260,13 @@ class FakeCheckIn(PrepareSendEmail, UseSelenium):
         print_with_time('QR 코드 확인. 출석 체크 진행')
         check_in_result = self.check_in()
 
-        # send email
+        # update result
         if check_in_result:
             self.result_dict['result']['content'] = '성공'
             self.is_wait = True
         else:
             self.result_dict['result']['content'] = '실패'
             self.is_wait = False
-        self.notify.run(self.result_dict)
 
         # quit Selenium
         self.driver.quit()
@@ -279,7 +279,6 @@ class FakeCheckIn(PrepareSendEmail, UseSelenium):
             until = datetime.now() + timedelta(minutes=30)
             self.sched_drop_runs_until(self.print_name, until)
             print_with_time(f'출석 확인. {datetime.strftime(until, "%H:%M")}까지 출석 체크 실행 안 함')
-        self.reset_attributes()
         return
 # pylint: enable=too-many-instance-attributes
 
