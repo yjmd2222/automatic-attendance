@@ -48,9 +48,9 @@ def convert_to_datetime(hour, minute=0, second=0):
     'convert given time to datetime object'
     return datetime.now().replace(hour=hour, minute=minute, second=second)
 
-def convert_to_str(time):
+def convert_to_str(datetime_):
     'convert given datetime to str'
-    return time.hour, time.minute, time.second
+    return datetime_.hour, datetime_.minute, datetime_.second
 
 def extrapolate_time_sets(hour, minute, second=0, diff_minute=5):
     'return time sets diff_min and 2*diff_min minutes before and after given time'
