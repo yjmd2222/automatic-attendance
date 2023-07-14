@@ -191,6 +191,17 @@ class MyScheduler(BaseClass):
                 # check if time input
             if not time_sets and args.time:
                 time_sets = parse_time(args.time)
+            if time_sets and args.extrapolate:
+                # pylint: disable=wrong-import-position,import-outside-toplevel
+                from fake_attendance.helper import (
+                    convert_to_str,
+                    extrapolate_time_sets,
+                    unfoil_time_sets)
+                # pylint: enable=wrong-import-position,import-outside-toplevel
+                time_sets = unfoil_time_sets(
+                    [extrapolate_time_sets(*convert_to_str(time_set), diff_minute=5)\
+                    for time_set in time_sets]
+                )
         # if time_sets empty
         if not time_sets:
             # regular day time sets

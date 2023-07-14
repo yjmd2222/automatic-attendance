@@ -14,6 +14,7 @@ parser.add_argument('time', type=str, nargs='*', help=r'%%H:%%M 형식으로 QR 
 parser.add_argument('-p', '--predefined', type=str,\
                     help='regular, sprint challenge, project day 1, project days 2-5 중 입력')
 parser.add_argument('-t', '--textfile', type=str, help='.txt 텍스트 파일 이름 입력')
+parser.add_argument('-e', '--extrapolate', action='store_true', help='입력한 시간 주위로 5분 단위로 출석 체크')
 parser.add_argument('-v', '--verbosity', type=int, default=VERBOSITY__INFO, help='출력메시지 선택. 기본값 3')
 
 args = parser.parse_args()
