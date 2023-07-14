@@ -13,12 +13,11 @@ import win32con
 import win32gui
 
 # pylint: disable=wrong-import-position
-from fake_attendance.arg_parse import args
-from fake_attendance.helper import decorator_start_end
+from fake_attendance.arg_parse import parsed_args
+from fake_attendance.helper import print_with_time
 from fake_attendance.settings import VERBOSITY__INFO
 # pylint: enable=wrong-import-position
 
-# pylint: disable=too-few-public-methods
 class BaseClass(ABC):
     'base class for abstraction'
 
@@ -27,7 +26,7 @@ class BaseClass(ABC):
     def __init__(self):
         'BaseClass.__init__() that decorates self.run() to print start and end of it'
         # to be used with super().__init__() in subclass
-        self.run = decorator_start_end(self.print_name)(self.run)
+        self.run = self.decorator_start_end(self.print_name)(self.run)
     # pylint: enable=no-member
 
     # pylint: disable=method-hidden
@@ -35,7 +34,19 @@ class BaseClass(ABC):
     def run(self):
         'run everything'
     # pylint: enable=method-hidden
-# pylint: enable=too-few-public-methods
+
+    @staticmethod
+    def decorator_start_end(name):
+        'outer decorator, argument should be name for script'
+        def inner_decorator(func):
+            'inner'
+            def wrapper(*args, **kwargs):
+                'wrapper'
+                print_with_time(f'{name} 스크립트 시작')
+                func(*args, **kwargs)
+                print_with_time(f'{name} 스크립트 종료')
+            return wrapper
+        return inner_decorator
 
 class UseSelenium(BaseClass):
     'base class for subclasses that use Selenium'
@@ -50,7 +61,7 @@ class UseSelenium(BaseClass):
         '''
         super().__init__()
         self.driver = None
-        self.verbosity = args.verbosity
+        self.verbosity = parsed_args.verbosity
 
     def create_selenium_options(self):
         '''
