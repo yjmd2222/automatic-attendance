@@ -21,13 +21,11 @@ from fake_attendance.settings import VERBOSITY__INFO
 class BaseClass(ABC):
     'base class for abstraction'
 
-    # pylint: disable=no-member
     @abstractmethod
     def __init__(self):
         'BaseClass.__init__() that decorates self.run() to print start and end of it'
         # to be used with super().__init__() in subclass
-        self.run = self.decorator_start_end(self.print_name)(self.run)
-    # pylint: enable=no-member
+        self.run = self.decorator_start_end(self.run)
 
     # pylint: disable=method-hidden
     @abstractmethod
@@ -35,18 +33,16 @@ class BaseClass(ABC):
         'run everything'
     # pylint: enable=method-hidden
 
-    @staticmethod
-    def decorator_start_end(name):
-        'outer decorator, argument should be name for script'
-        def inner_decorator(func):
-            'inner'
-            def wrapper(*args, **kwargs):
-                'wrapper'
-                print_with_time(f'{name} 스크립트 시작')
-                func(*args, **kwargs)
-                print_with_time(f'{name} 스크립트 종료')
-            return wrapper
-        return inner_decorator
+    # pylint: disable=no-member
+    def decorator_start_end(self, func):
+        'decorator for printing start and end of script'
+        def wrapper(*args, **kwargs):
+            'wrapper'
+            print_with_time(f'{self.print_name} 스크립트 시작')
+            func(*args, **kwargs)
+            print_with_time(f'{self.print_name} 스크립트 종료')
+        return wrapper
+    # pylint: enable=no-member
 
 class UseSelenium(BaseClass):
     'base class for subclasses that use Selenium'
