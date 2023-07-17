@@ -192,6 +192,7 @@ class LaunchZoom(PrepareSendEmail, UseSelenium):
         return self.result_dict[window_name]['content']
     # pylint: enable=too-many-arguments
 
+    # pylint: disable=attribute-defined-outside-init
     def run(self):
         'Run the launch'
         self.quit_zoom() # kill hidden Zoom conference windows if any
@@ -205,6 +206,9 @@ class LaunchZoom(PrepareSendEmail, UseSelenium):
         # maximize if everything done correctly
         if self.result_dict[ZOOM_AGREE_RECORDING_POPUP_CLASS]['content']:
             self.maximize_window(self.hwnd_zoom_classroom)
+        # chekcer bool to send email. See PrepareSendEmail.decorator_send_email_reset()
+        self.is_send = True
+    # pylint: enable=attribute-defined-outside-init
 
 if __name__ == '__main__':
     LaunchZoom().run()
