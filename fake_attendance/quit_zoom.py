@@ -20,12 +20,15 @@ class QuitZoom(PrepareSendEmail, BaseClass):
     'A class for quitting Zoom'
 
     def __init__(self):
+        'initialize'
         self.print_name = '줌 종료'
         PrepareSendEmail.define_attributes(self)
+        PrepareSendEmail.decorate_run(self)
         BaseClass.__init__(self)
 
     def reset_attributes(self):
-        'not implemented'
+        'reset attributes for next run'
+        PrepareSendEmail.define_attributes(self)
 
     def connect_and_kill(self, kill_hidden):
         'connect to Zoom conference and kill'
@@ -47,12 +50,14 @@ class QuitZoom(PrepareSendEmail, BaseClass):
             return False
 
     def run(self, kill_hidden=False):
-        'Run the launch'
+        '''
+        Run the launch. kill_hidden==True quits hidden Zoom conf before launching.\n
+        kill_hidden==False quits Zoom at the end of session and sends email
+        '''
         self.connect_and_kill(kill_hidden)
 
-        # send email if called at end of session
-        if not kill_hidden:
-            self.notify.run(self.result_dict)
+        # checker bool to send email
+        self.is_send = kill_hidden
 
 if __name__ == '__main__':
     QuitZoom().run()

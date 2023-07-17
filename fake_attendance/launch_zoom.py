@@ -205,6 +205,8 @@ class LaunchZoom(PrepareSendEmail, UseSelenium):
         # maximize if everything done correctly
         if self.result_dict[ZOOM_AGREE_RECORDING_POPUP_CLASS]['content']:
             self.maximize_window(self.hwnd_zoom_classroom)
+        # chekcer bool to send email. See PrepareSendEmail.decorator_send_email_reset()
+        self.is_send = True
 
 if __name__ == '__main__':
     LaunchZoom().run()

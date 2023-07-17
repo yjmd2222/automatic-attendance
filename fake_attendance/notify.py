@@ -103,12 +103,14 @@ class PrepareSendEmail:
         '''
         self.notify = Notify(self.print_name)
         self.result_dict: dict = RESULT_DICTS[self.print_name]
+        self.is_send = False
 
     def decorator_send_email_reset(self, func):
         'decorator for sending email and resetting attributes'
         def wrapper(*args, **kwargs):
             func(*args, **kwargs)
-            self.notify.run(self.result_dict)
+            if self.is_send:
+                self.notify.run(self.result_dict)
             self.reset_attributes()
         return wrapper
     # pylint: enable=no-member
