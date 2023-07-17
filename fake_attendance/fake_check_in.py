@@ -231,6 +231,7 @@ class FakeCheckIn(PrepareSendEmail, UseSelenium):
 
         return is_continue
 
+    # pylint: disable=attribute-defined-outside-init
     def run(self):
         'run whole check-in process'
         # get Zoom window
@@ -282,6 +283,7 @@ class FakeCheckIn(PrepareSendEmail, UseSelenium):
             # checker bool to send email
             self.is_send = True
         return
+    # pylint: enable=attribute-defined-outside-init
 # pylint: enable=too-many-instance-attributes
 
 if __name__ == '__main__':

@@ -49,6 +49,7 @@ class QuitZoom(PrepareSendEmail, BaseClass):
             self.result_dict['quit']['content'] = False
             return False
 
+    # pylint: disable=attribute-defined-outside-init
     def run(self, kill_hidden=False):
         '''
         Run the launch. kill_hidden==True quits hidden Zoom conf before launching.\n
@@ -58,6 +59,7 @@ class QuitZoom(PrepareSendEmail, BaseClass):
 
         # checker bool to send email
         self.is_send = kill_hidden
+    # pylint: enable=attribute-defined-outside-init
 
 if __name__ == '__main__':
     QuitZoom().run()
