@@ -58,7 +58,7 @@ class QuitZoom(PrepareSendEmail, BaseClass):
         self.connect_and_kill(kill_hidden)
 
         # checker bool to send email
-        self.is_send = kill_hidden
+        self.is_send = not kill_hidden
     # pylint: enable=attribute-defined-outside-init
 
 if __name__ == '__main__':
