@@ -62,13 +62,18 @@ SR_D2_CHECK_IN_TIMES = unfoil_time_sets(
     [extrapolate_time_sets(TIME_, diff_minute=DIFF_MINUTE)
      for TIME_ in ['10:30', '13:01', '14:50']]
 )
+PROJECT_TIMES = unfoil_time_sets(
+    [extrapolate_time_sets(TIME_, diff_minute=DIFF_MINUTE)
+     for TIME_ in ['12:00', '13:01', '16:50']]
+)
 ARGUMENT_MAP = {
     'regular': REGULAR_CHECK_IN_TIMES,
     'sprint challenge': SC_CHECK_IN_TIMES,
     'project day 1': P_D1_CHECK_IN_TIMES,
     'project days 2-5': P_D2_5_CHECK_IN_TIMES,
     'section review day 1': SR_D1_CHECK_IN_TIMES,
-    'section review day 2': SR_D2_CHECK_IN_TIMES
+    'section review day 2': SR_D2_CHECK_IN_TIMES,
+    'project section': PROJECT_TIMES
 }
 ZOOM_ON_TIMES = [convert_to_datetime(TIME_) for TIME_ in ['8:59', '12:59']]
 ZOOM_QUIT_TIMES = [convert_to_datetime(TIME_) for TIME_ in ['12:05', '18:05']]
