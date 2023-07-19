@@ -276,9 +276,10 @@ class FakeCheckIn(PrepareSendEmail, UseSelenium):
         win32gui.MoveWindow(self.hwnd, *self.rect, True)
 
         # make sure same job does not run within 30 minutes upon completion
-        if self.is_wait and self.sched_drop_runs_until:
+        if self.is_wait:
             until = datetime.now() + timedelta(minutes=30)
-            self.sched_drop_runs_until(self.print_name, until)
+            if self.sched_drop_runs_until:
+                self.sched_drop_runs_until(self.print_name, until)
             print_with_time(f'출석 확인. {datetime.strftime(until, "%H:%M")}까지 출석 체크 실행 안 함')
             # checker bool to send email
             self.is_send = True
