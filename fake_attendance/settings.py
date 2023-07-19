@@ -28,8 +28,6 @@ SCREEN_QR_READER_SOURCE = get_file_path('extension_0_1_2_0.crx')
 # PyAutoGUI
 # continue with download
 CONTINUE_IMAGE = get_file_path('continue_with_download.png', 'images')
-# start video
-START_IMAGE = get_file_path('start_video.png', 'images')
 
 # APScheduler timings
 # 11:20, 13:00, 15:20 normal
@@ -37,6 +35,7 @@ START_IMAGE = get_file_path('start_video.png', 'images')
 # 10:25(Days 2-5) 11:00(Day 1), 13:00, 15:30 project
 # 10:50, 13:00, 15:25 section review Day 1
 # 10:30, 13:00, 14:50 section review Day 2
+# 11:50, 13:00, 16:50 project section
 DIFF_MINUTE = 5
 REGULAR_CHECK_IN_TIMES = unfoil_time_sets(
     [extrapolate_time_sets(TIME_, diff_minute=DIFF_MINUTE)
