@@ -5,6 +5,7 @@ Scheduler that runs FakeCheckIn and TurnOnCamera
 import os
 import sys
 
+from datetime import datetime, timedelta
 import time
 
 from apscheduler.events import EVENT_JOB_EXECUTED
@@ -21,7 +22,7 @@ sys.path.append(os.getcwd())
 from fake_attendance.abc import BaseClass
 from fake_attendance.arg_parse import parsed_args
 from fake_attendance.fake_check_in import FakeCheckIn
-from fake_attendance.helper import print_with_time, print_sequence
+from fake_attendance.helper import print_with_time
 from fake_attendance.launch_zoom import LaunchZoom
 from fake_attendance.quit_zoom import QuitZoom
 from fake_attendance.settings import (
@@ -66,6 +67,7 @@ class MyScheduler(BaseClass):
             self.job_ids,
             (self.build_trigger(self.all_time_sets[job_id]) for job_id in self.job_ids))
         self.next_times = {}
+        self.until = None
         self.is_quit = False
         super().__init__()
 
@@ -81,7 +83,8 @@ class MyScheduler(BaseClass):
                 month  = time_set.month,
                 day    = time_set.day,
                 hour   = time_set.hour,
-                minute = time_set.minute)\
+                minute = time_set.minute,
+                second = time_set.second)\
                     for time_set in time_sets])
 
     def add_jobs(self):
@@ -116,12 +119,19 @@ class MyScheduler(BaseClass):
                 self.next_times[job_id] = None
     # pylint: enable=unused-argument
 
+    def get_current_timesets(self, job_id):
+        'get current trigger time sets'
+        time_sets = self.all_time_sets[job_id]
+        if self.until:
+            time_sets = [time_set for time_set in time_sets if time_set > self.until]
+        return time_sets
+
     def drop_runs_until(self, job_id, until):
         'reschedule so that job with matching job_id will not run until give datetime \'until\''
-        # which time sets
-        time_sets = self.all_time_sets[job_id]
-        # dropped the ones before 'until'
-        new_time_sets = [time_set for time_set in time_sets if time_set > until]
+        # save variable
+        self.until = until
+        # new time_sets
+        new_time_sets = self.get_current_timesets(job_id)
         # variables to pass to self.reschedule
         rescheduled_trigger = None
         is_remove_job = False
@@ -134,6 +144,12 @@ class MyScheduler(BaseClass):
             # remove the job
             is_remove_job = True
         self.reschedule(job_id, rescheduled_trigger, is_remove_job)
+
+    def add_run(self, job_id, time_set):
+        'extend trigger at given time'
+        new_time_sets = self.get_current_timesets(job_id) + [time_set]
+        rescheduled_trigger = self.build_trigger(new_time_sets)
+        self.reschedule(job_id, rescheduled_trigger, False)
 
     def reschedule(self, job_id, rescheduled_trigger, is_remove_job):
         'method that is called at the end of drop_runs_until'
@@ -232,11 +248,15 @@ class MyScheduler(BaseClass):
             elif all((not next_run for next_run in self.next_times.values())):
                 self.quit('남은 작업 없음')
             # fire job on command
-            for job in (self.launch_zoom, self.fake_check_in, self.quit_zoom):
-                if keyboard.is_pressed(SEQUENCE_MAP[job.print_name]):
-                    print_sequence(job.print_name)
-                    job.run()
-                    time.sleep(0.5)
+            for func in (self.launch_zoom, self.fake_check_in, self.quit_zoom):
+                if keyboard.is_pressed(SEQUENCE_MAP[func.print_name]):
+                    print_with_time(f'강제 {func.print_name} 커맨드 입력 확인')
+                    job = self.sched.get_job(func.print_name)
+                    if job and not job.pending:
+                        self.add_run(func.print_name, datetime.now() + timedelta(seconds=1))
+                    else:
+                        print_with_time(f'{func.print_name} 스크립트 이미 실행중. 완료 후 실행 바람')
+                    time.sleep(1)
             # quit
             if self.is_quit:
                 self.sched.remove_all_jobs()

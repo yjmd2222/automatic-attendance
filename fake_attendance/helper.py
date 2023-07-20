@@ -90,7 +90,3 @@ def bring_chrome_to_front(driver):
     time.sleep(1)
     driver.maximize_window()
     time.sleep(0.5)
-
-def print_sequence(sequence):
-    'return which sequence was pressed as message'
-    print_with_time(f'강제 {sequence} 커맨드 입력 확인')
