@@ -30,7 +30,6 @@ from fake_attendance.settings import (
     ZOOM_ON_TIMES,
     ZOOM_QUIT_TIMES,
     SCHED_QUIT_TIMES,
-    INTERRUPT_SEQUENCE,
     SEQUENCE_MAP)
 # pylint: enable=wrong-import-position
 
@@ -132,36 +131,17 @@ class MyScheduler(BaseClass):
         self.until = until
         # new time_sets
         new_time_sets = self.get_current_timesets(job_id)
-        # variables to pass to self.reschedule
-        rescheduled_trigger = None
-        is_remove_job = False
         # if next run left
         if new_time_sets:
             # reschedule
             rescheduled_trigger = self.build_trigger(new_time_sets)
-        # else
-        else:
-            # remove the job
-            is_remove_job = True
-        self.reschedule(job_id, rescheduled_trigger, is_remove_job)
+            self.sched.reschedule_job(job_id, trigger=rescheduled_trigger)
 
     def add_run(self, job_id, time_set):
         'extend trigger at given time'
         new_time_sets = self.get_current_timesets(job_id) + [time_set]
         rescheduled_trigger = self.build_trigger(new_time_sets)
-        self.reschedule(job_id, rescheduled_trigger, False)
-
-    def reschedule(self, job_id, rescheduled_trigger, is_remove_job):
-        'method that is called at the end of drop_runs_until'
-        # if no next run
-        if is_remove_job:
-            try:
-                self.sched.remove_job(job_id)
-            except JobLookupError:
-                print_with_time(f'오늘 남은 {job_id} 작업 없음')
-        # else
-        else:
-            self.sched.reschedule_job(job_id, trigger=rescheduled_trigger)
+        self.sched.reschedule_job(job_id, trigger=rescheduled_trigger)
 
     def get_timesets_from_terminal(self):
         'receive argument from command line for which time sets to add to schedule'
@@ -232,7 +212,7 @@ class MyScheduler(BaseClass):
 
         return time_sets
 
-    def quit(self, message='스케줄러 종료 시간'):
+    def quit(self, message='스케줄러 종료 요청'):
         'quit scheduler'
         print_with_time(message)
         self.is_quit = True
@@ -241,21 +221,20 @@ class MyScheduler(BaseClass):
     def wait_for_event(self):
         'runs APScheduler in background and waits for commands until quit command is passed'
         while True:
-            # quit scheduler with keyboard
-            if keyboard.is_pressed(INTERRUPT_SEQUENCE):
-                self.quit('키보드로 스케줄러 중단 요청')
             # quit if no job left
-            elif all((not next_run for next_run in self.next_times.values())):
+            if all((not next_run for next_run in self.next_times.values())):
                 self.quit('남은 작업 없음')
             # fire job on command
-            for func in (self.launch_zoom, self.fake_check_in, self.quit_zoom):
-                if keyboard.is_pressed(SEQUENCE_MAP[func.print_name]):
-                    print_with_time(f'강제 {func.print_name} 커맨드 입력 확인')
-                    job = self.sched.get_job(func.print_name)
+            for job_id in self.job_ids:
+                # if sequence for job is pressed
+                if keyboard.is_pressed(SEQUENCE_MAP[job_id]):
+                    print_with_time(f'강제 {job_id} 커맨드 입력 확인')
+                    job = self.sched.get_job(job_id)
+                    # check if job is not already running
                     if job and not job.pending:
-                        self.add_run(func.print_name, datetime.now() + timedelta(seconds=1))
+                        self.add_run(job_id, datetime.now() + timedelta(seconds=1))
                     else:
-                        print_with_time(f'{func.print_name} 스크립트 이미 실행중. 완료 후 실행 바람')
+                        print_with_time(f'{job_id} 스크립트 이미 실행중. 완료 후 실행 바람')
                     time.sleep(1)
             # quit
             if self.is_quit:

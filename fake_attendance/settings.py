@@ -132,13 +132,14 @@ RESULT_DICTS = {
 }
 
 # misc
-INTERRUPT_SEQUENCE = 'ctrl+alt+e'
 LAUNCH_ZOOM_SEQUENCE = 'ctrl+alt+l'
 CHECK_IN_SEQUENCE = 'ctrl+alt+c'
 QUIT_ZOOM_SEQUENCE = 'ctrl+alt+q'
+QUIT_SCHED_SEQUENCE = 'ctrl+alt+e'
 SEQUENCE_MAP = {
     '줌 실행': LAUNCH_ZOOM_SEQUENCE,
     'QR 체크인': CHECK_IN_SEQUENCE,
-    '줌 종료': QUIT_ZOOM_SEQUENCE
+    '줌 종료': QUIT_ZOOM_SEQUENCE,
+    '스케줄러 종료': QUIT_SCHED_SEQUENCE
 }
 VERBOSITY__INFO = 3
