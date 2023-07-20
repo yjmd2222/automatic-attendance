@@ -9,7 +9,6 @@ from datetime import datetime, timedelta
 import time
 
 from apscheduler.events import EVENT_JOB_EXECUTED
-from apscheduler.jobstores.base import JobLookupError
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.combining import OrTrigger
 from apscheduler.triggers.cron import CronTrigger
