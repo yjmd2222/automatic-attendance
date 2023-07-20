@@ -223,24 +223,21 @@ class MyScheduler(BaseClass):
         time.sleep(1)
 
     def wait_for_event(self):
-        'break if sequence is pressed or end job'
+        'runs APScheduler in background and waits for commands until quit command is passed'
         while True:
+            # quit scheduler with keyboard
             if keyboard.is_pressed(INTERRUPT_SEQUENCE):
-                self.quit('키보드로 중단 요청')
+                self.quit('키보드로 스케줄러 중단 요청')
+            # quit if no job left
             elif all((not next_run for next_run in self.next_times.values())):
                 self.quit('남은 작업 없음')
-            for name, process in zip([self.launch_zoom.print_name,
-                                      self.fake_check_in.print_name,
-                                      self.quit_zoom.print_name],
-                                     [LaunchZoom,
-                                      lambda: FakeCheckIn(self.drop_runs_until),
-                                      QuitZoom]):
-                if keyboard.is_pressed(SEQUENCE_MAP[name]):
-                    job = process()
-                    print_sequence(name)
+            # fire job on command
+            for job in (self.launch_zoom, self.fake_check_in, self.quit_zoom):
+                if keyboard.is_pressed(SEQUENCE_MAP[job.print_name]):
+                    print_sequence(job.print_name)
                     job.run()
                     time.sleep(0.5)
-                    break
+            # quit
             if self.is_quit:
                 self.sched.remove_all_jobs()
                 self.sched.remove_listener(self.print_next_time)
