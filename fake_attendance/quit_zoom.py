@@ -18,10 +18,10 @@ from fake_attendance.settings import ZOOM_CLASSROOM_CLASS
 
 class QuitZoom(PrepareSendEmail, BaseClass):
     'A class for quitting Zoom'
+    print_name = '줌 종료'
 
     def __init__(self):
         'initialize'
-        self.print_name = '줌 종료'
         PrepareSendEmail.define_attributes(self)
         PrepareSendEmail.decorate_run(self)
         BaseClass.__init__(self)

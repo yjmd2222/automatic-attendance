@@ -62,7 +62,7 @@ SR_D2_CHECK_IN_TIMES = unfoil_time_sets(
      for TIME_ in ['10:30', '13:01', '14:50']]
 )
 PROJECT_TIMES = unfoil_time_sets(
-    [extrapolate_time_sets(TIME_, diff_minute=DIFF_MINUTE)
+    [extrapolate_time_sets(TIME_, diff_minute=3, extend_num=1)
      for TIME_ in ['12:00', '13:01', '16:50']]
 )
 ARGUMENT_MAP = {
@@ -132,5 +132,13 @@ RESULT_DICTS = {
 }
 
 # misc
-INTERRUPT_SEQUENCE = 'ctrl+alt+c'
+INTERRUPT_SEQUENCE = 'ctrl+alt+e'
+LAUNCH_ZOOM_SEQUENCE = 'ctrl+alt+l'
+CHECK_IN_SEQUENCE = 'ctrl+alt+c'
+QUIT_ZOOM_SEQUENCE = 'ctrl+alt+q'
+SEQUENCE_MAP = {
+    '줌 실행': LAUNCH_ZOOM_SEQUENCE,
+    'QR 체크인': CHECK_IN_SEQUENCE,
+    '줌 종료': QUIT_ZOOM_SEQUENCE
+}
 VERBOSITY__INFO = 3

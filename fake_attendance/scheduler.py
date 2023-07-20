@@ -21,7 +21,7 @@ sys.path.append(os.getcwd())
 from fake_attendance.abc import BaseClass
 from fake_attendance.arg_parse import parsed_args
 from fake_attendance.fake_check_in import FakeCheckIn
-from fake_attendance.helper import print_with_time
+from fake_attendance.helper import print_with_time, print_sequence
 from fake_attendance.launch_zoom import LaunchZoom
 from fake_attendance.quit_zoom import QuitZoom
 from fake_attendance.settings import (
@@ -29,12 +29,15 @@ from fake_attendance.settings import (
     ZOOM_ON_TIMES,
     ZOOM_QUIT_TIMES,
     SCHED_QUIT_TIMES,
-    INTERRUPT_SEQUENCE)
+    INTERRUPT_SEQUENCE,
+    SEQUENCE_MAP)
 # pylint: enable=wrong-import-position
 
 # pylint: disable=too-many-instance-attributes
 class MyScheduler(BaseClass):
     'A class that manages the scheduler'
+    print_name = '스케줄러'
+
     def __init__(self):
         'initialize'
         self.sched = BackgroundScheduler()
@@ -64,7 +67,6 @@ class MyScheduler(BaseClass):
             (self.build_trigger(self.all_time_sets[job_id]) for job_id in self.job_ids))
         self.next_times = {}
         self.is_quit = False
-        self.print_name = '스케줄러'
         super().__init__()
 
     def map_dict(self, keys, values):
@@ -220,13 +222,25 @@ class MyScheduler(BaseClass):
         self.is_quit = True
         time.sleep(1)
 
-    def wait_for_quit(self, interrupt_sequence):
+    def wait_for_event(self):
         'break if sequence is pressed or end job'
         while True:
-            if keyboard.is_pressed(interrupt_sequence):
+            if keyboard.is_pressed(INTERRUPT_SEQUENCE):
                 self.quit('키보드로 중단 요청')
             elif all((not next_run for next_run in self.next_times.values())):
                 self.quit('남은 작업 없음')
+            for name, process in zip([self.launch_zoom.print_name,
+                                      self.fake_check_in.print_name,
+                                      self.quit_zoom.print_name],
+                                     [LaunchZoom,
+                                      lambda: FakeCheckIn(self.drop_runs_until),
+                                      QuitZoom]):
+                if keyboard.is_pressed(SEQUENCE_MAP[name]):
+                    job = process()
+                    print_sequence(name)
+                    job.run()
+                    time.sleep(0.5)
+                    break
             if self.is_quit:
                 self.sched.remove_all_jobs()
                 self.sched.remove_listener(self.print_next_time)
@@ -238,7 +252,7 @@ class MyScheduler(BaseClass):
         self.add_jobs() # add all jobs
         self.sched.start() # start the scheduler
         self.print_next_time() # print time first job fires
-        self.wait_for_quit(INTERRUPT_SEQUENCE) # quit with keyboard or at self.quit job time
+        self.wait_for_event() # quit with keyboard, force qr check, or at self.quit job time
 # pylint: enable=too-many-instance-attributes
 
 if __name__ == '__main__':

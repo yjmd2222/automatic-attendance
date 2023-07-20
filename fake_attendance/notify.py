@@ -29,12 +29,12 @@ from fake_attendance.settings import RESULT_DICTS
 
 class Notify(BaseClass):
     'A class for sending email on successful QR recognization'
+    print_name = '이메일 발송'
 
     def __init__(self, job_id='job_id'):
         'initialize'
         self.link = ''
         self.job_id = job_id
-        self.print_name = '이메일 발송'
         super().__init__()
 
     def write_body(self, result):

@@ -32,11 +32,11 @@ from fake_attendance.settings import (
 
 class LaunchZoom(PrepareSendEmail, UseSelenium):
     'A class for launching Zoom'
+    print_name = '줌 실행'
 
     def __init__(self):
         'initialize'
         self.hwnd_zoom_classroom = 0
-        self.print_name = '줌 실행'
         PrepareSendEmail.define_attributes(self)
         PrepareSendEmail.decorate_run(self)
         UseSelenium.__init__(self)
