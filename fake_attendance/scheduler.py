@@ -9,6 +9,7 @@ from datetime import datetime, timedelta
 import time
 
 from apscheduler.events import EVENT_JOB_EXECUTED
+from apscheduler.jobstores.base import JobLookupError
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.combining import OrTrigger
 from apscheduler.triggers.cron import CronTrigger
@@ -135,6 +136,16 @@ class MyScheduler(BaseClass):
             # reschedule
             rescheduled_trigger = self.build_trigger(new_time_sets)
             self.sched.reschedule_job(job_id, trigger=rescheduled_trigger)
+        # else remove job
+        else:
+            self.remove_job(job_id)
+
+    def remove_job(self, job_id):
+        'remove job'
+        try:
+            self.sched.remove_job(job_id)
+        except JobLookupError:
+            print_with_time(f'오늘 남은 {job_id} 작업 없음')
 
     def add_run(self, job_id, time_set):
         'extend trigger at given time'
