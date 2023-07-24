@@ -6,9 +6,8 @@ from abc import ABC, abstractmethod
 
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
-# from selenium.webdriver.chrome.service import Service
-# from webdriver_manager.chrome import ChromeDriverManager
-import chromedriver_autoinstaller
+from selenium.webdriver.chrome.service import Service
+from webdriver_manager.chrome import ChromeDriverManager
 
 import win32con
 import win32gui
@@ -73,12 +72,10 @@ class UseSelenium(BaseClass):
 
     def initialize_selenium(self):
         'initialize Selenium and return driver'
-        # auto_driver = Service(ChromeDriverManager().install())
-        chromedriver_autoinstaller.install()
+        auto_driver = Service(ChromeDriverManager().install())
         options = self.create_selenium_options()
 
-        # return webdriver.Chrome(service=auto_driver, options=options)
-        return webdriver.Chrome(options=options)
+        return webdriver.Chrome(service=auto_driver, options=options)
 
     def maximize_window(self, hwnd):
         'maximize window'
