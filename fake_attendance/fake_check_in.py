@@ -233,58 +233,57 @@ class FakeCheckIn(PrepareSendEmail, UseSelenium):
 
     # pylint: disable=attribute-defined-outside-init
     def run(self):
-        # 'run whole check-in process'
-        # # get Zoom window
-        # self.is_window, self.hwnd = self.check_window()
-        # # if it is visible
-        # if self.is_window:
-        #     # get max rect
-        #     self.rect = self.maximize_window(self.hwnd)
-        #     # init selenium
-        #     self.driver = self.initialize_selenium()
-        # # if not
-        # else:
-        #     # quit
-        #     print_with_time('줌 실행중인지 확인 필요')
-        #     self.reset_attributes()
-        #     return
+        'run whole check-in process'
+        # get Zoom window
+        self.is_window, self.hwnd = self.check_window()
+        # if it is visible
+        if self.is_window:
+            # get max rect
+            self.rect = self.maximize_window(self.hwnd)
+            # init selenium
+            self.driver = self.initialize_selenium()
+        # if not
+        else:
+            # quit
+            print_with_time('줌 실행중인지 확인 필요')
+            self.reset_attributes()
+            return
 
-        # # check QR code in Zoom
-        # is_qr = self.check_link_loop()
-        # # if there's no QR code
-        # if not is_qr:
-        #     print_with_time('QR 코드 없음. 현 세션 완료')
-        #     self.driver.quit()
-        #     return
+        # check QR code in Zoom
+        is_qr = self.check_link_loop()
+        # if there's no QR code
+        if not is_qr:
+            print_with_time('QR 코드 없음. 현 세션 완료')
+            self.driver.quit()
+            return
 
-        # # otherwise check in
-        # print_with_time('QR 코드 확인. 출석 체크 진행')
-        # check_in_result = self.check_in()
+        # otherwise check in
+        print_with_time('QR 코드 확인. 출석 체크 진행')
+        check_in_result = self.check_in()
 
-        # # update result
-        # if check_in_result:
-        #     self.result_dict['result']['content'] = '성공'
-        #     self.is_wait = True
-        # else:
-        #     self.result_dict['result']['content'] = '실패'
-        #     self.is_wait = False
+        # update result
+        if check_in_result:
+            self.result_dict['result']['content'] = '성공'
+            self.is_wait = True
+        else:
+            self.result_dict['result']['content'] = '실패'
+            self.is_wait = False
 
-        # # quit Selenium
-        # self.driver.quit()
+        # quit Selenium
+        self.driver.quit()
 
-        # # maximize Zoom window on exit
-        # win32gui.MoveWindow(self.hwnd, *self.rect, True)
+        # maximize Zoom window on exit
+        win32gui.MoveWindow(self.hwnd, *self.rect, True)
 
         # make sure same job does not run within 30 minutes upon completion
-        # if self.is_wait:
-        until = datetime.now() + timedelta(minutes=30)
-        if self.sched_drop_runs_until:
-            self.sched_drop_runs_until(self.print_name, until)
-            print('?')
-        print_with_time(f'출석 확인. {datetime.strftime(until, "%H:%M")}까지 출석 체크 실행 안 함')
-        # checker bool to send email
-        # self.is_send = True
-        # return
+        if self.is_wait:
+            until = datetime.now() + timedelta(minutes=30)
+            if self.sched_drop_runs_until:
+                self.sched_drop_runs_until(self.print_name, until)
+            print_with_time(f'출석 확인. {datetime.strftime(until, "%H:%M")}까지 출석 체크 실행 안 함')
+            # checker bool to send email
+            self.is_send = True
+        return
     # pylint: enable=attribute-defined-outside-init
 # pylint: enable=too-many-instance-attributes
 
