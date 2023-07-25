@@ -72,10 +72,11 @@ class UseSelenium(BaseClass):
 
     def initialize_selenium(self):
         'initialize Selenium and return driver'
-        auto_driver = Service(ChromeDriverManager().install())
+        # auto_driver = Service(ChromeDriverManager().install())
         options = self.create_selenium_options()
 
-        return webdriver.Chrome(service=auto_driver, options=options)
+        # return webdriver.Chrome(service=auto_driver, options=options)
+        return webdriver.Chrome(options=options)
 
     def maximize_window(self, hwnd):
         'maximize window'
