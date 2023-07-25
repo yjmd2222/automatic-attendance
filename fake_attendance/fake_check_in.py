@@ -40,6 +40,7 @@ from fake_attendance.notify import PrepareSendEmail
 # pylint: disable=too-many-instance-attributes
 class FakeCheckIn(PrepareSendEmail, UseSelenium):
     'A class for checking QR image and sending email with link'
+    print_name = 'QR 체크인'
 
     def __init__(self, sched_drop_runs_until=None):
         'initialize'
@@ -49,7 +50,6 @@ class FakeCheckIn(PrepareSendEmail, UseSelenium):
         self.rect = [100,100,100,100]
         self.extension_source = SCREEN_QR_READER_SOURCE
         self.is_wait = False
-        self.print_name = 'QR 체크인'
         PrepareSendEmail.define_attributes(self)
         PrepareSendEmail.decorate_run(self)
         UseSelenium.__init__(self)

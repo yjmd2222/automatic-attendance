@@ -41,14 +41,14 @@ def convert_to_datetime(time_, format_='%H:%M'):
         second = 0)
     return time_
 
-def extrapolate_time_sets(time_:str|datetime, diff_minute=5, format_='%H:%M'):
+def extrapolate_time_sets(time_:str|datetime, diff_minute=5, extend_num=2, format_='%H:%M'):
     '''
     return time sets diff_min and 2*diff_min minutes before and after given time\n
     converts 'time_' to datetime.datetime if type str
     '''
     if isinstance(time_, str):
         time_ = convert_to_datetime(time_, format_)
-    return [time_ + timedelta(minutes=diff_minute*i) for i in range(-2, 3)]
+    return [time_ + timedelta(minutes=diff_minute*i) for i in range(-extend_num, extend_num+1)]
 
 def unfoil_time_sets(time_sets_outer):
     'return unfoiled time sets'
@@ -90,11 +90,3 @@ def bring_chrome_to_front(driver):
     time.sleep(1)
     driver.maximize_window()
     time.sleep(0.5)
-
-def decorator_get_name(func):
-    'decorator for getting method name'
-    def wrapper(*args, **kwargs):
-        'wrapper'
-        args = args[:-1] + (func.__name__,)
-        func(*args, **kwargs)
-    return wrapper
