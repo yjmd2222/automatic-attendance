@@ -30,12 +30,12 @@ from fake_attendance.settings import (
 
 class DownloadExtensionSource(UseSelenium):
     'A class for downloading the source of Screen QR Reader'
+    print_name = '다운로드'
 
     def __init__(self, scheduler:MyScheduler|None=None):
         'initialize'
         self.image = CONTINUE_IMAGE
         self.scheduler = scheduler
-        self.print_name = '다운로드'
         super().__init__()
 
     def check_source_exists(self):

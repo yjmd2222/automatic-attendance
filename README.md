@@ -26,7 +26,7 @@ Note: If the module fails to download the Chrome extension source, you can try d
 ## Run
 Run `python -m fake_attendance` for download, Zoom launch, and check-in. Read [How it works and why](#how-it-works-and-why) for explanation.
 
-To change the QR checking schedule, you can run add an argument as either:
+To change the QR checking schedule, you can add an argument as either:
 - `-p` optional argument; one of `'regular'`, `'sprint challenge'`, `'project day 1'`, `'project days 2-5'`, `'section review day 1'`, `'section review day 2'`, and `'project section'` (See [settings.py](fake_attendance/settings.py) for actual timings.)
 - `-t` optional argument; a text file that contains a 24-hour format time sets, such as [test_times.txt](test_times.txt)
 - or positional argument; a series of time sets, such as `10:00 15:00` (This case would be multiple arguments).
@@ -37,8 +37,10 @@ Type `python -m fake_attendance -h` for more information. Note that arguments ar
 
 For a single test to fire right away, run `python -m fake_attendance.fake_check_in`.
 
+Currently supports `Ctrl + Alt + L` for launching Zoom, `Ctrl + Alt + C` for checking in with QR code, and `Ctrl + Alt + Q` for quitting Zoom.
+
 ## Quit
-To quit, press `Ctrl + C` in the terminal or `Ctrl + Alt + C` anywhere. The former is the default sequence for quitting a Python script, and the latter is a user-defined sequence: see [scheduler.py](https://github.com/yjmd2222/fake-attendance/blob/d38ceb32321eac70bbd7902cd87dd7bd88a61a6d/fake_attendance/scheduler.py#L124-L127) and [settings.py](https://github.com/yjmd2222/fake-attendance/blob/d38ceb32321eac70bbd7902cd87dd7bd88a61a6d/fake_attendance/settings.py#L111).
+To quit, press `Ctrl + C` in the terminal or `Ctrl + Alt + E` anywhere. The former is the default sequence for quitting a Python script, and the latter is a user-defined sequence: see [scheduler.py](https://github.com/yjmd2222/fake-attendance/blob/d38ceb32321eac70bbd7902cd87dd7bd88a61a6d/fake_attendance/scheduler.py#L124-L127) and [settings.py](https://github.com/yjmd2222/fake-attendance/blob/d38ceb32321eac70bbd7902cd87dd7bd88a61a6d/fake_attendance/settings.py#L111).
 
 The second sequence allows quitting even when not focused on the terminal, and it may not work in the middle of a job until the job is finished which I believe is due to the usage of `APScheduler`'s `BackgroundScheduler`. A contribution for a fix is welcomed.
 

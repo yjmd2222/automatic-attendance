@@ -18,10 +18,10 @@ from fake_attendance.settings import ZOOM_CLASSROOM_CLASS
 
 class QuitZoom(PrepareSendEmail, BaseClass):
     'A class for quitting Zoom'
+    print_name = '줌 종료'
 
     def __init__(self):
         'initialize'
-        self.print_name = '줌 종료'
         PrepareSendEmail.define_attributes(self)
         PrepareSendEmail.decorate_run(self)
         BaseClass.__init__(self)
@@ -39,14 +39,16 @@ class QuitZoom(PrepareSendEmail, BaseClass):
                 print_with_time('숨겨진 Zoom 회의 종료')
             else:
                 print_with_time('Zoom 회의 입장 확인 후 종료')
-            self.result_dict['quit']['content'] = True
+            if not self.result_dict['quit']['content']:
+                self.result_dict['quit']['content'] = True
             return True
         except ElementNotFoundError:
             if kill_hidden:
                 print_with_time('숨겨진 Zoom 회의 없음')
             else:
                 print_with_time('Zoom 회의 입장 안 함')
-            self.result_dict['quit']['content'] = False
+            if self.result_dict['quit']['content'] is None:
+                self.result_dict['quit']['content'] = False
             return False
 
     # pylint: disable=attribute-defined-outside-init
@@ -55,7 +57,10 @@ class QuitZoom(PrepareSendEmail, BaseClass):
         Run the launch. kill_hidden==True quits hidden Zoom conf before launching.\n
         kill_hidden==False quits Zoom at the end of session and sends email
         '''
-        self.connect_and_kill(kill_hidden)
+        # try killing Zoom completely in three tries
+        for _ in range(3):
+            if not self.connect_and_kill(kill_hidden):
+                break
 
         # checker bool to send email
         self.is_send = not kill_hidden
