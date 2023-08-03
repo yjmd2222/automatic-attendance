@@ -12,11 +12,9 @@ from selenium.webdriver.chrome.options import Options
 import win32con
 import win32gui
 
-# pylint: disable=wrong-import-position
 from fake_attendance.arg_parse import parsed_args
 from fake_attendance.helper import print_with_time
 from fake_attendance.settings import VERBOSITY__INFO
-# pylint: enable=wrong-import-position
 
 class BaseClass(ABC):
     'base class for abstraction'

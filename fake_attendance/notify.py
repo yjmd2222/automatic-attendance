@@ -2,9 +2,6 @@
 Notify upon successfully reading QR
 '''
 
-import os
-import sys
-
 import smtplib
 from smtplib import SMTPAuthenticationError
 from email.mime.text import MIMEText
@@ -15,9 +12,6 @@ from socket import gaierror
 
 from textwrap import dedent
 
-sys.path.append(os.getcwd())
-
-# pylint: disable=wrong-import-position
 from fake_attendance.abc import BaseClass
 from fake_attendance.helper import print_with_time
 from fake_attendance.info import (
@@ -25,7 +19,6 @@ from fake_attendance.info import (
     EMAIL_PASSWORD,
     SMTP_HOST, SMTP_PORT)
 from fake_attendance.settings import RESULT_DICTS
-# pylint: enable=wrong-import-position
 
 class Notify(BaseClass):
     'A class for sending email on successful QR recognization'

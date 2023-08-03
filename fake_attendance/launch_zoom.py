@@ -2,17 +2,10 @@
 Launch Zoom
 '''
 
-import os
-import sys
-
 import time
 
 import keyboard
 import win32gui
-
-sys.path.append(os.getcwd())
-
-# pylint: disable=wrong-import-position
 from fake_attendance.abc import UseSelenium
 from fake_attendance.info import ZOOM_LINK
 from fake_attendance.helper import (
@@ -28,7 +21,6 @@ from fake_attendance.settings import (
     ZOOM_UPDATE_POPUP_CLASS,
     ZOOM_UPDATE_DOWNLOAD_CLASS,
     ZOOM_UPDATE_ACTUAL_UPDATE_CLASS)
-# pylint: enable=wrong-import-position
 
 class LaunchZoom(PrepareSendEmail, UseSelenium):
     'A class for launching Zoom'

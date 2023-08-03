@@ -2,9 +2,6 @@
 Scheduler that runs FakeCheckIn and TurnOnCamera
 '''
 
-import os
-import sys
-
 from datetime import datetime, timedelta
 import time
 
@@ -16,9 +13,6 @@ from apscheduler.triggers.cron import CronTrigger
 
 import keyboard
 
-sys.path.append(os.getcwd())
-
-# pylint: disable=wrong-import-position
 from fake_attendance.abc import BaseClass
 from fake_attendance.arg_parse import parsed_args
 from fake_attendance.fake_check_in import FakeCheckIn
@@ -31,7 +25,6 @@ from fake_attendance.settings import (
     ZOOM_QUIT_TIMES,
     SCHED_QUIT_TIMES,
     SEQUENCE_MAP)
-# pylint: enable=wrong-import-position
 
 # pylint: disable=too-many-instance-attributes
 class MyScheduler(BaseClass):
@@ -159,9 +152,9 @@ class MyScheduler(BaseClass):
 
         def parse_time(raw_time_sets):
             'parse time sets from raw list'
-            # pylint: disable=wrong-import-position,import-outside-toplevel
+            # pylint: disable=import-outside-toplevel
             from fake_attendance.helper import convert_to_datetime
-            # pylint: enable=wrong-import-position,import-outside-toplevel
+            # pylint: enable=import-outside-toplevel
             parsed_time_sets = []
             is_success = None
             for raw in raw_time_sets:
@@ -206,9 +199,9 @@ class MyScheduler(BaseClass):
                 time_sets, is_success = parse_time(parsed_args.time)
             if parsed_args.extrapolate:
                 if is_success == 'true':
-                    # pylint: disable=wrong-import-position,import-outside-toplevel
+                    # pylint: disable=import-outside-toplevel
                     from fake_attendance.helper import extrapolate_time_sets, unfoil_time_sets
-                    # pylint: enable=wrong-import-position,import-outside-toplevel
+                    # pylint: enable=import-outside-toplevel
                     time_sets = unfoil_time_sets(
                         [extrapolate_time_sets(time_set) for time_set in time_sets]
                     )

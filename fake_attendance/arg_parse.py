@@ -4,9 +4,7 @@ parses arguments from command line
 
 import argparse
 
-# pylint: disable=wrong-import-position
 from fake_attendance.settings import ARGUMENT_MAP, VERBOSITY__INFO
-# pylint: enable=wrong-import-position
 
 parser = argparse.ArgumentParser(description='자동 출석 프로그램. -p, -t, time 중 하나만 선택')
 
