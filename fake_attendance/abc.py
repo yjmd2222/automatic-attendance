@@ -16,11 +16,17 @@ if platform == 'win32':
     import win32gui
 elif platform == 'darwin':
     import subprocess
-    import pyautogui
 
 # pylint: disable=wrong-import-position
 from fake_attendance.arg_parse import parsed_args
 from fake_attendance.helper import print_with_time
+if platform == 'win32':
+    from fake_attendance.settings import ZOOM_CLASSROOM_CLASS
+elif platform == 'darwin':
+    from fake_attendance.helper import get_screen_resolution
+    from fake_attendance.settings import (
+        ZOOM_APPLICATION_NAME,
+        ZOOM_CLASSROOM_NAME)
 from fake_attendance.settings import VERBOSITY__INFO
 # pylint: enable=wrong-import-position
 
@@ -84,53 +90,98 @@ class UseSelenium(BaseClass):
         # return webdriver.Chrome(service=auto_driver, options=options)
         return webdriver.Chrome(options=options)
 
-    if platform == 'win32':
-        def maximize_window_win32(self, hwnd:int):
-            '''
-            maximize window on win32
-            '''
-            # force normal size from possible out-of-size maximized window
-            win32gui.ShowWindow(hwnd, win32con.SW_NORMAL)
-            # maximize window
-            win32gui.ShowWindow(hwnd, win32con.SW_MAXIMIZE)
+    def check_window_win32(self, window_class_name):
+        'check and return window on win32'
+        hwnd = win32gui.FindWindow(window_class_name, None)
+        is_window = win32gui.IsWindowVisible(hwnd)
 
-            rect = list(win32gui.GetWindowRect(hwnd))
+        return is_window, hwnd
 
-            return rect
-
-    elif platform == 'darwin':
-        def get_screen_resolution(self):
-            'get screen resolution'
-            pos_x, pos_y = pyautogui.size()
-            return pos_x, pos_y
-
-        def maximize_window_darwin(self, app_name:str, window_name:str):
-            '''
-            maximize window on darwin
-            '''
-            pos_x, pos_y = self.get_screen_resolution()
-            applescript_code = f'''
-            tell application "System Events"
+    def check_window_darwin(self, app_name, window_name):
+        'check window and return True on darwin'
+        applescript_code = f'''
+        tell application "System Events"
+            if exists application process "{app_name}" then
                 tell application process "{app_name}"
-                    tell (window 1 whose title is "{window_name}")
-                        set position to (0, 0)
-                        set size to {pos_x, pos_y}
-                        set rect to position & size
-                    end tell
-                    set frontmost to true
-                    return rect
+                    if exists (window 1 whose title is "{window_name}") then
+                        return 1
+                    else
+                        return 0
+                    end if
                 end tell
+            else
+                return 0
+            end if
+        end tell
+        '''
+
+        result = subprocess.run(['osascript', '-e', applescript_code], capture_output=True, text=True, check=True)
+        is_window = bool(int(result.stdout.strip()))
+
+        return is_window, None
+
+    def check_window(self):
+        '''
+        check Zoom conference window presence\n
+        returns is_window, hwnd on win32\n
+        and returns is_window, None on darwin
+        '''
+        if platform == 'win32':
+            is_window, hwnd = self.check_window_win32(ZOOM_CLASSROOM_CLASS)
+        elif platform == 'darwin':
+            is_window, hwnd = self.check_window_darwin(ZOOM_APPLICATION_NAME, ZOOM_CLASSROOM_NAME)
+        return is_window, hwnd
+
+    def maximize_window_win32(self, hwnd):
+        '''
+        maximize window on win32
+        '''
+        # force normal size from possible out-of-size maximized window
+        win32gui.ShowWindow(hwnd, win32con.SW_NORMAL)
+        # maximize window
+        win32gui.ShowWindow(hwnd, win32con.SW_MAXIMIZE)
+
+        rect = list(win32gui.GetWindowRect(hwnd))
+
+        return rect
+
+    def maximize_window_darwin(self, app_name, window_name):
+        '''
+        maximize window on darwin
+        '''
+        pos_x, pos_y = get_screen_resolution()
+        applescript_code = f'''
+        tell application "System Events"
+            tell application process "{app_name}"
+                tell (window 1 whose title is "{window_name}")
+                    set position to (0, 0)
+                    set size to {pos_x, pos_y}
+                    set rect to position & size
+                end tell
+                set frontmost to true
+                return rect
             end tell
-            '''
+        end tell
+        '''
 
-            result = subprocess.run(['osascript', '-e', applescript_code],
-                                    capture_output=True,
-                                    text=True,
-                                    check=True)
-            rect = result.stdout.strip().split(', ')
-            rect = [int(num) for num in rect]
+        result = subprocess.run(['osascript', '-e', applescript_code],
+                                capture_output=True,
+                                text=True,
+                                check=True)
+        rect = result.stdout.strip().split(', ')
+        rect = [int(num) for num in rect]
 
-            return rect
+        return rect
+    
+    def maximize_window(self, hwnd:int|None):
+        '''
+        maximize window and returns rect\n
+        hwnd is just a placeholder on darwin
+        '''
+        if platform == 'win32':
+            return self.maximize_window_win32(hwnd)
+        elif platform == 'darwin':
+            return self.maximize_window_darwin(ZOOM_APPLICATION_NAME, ZOOM_CLASSROOM_NAME)
 
     # def maximize_window_darwin(self, hwnd, app_name=None):
     #     'maximize window on Darwin'

@@ -21,7 +21,8 @@ from fake_attendance.abc import UseSelenium
 from fake_attendance.info import ZOOM_LINK
 from fake_attendance.helper import (
     bring_chrome_to_front,
-    print_with_time)
+    print_with_time,
+    set_foreground)
 if platform == 'win32':
     from fake_attendance.helper import (
         print_all_windows,
@@ -30,10 +31,19 @@ from fake_attendance.quit_zoom import QuitZoom
 from fake_attendance.notify import PrepareSendEmail
 from fake_attendance.settings import (
     ZOOM_AGREE_RECORDING_POPUP_CLASS,
-    ZOOM_CLASSROOM_CLASS,
+    ZOOM_AGREE_RECORDING_POPUP_NAME,
     ZOOM_UPDATE_POPUP_CLASS,
     ZOOM_UPDATE_DOWNLOAD_CLASS,
-    ZOOM_UPDATE_ACTUAL_UPDATE_CLASS)
+    ZOOM_UPDATE_ACTUAL_UPDATE_CLASS,
+    ZOOM_APPLICATION_NAME,
+    ZOOM_CLASSROOM_NAME
+    )
+if platform == 'win32':
+    from fake_attendance.settings import ZOOM_CLASSROOM_CLASS
+# elif platform == 'darwin':
+#     from fake_attendance.settings import (
+#         ZOOM_APPLICATION_NAME,
+#         ZOOM_CLASSROOM_NAME)
 # pylint: enable=wrong-import-position
 
 class LaunchZoom(PrepareSendEmail, UseSelenium):
@@ -65,10 +75,10 @@ class LaunchZoom(PrepareSendEmail, UseSelenium):
     def connect(self):
         'connect to Zoom conference'
         # check presence of Zoom conference
-        self.hwnd_zoom_classroom = win32gui.FindWindow(ZOOM_CLASSROOM_CLASS, None)
+        is_window, self.hwnd_zoom_classroom = self.check_window()
         # if visible
-        if win32gui.IsWindowVisible(self.hwnd_zoom_classroom):
-            send_alt_key_and_set_foreground(self.hwnd_zoom_classroom)
+        if is_window:
+            set_foreground(self.hwnd_zoom_classroom, ZOOM_APPLICATION_NAME, ZOOM_CLASSROOM_NAME)
             print_with_time('줌 회의 입장 확인')
         # if not visible
         else:
@@ -113,17 +123,9 @@ class LaunchZoom(PrepareSendEmail, UseSelenium):
     def check_launch_result(self):
         'check the result'
         # check Zoom classroom
-        self.hwnd_zoom_classroom = win32gui.FindWindow(ZOOM_CLASSROOM_CLASS, None)
+        is_classroom, self.hwnd_zoom_classroom = self.check_window()
 
-        def check_zoom_visible(hwnd):
-            'check if zoom classroom window is visible'
-            # if Zoom classroom visible
-            if win32gui.IsWindowVisible(hwnd):
-                print_with_time('줌 회의 실행/발견 성공')
-                return True
-            return False
-
-        if check_zoom_visible(self.hwnd_zoom_classroom):
+        if is_classroom:
             self.result_dict[ZOOM_CLASSROOM_CLASS]['content'] = True
             return True
         # if not
@@ -141,8 +143,8 @@ class LaunchZoom(PrepareSendEmail, UseSelenium):
                 print_all_windows() # debug
             self.launch_zoom()
             # check if now zoom window is visible
-            self.hwnd_zoom_classroom = win32gui.FindWindow(ZOOM_CLASSROOM_CLASS, None)
-            if check_zoom_visible(self.hwnd_zoom_classroom):
+            is_classroom, self.hwnd_zoom_classroom = self.check_window()
+            if is_classroom:
                 return True
 
         # no launch from all tries
@@ -174,17 +176,17 @@ class LaunchZoom(PrepareSendEmail, UseSelenium):
             print_with_time(f'입력 오류: {error}')
             return False
         # get hwnd
-        if window_class:
-            hwnd = win32gui.FindWindow(window_class, None)
+        if platform == 'win32':
+            is_window, hwnd = self.check_window_win32(window_class)
             window_name = window_class
-        else:
-            hwnd = win32gui.FindWindow(None, window_title)
+        elif platform == 'darwin':
+            is_window, hwnd = self.check_window_darwin(ZOOM_APPLICATION_NAME, window_title)
             window_name = window_title
         # window/popup visible
-        if win32gui.IsWindowVisible(hwnd):
+        if is_window:
             print_with_time(f'{window_name} 창 확인')
             # set focus on it
-            send_alt_key_and_set_foreground(hwnd)
+            set_foreground(hwnd, ZOOM_APPLICATION_NAME, window_title)
             # press tab num times and hit space to enter
             self.press_tabs_and_space(tab_num, reverse, send_alt)
             self.result_dict[window_name]['content'] = True
@@ -206,9 +208,9 @@ class LaunchZoom(PrepareSendEmail, UseSelenium):
         # if launch successful
         if self.check_launch_result():
             # double check recording consent
-            self.process_popup(ZOOM_AGREE_RECORDING_POPUP_CLASS, reverse=True, send_alt=True)
+            self.process_popup(ZOOM_AGREE_RECORDING_POPUP_CLASS, ZOOM_AGREE_RECORDING_POPUP_NAME, reverse=True, send_alt=True)
             print_with_time('동의 재확인')
-            self.process_popup(ZOOM_AGREE_RECORDING_POPUP_CLASS, reverse=True, send_alt=True)
+            self.process_popup(ZOOM_AGREE_RECORDING_POPUP_CLASS, ZOOM_AGREE_RECORDING_POPUP_NAME, reverse=True, send_alt=True)
         # maximize if everything done correctly
         if self.result_dict[ZOOM_AGREE_RECORDING_POPUP_CLASS]['content']:
             self.maximize_window(self.hwnd_zoom_classroom)

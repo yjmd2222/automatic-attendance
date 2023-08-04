@@ -13,6 +13,8 @@ import pyautogui
 if platform == 'win32':
     from win32com.client import Dispatch
     import win32gui
+elif platform == 'darwin':
+    import subprocess
 
 def get_file_path(filename, sub=None):
     'return full file path'
@@ -72,25 +74,57 @@ def bring_chrome_to_front(driver):
     driver.maximize_window()
     time.sleep(0.5)
 
-if platform == 'win32':
-    def send_alt_key_and_set_foreground(hwnd):
-        '''
-        send alt key to shell before setting foreground with win32gui to workaround
-        error: (0, 'SetForegroundWindow', 'No error message is available')
-        '''
-        Dispatch('WScript.Shell').SendKeys('%')
-        win32gui.SetForegroundWindow(hwnd)
+def send_alt_key_and_set_foreground(hwnd):
+    '''
+    send alt key to shell before setting foreground with win32gui to workaround
+    error: (0, 'SetForegroundWindow', 'No error message is available')
+    '''
+    Dispatch('WScript.Shell').SendKeys('%')
+    win32gui.SetForegroundWindow(hwnd)
 
-    def print_all_windows(title='Zoom'):
-        'wrapper'
-        def win_enum_handler(hwnd, items):
-            '''print hwnds and respective class names with 'Zoom' in title'''
-            full_title = win32gui.GetWindowText(hwnd)
-            if title in full_title:
-                items.append(str(hwnd).ljust(10) + win32gui.GetClassName(hwnd).ljust(30) + full_title)
+def set_foreground_darwin(app_name, window_name):
+    'set window to foreground on darwin'
+    applescript_code = f'''
+    tell application "System Events"
+        tell application process "{app_name}"
+            set frontmost to true
+            set window_to_foreground to window 1 whose title is "{window_name}"
+            tell window_to_foreground
+                perform action "AXRaise" of window_to_foreground
+            end tell
+        end tell
+    end tell
+    '''
+    with open(os.devnull, 'w') as devnull:
+        subprocess.run(['osascript', '-e', applescript_code],
+                        stdout=devnull,
+                        check=True)
 
-        items = []
-        win32gui.EnumWindows(win_enum_handler, items)
+def set_foreground(hwnd=None, app_name=None, window_name=None):
+    '''
+    set window to foreground\n
+    hwnd is used on win32 and others on darwin
+    '''
+    if platform == 'win32':
+        send_alt_key_and_set_foreground(hwnd)
+    elif platform == 'darwin':
+        set_foreground_darwin(app_name, window_name)
 
-        for i in items:
-            print(i)
+def print_all_windows(title='Zoom'):
+    'wrapper'
+    def win_enum_handler(hwnd, items):
+        '''print hwnds and respective class names with 'Zoom' in title'''
+        full_title = win32gui.GetWindowText(hwnd)
+        if title in full_title:
+            items.append(str(hwnd).ljust(10) + win32gui.GetClassName(hwnd).ljust(30) + full_title)
+
+    items = []
+    win32gui.EnumWindows(win_enum_handler, items)
+
+    for i in items:
+        print(i)
+
+def get_screen_resolution():
+    'get screen resolution'
+    pos_x, pos_y = pyautogui.size()
+    return pos_x, pos_y

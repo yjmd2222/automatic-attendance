@@ -27,6 +27,7 @@ from fake_attendance.abc import UseSelenium
 from fake_attendance.info import KAKAO_ID, KAKAO_PASSWORD
 from fake_attendance.helper import print_with_time
 from fake_attendance.settings import (
+    ZOOM_CLASSROOM_NAME,
     SCREEN_QR_READER_BLANK,
     SCREEN_QR_READER_POPUP_LINK,
     SCREEN_QR_READER_SOURCE,
@@ -38,12 +39,9 @@ from fake_attendance.settings import (
     AGREE,
     CHECK_IN,
     SUBMIT)
-if platform == 'win32':
-    from fake_attendance.settings import ZOOM_CLASSROOM_CLASS
-elif platform == 'darwin':
+if platform == 'darwin':
     from fake_attendance.settings import (
-        ZOOM_APPLICATION_NAME,
-        ZOOM_CLASSROOM_NAME
+        ZOOM_APPLICATION_NAME
     )
 from fake_attendance.notify import PrepareSendEmail
 # pylint: enable=wrong-import-position
@@ -67,68 +65,41 @@ class FakeCheckIn(PrepareSendEmail, UseSelenium):
 
     def reset_attributes(self):
         'reset attributes for next run'
-        if platform == 'win32':
-            self.is_window, self.hwnd = self.check_window_win32(ZOOM_CLASSROOM_CLASS)
-            self.rect = self.maximize_window_win32(self.hwnd)
-        elif platform == 'darwin':
-            self.is_window = self.check_window_darwin(ZOOM_APPLICATION_NAME, ZOOM_CLASSROOM_NAME)
-            self.rect = self.maximize_window_darwin(ZOOM_APPLICATION_NAME, ZOOM_CLASSROOM_NAME)
+        self.is_window, self.hwnd = self.check_window()
+        self.rect = self.maximize_window(self.hwnd)
         self.driver = None
         self.is_wait = False
         PrepareSendEmail.define_attributes(self)
 
-    if platform == 'win32':
-        def check_window_win32(self, window_class_name):
-            'check and return window on win32'
-            hwnd = win32gui.FindWindow(window_class_name, None)
+    def resize_window_win32(self, rect, hwnd):
+        'resize window to given rect on win32'
+        win32gui.MoveWindow(hwnd, *rect, True)
 
-            return bool(hwnd), hwnd
-
-        def resize_window_win32(self, rect, hwnd):
-            'resize window to given rect on win32'
-            win32gui.MoveWindow(hwnd, *rect, True)
-
-    elif platform == 'darwin':
-        def check_window_darwin(self, app_name, window_name):
-            'check window and return True on darwin'
-            applescript_code = f'''
-            tell application "System Events"
-                if exists application process "{app_name}" then
-                    tell application process "{app_name}"
-                        if exists (window 1 whose title is "{window_name}") then
-                            return 1
-                        else
-                            return 0
-                        end if
-                    end tell
-                else
-                    return 0
-                end if
-            end tell
-            '''
-
-            result = subprocess.run(['osascript', '-e', applescript_code], capture_output=True, text=True, check=True)
-            is_window = bool(int(result.stdout.strip()))
-
-            return is_window
-
-        def resize_window_darwin(self, rect, app_name, window_name):
-            'resize window to given rect on darwin'
-            applescript_code = f'''
-            tell application "System Events"
-                tell application process "{app_name}"
-                    tell (window 1 whose title is "{window_name}")
-                        set position to {rect[:2]}
-                        set size to {rect[2:]}
-                        set rect to position & size
-                    end tell
+    def resize_window_darwin(self, rect, app_name, window_name):
+        'resize window to given rect on darwin'
+        applescript_code = f'''
+        tell application "System Events"
+            tell application process "{app_name}"
+                set zoom_conference to window 1 whose title is "{window_name}"
+                tell zoom_conference
+                    set position to {rect[:2]}
+                    set size to {rect[2:]}
+                    set rect to position & size
                 end tell
             end tell
-            '''
-            with open(os.devnull, 'w') as devnull:
-                subprocess.run(['osascript', '-e', applescript_code],
-                               stdout=devnull,
-                               check=True)
+        end tell
+        '''
+        with open(os.devnull, 'w') as devnull:
+            subprocess.run(['osascript', '-e', applescript_code],
+                            stdout=devnull,
+                            check=True)
+
+    def resize_window(self, rect):
+        'resize window to given rect'
+        if platform == 'win32':
+            self.resize_window_win32(rect, self.hwnd)
+        elif platform == 'darwin':
+            self.resize_window_darwin(rect, ZOOM_APPLICATION_NAME, ZOOM_CLASSROOM_NAME)
 
     # def check_window(self):
     #     'check and return window'
@@ -186,10 +157,7 @@ class FakeCheckIn(PrepareSendEmail, UseSelenium):
     def check_link(self, rect_resized):
         'method to actually fire Screen QR Reader inside loop'
         # apply new window size
-        if platform == 'win32':
-            self.resize_window_win32(rect_resized, self.hwnd)
-        elif platform == 'darwin':
-            self.resize_window_darwin(rect_resized, ZOOM_APPLICATION_NAME, ZOOM_CLASSROOM_NAME)
+        self.resize_window(rect_resized)
 
         self.driver.get(SCREEN_QR_READER_POPUP_LINK) # Screen QR Reader
         time.sleep(2)
@@ -213,7 +181,7 @@ class FakeCheckIn(PrepareSendEmail, UseSelenium):
         # Screen QR Reader source required
         options.add_extension(self.extension_source)
         # automatically select Zoom meeting
-        options.add_argument('--auto-select-desktop-capture-source=Zoom')
+        options.add_argument(f'--auto-select-desktop-capture-source="{ZOOM_CLASSROOM_NAME}"')
 
         return options
 
@@ -326,17 +294,11 @@ class FakeCheckIn(PrepareSendEmail, UseSelenium):
     def run(self):
         'run whole check-in process'
         # get Zoom window
-        if platform == 'win32':
-            self.is_window, self.hwnd = self.check_window_win32(ZOOM_CLASSROOM_CLASS)
-        elif platform == 'darwin':
-            self.is_window = self.check_window_darwin(ZOOM_APPLICATION_NAME, ZOOM_CLASSROOM_NAME)
+        self.is_window, self.hwnd = self.check_window()
         # if it is visible
         if self.is_window:
             # get max rect
-            if platform == 'win32':
-                self.rect = self.maximize_window_win32(self.hwnd)
-            elif platform == 'darwin':
-                self.rect = self.maximize_window_darwin(ZOOM_APPLICATION_NAME, ZOOM_CLASSROOM_NAME)
+            self.rect = self.maximize_window(self.hwnd)
             # init selenium
             self.driver = self.initialize_selenium()
         # if not
