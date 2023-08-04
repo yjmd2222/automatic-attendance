@@ -17,11 +17,9 @@ Run below in a Python 3 environment, 3.11.3 recommended.
 
 `pip install -r requirements.txt`
 
-Install the Chrome extension [Screen QR Reader](https://chrome.google.com/webstore/detail/screen-qr-reader/ekoaehpknadfoaolagjfdefeopkhfhln).
-
 Fill out the template [info_template.py](fake_attendance/info_template.py) with your login, email information, and the zoom link without the `#success`. Rename the file to `info.py`
 
-Note: If the module fails to download the Chrome extension source, you can try downloading it manually. Check that its name is `extension_0_1_2_0.crx`, and put it in the root of the repository. See [this](https://crx-downloader.com/how-it-works).
+Note: If the module fails to download the Chrome extension source, you can try downloading it manually. Check that its name is `extension_0_1_2_0.crx`, and put it in the root of the repository. See [this](https://crx-downloader.com/how-it-works). Screen QR Reader url: https://chrome.google.com/webstore/detail/screen-qr-reader/ekoaehpknadfoaolagjfdefeopkhfhln.
 
 ## Run
 Run `python -m fake_attendance` for download, Zoom launch, and check-in. Read [How it works and why](#how-it-works-and-why) for explanation.
