@@ -5,15 +5,20 @@ Script to automatically send link information in QR image on a Zoom meeting ever
 import os
 import sys
 
+from sys import platform
+
 from datetime import datetime, timedelta
 import time
-
-import win32gui
 
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
+
+if platform == 'win32':
+    import win32gui
+elif platform == 'darwin':
+    import subprocess
 
 sys.path.append(os.getcwd())
 
@@ -25,7 +30,6 @@ from fake_attendance.settings import (
     SCREEN_QR_READER_BLANK,
     SCREEN_QR_READER_POPUP_LINK,
     SCREEN_QR_READER_SOURCE,
-    ZOOM_CLASSROOM_CLASS,
     LOGIN_WITH_KAKAO_BUTTON,
     ID_INPUT_BOX,
     PASSWORD_INPUT_BOX,
@@ -34,6 +38,13 @@ from fake_attendance.settings import (
     AGREE,
     CHECK_IN,
     SUBMIT)
+if platform == 'win32':
+    from fake_attendance.settings import ZOOM_CLASSROOM_CLASS
+elif platform == 'darwin':
+    from fake_attendance.settings import (
+        ZOOM_APPLICATION_NAME,
+        ZOOM_CLASSROOM_NAME
+    )
 from fake_attendance.notify import PrepareSendEmail
 # pylint: enable=wrong-import-position
 
@@ -56,18 +67,96 @@ class FakeCheckIn(PrepareSendEmail, UseSelenium):
 
     def reset_attributes(self):
         'reset attributes for next run'
-        self.is_window, self.hwnd = self.check_window()
-        self.rect = self.maximize_window(self.hwnd) if self.is_window else [100,100,100,100]
+        if platform == 'win32':
+            self.is_window, self.hwnd = self.check_window_win32(ZOOM_CLASSROOM_CLASS)
+            self.rect = self.maximize_window_win32(self.hwnd)
+        elif platform == 'darwin':
+            self.is_window = self.check_window_darwin(ZOOM_APPLICATION_NAME, ZOOM_CLASSROOM_NAME)
+            self.rect = self.maximize_window_darwin(ZOOM_APPLICATION_NAME, ZOOM_CLASSROOM_NAME)
         self.driver = None
         self.is_wait = False
         PrepareSendEmail.define_attributes(self)
 
-    def check_window(self):
-        'check and return window'
-        hwnd = win32gui.FindWindow(ZOOM_CLASSROOM_CLASS, None)
-        self.is_window = win32gui.IsWindowVisible(hwnd)
+    if platform == 'win32':
+        def check_window_win32(self, window_class_name):
+            'check and return window on win32'
+            hwnd = win32gui.FindWindow(window_class_name, None)
 
-        return bool(hwnd), hwnd
+            return bool(hwnd), hwnd
+
+        def resize_window_win32(self, rect, hwnd):
+            'resize window to given rect on win32'
+            win32gui.MoveWindow(hwnd, *rect, True)
+
+    elif platform == 'darwin':
+        def check_window_darwin(self, app_name, window_name):
+            'check window and return True on darwin'
+            applescript_code = f'''
+            tell application "System Events"
+                if exists application process "{app_name}" then
+                    tell application process "{app_name}"
+                        if exists (window 1 whose title is "{window_name}") then
+                            return 1
+                        else
+                            return 0
+                        end if
+                    end tell
+                else
+                    return 0
+                end if
+            end tell
+            '''
+
+            result = subprocess.run(['osascript', '-e', applescript_code], capture_output=True, text=True, check=True)
+            is_window = bool(int(result.stdout.strip()))
+
+            return is_window
+
+        def resize_window_darwin(self, rect, app_name, window_name):
+            'resize window to given rect on darwin'
+            applescript_code = f'''
+            tell application "System Events"
+                tell application process "{app_name}"
+                    tell (window 1 whose title is "{window_name}")
+                        set position to {rect[:2]}
+                        set size to {rect[2:]}
+                        set rect to position & size
+                    end tell
+                end tell
+            end tell
+            '''
+            with open(os.devnull, 'w') as devnull:
+                subprocess.run(['osascript', '-e', applescript_code],
+                               stdout=devnull,
+                               capture_output=False,
+                               text=False,
+                               check=True)
+
+    # def check_window(self):
+    #     'check and return window'
+    #     if platform == 'win32':
+    #         hwnd = win32gui.FindWindow(ZOOM_CLASSROOM_CLASS, None)
+    #     elif platform == 'darwin':
+    #         ZOOM_APPLICATION_NAME = 'zoom.us'
+    #         ZOOM_CLASSROOM_NAME = 'Zoom 회의'
+    #         applescript_code = f'''
+    #         tell application "{ZOOM_APPLICATION_NAME}"
+    #             set target_title to "{ZOOM_CLASSROOM_NAME}"
+    #             set window_list to every window
+    #             repeat with a_window in window_list
+    #                 set window_title to name of a_window
+    #                 if window_title is equal to target_title then
+    #                     set window_id to id of a_window
+    #                     return window_id
+    #                 end if
+    #             end repeat
+    #         end tell
+    #         '''
+
+    #         result = subprocess.run(['osascript', '-e', applescript_code], capture_output=True, text=True, check=True)
+    #         hwnd = result.stdout.strip()
+
+    #     return bool(hwnd), hwnd
 
     def check_link_loop(self):
         'Get link from QR'
@@ -99,7 +188,11 @@ class FakeCheckIn(PrepareSendEmail, UseSelenium):
     def check_link(self, rect_resized):
         'method to actually fire Screen QR Reader inside loop'
         # apply new window size
-        win32gui.MoveWindow(self.hwnd, *rect_resized, True)
+        if platform == 'win32':
+            self.resize_window_win32(rect_resized, self.hwnd)
+        elif platform == 'darwin':
+            self.resize_window_darwin(rect_resized, ZOOM_APPLICATION_NAME, ZOOM_CLASSROOM_NAME)
+
         self.driver.get(SCREEN_QR_READER_POPUP_LINK) # Screen QR Reader
         time.sleep(2)
 
@@ -235,11 +328,17 @@ class FakeCheckIn(PrepareSendEmail, UseSelenium):
     def run(self):
         'run whole check-in process'
         # get Zoom window
-        self.is_window, self.hwnd = self.check_window()
+        if platform == 'win32':
+            self.is_window, self.hwnd = self.check_window_win32(ZOOM_CLASSROOM_CLASS)
+        elif platform == 'darwin':
+            self.is_window = self.check_window_darwin(ZOOM_APPLICATION_NAME, ZOOM_CLASSROOM_NAME)
         # if it is visible
         if self.is_window:
             # get max rect
-            self.rect = self.maximize_window(self.hwnd)
+            if platform == 'win32':
+                self.rect = self.maximize_window_win32(self.hwnd)
+            elif platform == 'darwin':
+                self.rect = self.maximize_window_darwin(ZOOM_APPLICATION_NAME, ZOOM_CLASSROOM_NAME)
             # init selenium
             self.driver = self.initialize_selenium()
         # if not
@@ -271,9 +370,6 @@ class FakeCheckIn(PrepareSendEmail, UseSelenium):
 
         # quit Selenium
         self.driver.quit()
-
-        # maximize Zoom window on exit
-        win32gui.MoveWindow(self.hwnd, *self.rect, True)
 
         # make sure same job does not run within 30 minutes upon completion
         if self.is_wait:

@@ -4,8 +4,11 @@ Quit Zoom
 
 import os
 import sys
-import pywinauto
-from pywinauto.findwindows import ElementNotFoundError
+from sys import platform
+
+if platform == 'win32':
+    import pywinauto
+    from pywinauto.findwindows import ElementNotFoundError
 
 sys.path.append(os.getcwd())
 

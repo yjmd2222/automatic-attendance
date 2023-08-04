@@ -5,10 +5,14 @@ Launch Zoom
 import os
 import sys
 
+from sys import platform
+
 import time
 
 import keyboard
-import win32gui
+
+if platform == 'win32':
+    import win32gui
 
 sys.path.append(os.getcwd())
 
@@ -17,9 +21,11 @@ from fake_attendance.abc import UseSelenium
 from fake_attendance.info import ZOOM_LINK
 from fake_attendance.helper import (
     bring_chrome_to_front,
-    print_with_time,
-    print_all_windows,
-    send_alt_key_and_set_foreground)
+    print_with_time)
+if platform == 'win32':
+    from fake_attendance.helper import (
+        print_all_windows,
+        send_alt_key_and_set_foreground)
 from fake_attendance.quit_zoom import QuitZoom
 from fake_attendance.notify import PrepareSendEmail
 from fake_attendance.settings import (

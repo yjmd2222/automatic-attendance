@@ -79,11 +79,16 @@ ZOOM_QUIT_TIMES = [convert_to_datetime(TIME_) for TIME_ in ['12:05', '18:05']]
 SCHED_QUIT_TIMES = [convert_to_datetime('18:10')] # conform to the format of other 'times'
 
 # Zoom props
+# common
 ZOOM_AGREE_RECORDING_POPUP_CLASS = 'ZPRecordingConsentClass' # '이 회의는 호스트 또는 참가자가 기록 중입니다'
-ZOOM_CLASSROOM_CLASS = 'ZPContentViewWndClass'
 ZOOM_UPDATE_POPUP_CLASS = 'ZPForceUpdateWnd' # update popup when launching Zoom
 ZOOM_UPDATE_DOWNLOAD_CLASS = 'CZPUpdateWndCls'
 ZOOM_UPDATE_ACTUAL_UPDATE_CLASS = 'zoom.us Installer Engine'
+# win32
+ZOOM_CLASSROOM_CLASS = 'ZPContentViewWndClass'
+# darwin
+ZOOM_APPLICATION_NAME = 'zoom.us'
+ZOOM_CLASSROOM_NAME = 'Zoom 회의'
 
 # Check-in props
 LOGIN_WITH_KAKAO_BUTTON = 'login-form__button-title.css-caslt6'

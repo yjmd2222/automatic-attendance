@@ -4,12 +4,15 @@ Helper methods
 
 import os
 
+from sys import platform
+
 from datetime import datetime, timedelta
 import time
 
 import pyautogui
-from win32com.client import Dispatch
-import win32gui
+if platform == 'win32':
+    from win32com.client import Dispatch
+    import win32gui
 
 def get_file_path(filename, sub=None):
     'return full file path'
@@ -62,31 +65,32 @@ def print_with_time(*args, **kwargs):
     now = datetime.strftime(datetime.now(), '%H:%M:%S')
     print(now, *args, **kwargs)
 
-def send_alt_key_and_set_foreground(hwnd):
-    '''
-    send alt key to shell before setting foreground with win32gui to workaround
-    error: (0, 'SetForegroundWindow', 'No error message is available')
-    '''
-    Dispatch('WScript.Shell').SendKeys('%')
-    win32gui.SetForegroundWindow(hwnd)
-
-def print_all_windows(title='Zoom'):
-    'wrapper'
-    def win_enum_handler(hwnd, items):
-        '''print hwnds and respective class names with 'Zoom' in title'''
-        full_title = win32gui.GetWindowText(hwnd)
-        if title in full_title:
-            items.append(str(hwnd).ljust(10) + win32gui.GetClassName(hwnd).ljust(30) + full_title)
-
-    items = []
-    win32gui.EnumWindows(win_enum_handler, items)
-
-    for i in items:
-        print(i)
-
 def bring_chrome_to_front(driver):
     'bring Selenium Chrome browser to front with a hack'
     driver.minimize_window()
     time.sleep(1)
     driver.maximize_window()
     time.sleep(0.5)
+
+if platform == 'win32':
+    def send_alt_key_and_set_foreground(hwnd):
+        '''
+        send alt key to shell before setting foreground with win32gui to workaround
+        error: (0, 'SetForegroundWindow', 'No error message is available')
+        '''
+        Dispatch('WScript.Shell').SendKeys('%')
+        win32gui.SetForegroundWindow(hwnd)
+
+    def print_all_windows(title='Zoom'):
+        'wrapper'
+        def win_enum_handler(hwnd, items):
+            '''print hwnds and respective class names with 'Zoom' in title'''
+            full_title = win32gui.GetWindowText(hwnd)
+            if title in full_title:
+                items.append(str(hwnd).ljust(10) + win32gui.GetClassName(hwnd).ljust(30) + full_title)
+
+        items = []
+        win32gui.EnumWindows(win_enum_handler, items)
+
+        for i in items:
+            print(i)
