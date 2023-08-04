@@ -128,8 +128,6 @@ class FakeCheckIn(PrepareSendEmail, UseSelenium):
             with open(os.devnull, 'w') as devnull:
                 subprocess.run(['osascript', '-e', applescript_code],
                                stdout=devnull,
-                               capture_output=False,
-                               text=False,
                                check=True)
 
     # def check_window(self):

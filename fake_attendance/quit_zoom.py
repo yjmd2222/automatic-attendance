@@ -9,6 +9,8 @@ from sys import platform
 if platform == 'win32':
     import pywinauto
     from pywinauto.findwindows import ElementNotFoundError
+elif platform == 'darwin':
+    import subprocess
 
 sys.path.append(os.getcwd())
 
@@ -16,7 +18,10 @@ sys.path.append(os.getcwd())
 from fake_attendance.abc import BaseClass
 from fake_attendance.helper import print_with_time
 from fake_attendance.notify import PrepareSendEmail
-from fake_attendance.settings import ZOOM_CLASSROOM_CLASS
+if platform == 'win32':
+    from fake_attendance.settings import ZOOM_CLASSROOM_CLASS
+elif platform == 'darwin':
+    from fake_attendance.settings import ZOOM_APPLICATION_NAME
 # pylint: enable=wrong-import-position
 
 class QuitZoom(PrepareSendEmail, BaseClass):
@@ -33,26 +38,62 @@ class QuitZoom(PrepareSendEmail, BaseClass):
         'reset attributes for next run'
         PrepareSendEmail.define_attributes(self)
 
-    def connect_and_kill(self, kill_hidden):
-        'connect to Zoom conference and kill'
-        try:
-            pywinauto.Application().connect(class_name=ZOOM_CLASSROOM_CLASS, found_index=0)\
-                .kill(soft=True)
-            if kill_hidden:
-                print_with_time('숨겨진 Zoom 회의 종료')
-            else:
-                print_with_time('Zoom 회의 입장 확인 후 종료')
-            if not self.result_dict['quit']['content']:
-                self.result_dict['quit']['content'] = True
-            return True
-        except ElementNotFoundError:
-            if kill_hidden:
-                print_with_time('숨겨진 Zoom 회의 없음')
-            else:
-                print_with_time('Zoom 회의 입장 안 함')
-            if self.result_dict['quit']['content'] is None:
-                self.result_dict['quit']['content'] = False
-            return False
+    if platform == 'win32':
+        def kill_zoom_win32(self, kill_hidden):
+            'kill Zoom conference on win32'
+            try:
+                pywinauto.Application().connect(class_name=ZOOM_CLASSROOM_CLASS, found_index=0)\
+                    .kill(soft=True)
+                if kill_hidden:
+                    print_with_time('숨겨진 Zoom 회의 종료')
+                else:
+                    print_with_time('Zoom 회의 입장 확인 후 종료')
+                # set flag to quit content
+                if not self.result_dict['quit']['content']:
+                    self.result_dict['quit']['content'] = True
+                return True
+            except ElementNotFoundError:
+                if kill_hidden:
+                    print_with_time('숨겨진 Zoom 회의 없음')
+                else:
+                    print_with_time('실행 중인 Zoom 회의 없음')
+                # set flag to quit content (nothing closed)
+                if self.result_dict['quit']['content'] is None:
+                    self.result_dict['quit']['content'] = False
+                return False
+            
+    elif platform == 'darwin':
+        def kill_zoom_darwin(self, kill_hidden):
+            'kill Zoom on darwin'
+            applescript_code = f'''
+            tell application "System Events"
+                set theID to (unix id of processes whose name is "{ZOOM_APPLICATION_NAME}")
+                try
+                    do shell script "kill -9 " & theID
+                end try
+            end tell'''
+            
+            with open(os.devnull, 'w') as devnull:
+                try:
+                    subprocess.run(['osascript', '-e', applescript_code],
+                                stdout=devnull,
+                                check=True)
+                    if kill_hidden:
+                        print_with_time('숨겨진 Zoom 회의 포함 Zoom 애플리케이션 종료')
+                    else:
+                        print_with_time('Zoom 애플리케이션 종료')
+                    # set flag to quit content
+                    self.result_dict['quit']['content'] = True
+                    return True
+                except subprocess.CalledProcessError:
+                    if kill_hidden:
+                        print_with_time('숨겨진 Zoom 회의 없음')
+                    else:
+                        print_with_time('실행 중인 Zoom 애플리케이션 없음')
+                    # set flag to quit content (nothing closed)
+                    if self.result_dict['quit']['content'] is None:
+                        self.result_dict['quit']['content'] = False
+                    return False
 
     # pylint: disable=attribute-defined-outside-init
     def run(self, kill_hidden=False):
@@ -60,10 +101,13 @@ class QuitZoom(PrepareSendEmail, BaseClass):
         Run the launch. kill_hidden==True quits hidden Zoom conf before launching.\n
         kill_hidden==False quits Zoom at the end of session and sends email
         '''
-        # try killing Zoom completely in three tries
-        for _ in range(3):
-            if not self.connect_and_kill(kill_hidden):
-                break
+        if platform == 'win32':
+            # try killing Zoom conference completely in three tries
+            for _ in range(3):
+                if not self.kill_zoom_win32(kill_hidden):
+                    break
+        elif platform == 'darwin':
+            self.kill_zoom_darwin(kill_hidden)
 
         # checker bool to send email
         self.is_send = not kill_hidden
