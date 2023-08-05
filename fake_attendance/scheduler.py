@@ -231,12 +231,7 @@ class MyScheduler(BaseClass):
         def on_activate(job_id):
             'inner on_activate function that is fired on command'
             print_with_time(f'강제 {job_id} 커맨드 입력 확인')
-            job = self.sched.get_job(job_id)
-            # check if job is not already running
-            if (job and not job.pending) or not job:
-                self.add_run(job_id, datetime.now() + timedelta(seconds=1))
-            else:
-                print_with_time(f'{job_id} 스크립트 이미 실행중. 완료 후 실행 바람')
+            self.add_run(job_id, datetime.now() + timedelta(seconds=1))
 
         # adding the wrapper to dictionary
         for job_id in self.job_ids:
