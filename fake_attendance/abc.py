@@ -76,6 +76,9 @@ class UseSelenium(BaseClass):
         # return webdriver.Chrome(service=auto_driver, options=options)
         return webdriver.Chrome(options=options)
 
+class ManipulateWindow:
+    'base class for checking visibility of and manipulating windows'
+
     def check_window(self, window_class=None, window_title=None):
         'check and return window'
         hwnd = win32gui.FindWindow(window_class, window_title)

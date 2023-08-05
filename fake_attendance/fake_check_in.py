@@ -12,7 +12,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 
-from fake_attendance.abc import UseSelenium
+from fake_attendance.abc import UseSelenium, ManipulateWindow
 from fake_attendance.info import KAKAO_ID, KAKAO_PASSWORD
 from fake_attendance.helper import print_with_time, send_alt_key_and_set_foreground
 from fake_attendance.settings import (
@@ -31,7 +31,7 @@ from fake_attendance.settings import (
 from fake_attendance.notify import PrepareSendEmail
 
 # pylint: disable=too-many-instance-attributes
-class FakeCheckIn(PrepareSendEmail, UseSelenium):
+class FakeCheckIn(PrepareSendEmail, UseSelenium, ManipulateWindow):
     'A class for checking QR image and sending email with link'
     print_name = 'QR 체크인'
 
@@ -50,7 +50,7 @@ class FakeCheckIn(PrepareSendEmail, UseSelenium):
     def reset_attributes(self):
         'reset attributes for next run'
         self.is_window, self.hwnd = self.check_window(ZOOM_CLASSROOM_CLASS)
-        self.rect = self.maximize_window(self.hwnd)
+        self.rect = self.maximize_window(self.hwnd) if self.is_window else [100,100,100,100]
         self.driver = None
         self.is_wait = False
         PrepareSendEmail.define_attributes(self)

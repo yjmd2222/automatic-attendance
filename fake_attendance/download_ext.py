@@ -79,10 +79,6 @@ class DownloadExtensionSource(UseSelenium):
         else:
             print_with_time('다운로드 "계속" 버튼 찾을 수 없음')
 
-    def maximize_window(self, hwnd):
-        'not implemented'
-        return None
-
     def run(self):
         'Run the download'
         # quit if source already exists

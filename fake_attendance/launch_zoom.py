@@ -6,7 +6,7 @@ import time
 
 import keyboard
 
-from fake_attendance.abc import UseSelenium
+from fake_attendance.abc import UseSelenium, ManipulateWindow
 from fake_attendance.info import ZOOM_LINK
 from fake_attendance.helper import (
     bring_chrome_to_front,
@@ -22,7 +22,7 @@ from fake_attendance.settings import (
     ZOOM_UPDATE_DOWNLOAD_CLASS,
     ZOOM_UPDATE_ACTUAL_UPDATE_CLASS)
 
-class LaunchZoom(PrepareSendEmail, UseSelenium):
+class LaunchZoom(PrepareSendEmail, UseSelenium, ManipulateWindow):
     'A class for launching Zoom'
     print_name = '줌 실행'
 
