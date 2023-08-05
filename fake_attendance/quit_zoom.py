@@ -9,7 +9,7 @@ from sys import platform
 if platform == 'win32':
     import pywinauto
     from pywinauto.findwindows import ElementNotFoundError
-elif platform == 'darwin':
+else:
     import subprocess
 
 sys.path.append(os.getcwd())
@@ -20,7 +20,7 @@ from fake_attendance.helper import print_with_time
 from fake_attendance.notify import PrepareSendEmail
 if platform == 'win32':
     from fake_attendance.settings import ZOOM_CLASSROOM_CLASS
-elif platform == 'darwin':
+else:
     from fake_attendance.settings import ZOOM_APPLICATION_NAME
 # pylint: enable=wrong-import-position
 
@@ -70,8 +70,8 @@ class QuitZoom(PrepareSendEmail, BaseClass):
                 do shell script "kill -9 " & theID
             end try
         end tell'''
-        
-        with open(os.devnull, 'w') as devnull:
+
+        with open(os.devnull, 'wb') as devnull:
             try:
                 subprocess.run(['osascript', '-e', applescript_code],
                             stdout=devnull,
@@ -95,7 +95,7 @@ class QuitZoom(PrepareSendEmail, BaseClass):
         'kill Zoom conference'
         if platform == 'win32':
             self.kill_zoom_win32(kill_hidden)
-        elif platform == 'darwin':
+        else:
             self.kill_zoom_darwin(kill_hidden)
 
     # pylint: disable=attribute-defined-outside-init

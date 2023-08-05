@@ -17,7 +17,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 
 if platform == 'win32':
     import win32gui
-elif platform == 'darwin':
+else:
     import subprocess
 
 sys.path.append(os.getcwd())
@@ -89,7 +89,7 @@ class FakeCheckIn(PrepareSendEmail, UseSelenium):
             end tell
         end tell
         '''
-        with open(os.devnull, 'w') as devnull:
+        with open(os.devnull, 'wb') as devnull:
             subprocess.run(['osascript', '-e', applescript_code],
                             stdout=devnull,
                             check=True)
@@ -98,14 +98,14 @@ class FakeCheckIn(PrepareSendEmail, UseSelenium):
         'resize window to given rect'
         if platform == 'win32':
             self.resize_window_win32(rect, self.hwnd)
-        elif platform == 'darwin':
+        else:
             self.resize_window_darwin(rect, ZOOM_APPLICATION_NAME, ZOOM_CLASSROOM_NAME)
 
     # def check_window(self):
     #     'check and return window'
     #     if platform == 'win32':
     #         hwnd = win32gui.FindWindow(ZOOM_CLASSROOM_CLASS, None)
-    #     elif platform == 'darwin':
+    #     else:
     #         ZOOM_APPLICATION_NAME = 'zoom.us'
     #         ZOOM_CLASSROOM_NAME = 'Zoom 회의'
     #         applescript_code = f'''
@@ -122,7 +122,10 @@ class FakeCheckIn(PrepareSendEmail, UseSelenium):
     #         end tell
     #         '''
 
-    #         result = subprocess.run(['osascript', '-e', applescript_code], capture_output=True, text=True, check=True)
+    #         result = subprocess.run(['osascript', '-e', applescript_code],
+    #                                 capture_output=True,
+    #                                 text=True,
+    #                                 check=True)
     #         hwnd = result.stdout.strip()
 
     #     return bool(hwnd), hwnd

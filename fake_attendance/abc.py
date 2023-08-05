@@ -14,7 +14,7 @@ from selenium.webdriver.chrome.options import Options
 if platform == 'win32':
     import win32con
     import win32gui
-elif platform == 'darwin':
+else:
     import subprocess
 
 # pylint: disable=wrong-import-position
@@ -22,7 +22,7 @@ from fake_attendance.arg_parse import parsed_args
 from fake_attendance.helper import print_with_time
 if platform == 'win32':
     from fake_attendance.settings import ZOOM_CLASSROOM_CLASS
-elif platform == 'darwin':
+else:
     from fake_attendance.helper import get_screen_resolution
     from fake_attendance.settings import (
         ZOOM_APPLICATION_NAME,
@@ -115,7 +115,10 @@ class UseSelenium(BaseClass):
         end tell
         '''
 
-        result = subprocess.run(['osascript', '-e', applescript_code], capture_output=True, text=True, check=True)
+        result = subprocess.run(['osascript', '-e', applescript_code],
+                                capture_output=True,
+                                text=True,
+                                check=True)
         is_window = bool(int(result.stdout.strip()))
 
         return is_window, None
@@ -128,7 +131,7 @@ class UseSelenium(BaseClass):
         '''
         if platform == 'win32':
             is_window, hwnd = self.check_window_win32(ZOOM_CLASSROOM_CLASS)
-        elif platform == 'darwin':
+        else:
             is_window, hwnd = self.check_window_darwin(ZOOM_APPLICATION_NAME, ZOOM_CLASSROOM_NAME)
         return is_window, hwnd
 
@@ -172,16 +175,17 @@ class UseSelenium(BaseClass):
         rect = [int(num) for num in rect]
 
         return rect
-    
+
     def maximize_window(self, hwnd:int|None):
         '''
         maximize window and returns rect\n
         hwnd is just a placeholder on darwin
         '''
         if platform == 'win32':
-            return self.maximize_window_win32(hwnd)
-        elif platform == 'darwin':
-            return self.maximize_window_darwin(ZOOM_APPLICATION_NAME, ZOOM_CLASSROOM_NAME)
+            rect =  self.maximize_window_win32(hwnd)
+        else:
+            rect  = self.maximize_window_darwin(ZOOM_APPLICATION_NAME, ZOOM_CLASSROOM_NAME)
+        return rect
 
     # def maximize_window_darwin(self, hwnd, app_name=None):
     #     'maximize window on Darwin'

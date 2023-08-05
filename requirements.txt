@@ -1,6 +1,6 @@
 apscheduler==3.10.1
 keyboard==0.13.5
 pyautogui==0.9.54
-pywinauto==0.6.8
+pywinauto==0.6.8; platform_system == "Windows"
 selenium==4.10.0
 webdriver-manager==3.9.1

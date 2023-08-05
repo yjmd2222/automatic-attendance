@@ -13,7 +13,7 @@ import pyautogui
 if platform == 'win32':
     from win32com.client import Dispatch
     import win32gui
-elif platform == 'darwin':
+else:
     import subprocess
 
 def get_file_path(filename, sub=None):
@@ -95,7 +95,7 @@ def set_foreground_darwin(app_name, window_name):
         end tell
     end tell
     '''
-    with open(os.devnull, 'w') as devnull:
+    with open(os.devnull, 'wb') as devnull:
         subprocess.run(['osascript', '-e', applescript_code],
                         stdout=devnull,
                         check=True)
@@ -107,7 +107,7 @@ def set_foreground(hwnd=None, app_name=None, window_name=None):
     '''
     if platform == 'win32':
         send_alt_key_and_set_foreground(hwnd)
-    elif platform == 'darwin':
+    else:
         set_foreground_darwin(app_name, window_name)
 
 def print_all_windows(title='Zoom'):
@@ -135,6 +135,6 @@ def check_appearance():
     if DARK: True, elif LIGHT: False
     """
     cmd = 'defaults read -g AppleInterfaceStyle'
-    p = subprocess.Popen(cmd, stdout=subprocess.PIPE,
+    popen = subprocess.Popen(cmd, stdout=subprocess.PIPE,
                          stderr=subprocess.PIPE, shell=True)
-    return bool(p.communicate()[0])
+    return bool(popen.communicate()[0])

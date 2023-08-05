@@ -11,9 +11,7 @@ import time
 
 import keyboard
 
-if platform == 'win32':
-    import win32gui
-elif platform == 'darwin':
+if platform == 'darwin':
     import pyautogui
 
 sys.path.append(os.getcwd())
@@ -106,7 +104,7 @@ class LaunchZoom(PrepareSendEmail, UseSelenium):
         # click 'open Zoom in app'
         if platform == 'win32':
             self.press_tabs_and_space(tab_num=2, reverse=False, send_alt=False)
-        elif platform == 'darwin':
+        else:
             # darwin is slower to minimize and maximize
             time.sleep(3)
             pos = get_last_match(OPEN_IN_ZOOM_IMAGE_DARWIN)
@@ -122,10 +120,16 @@ class LaunchZoom(PrepareSendEmail, UseSelenium):
     def check_window_down(self, window_class=None, window_title=None):
         'wait until window is down'
         if platform == 'win32':
-            check_is_window = lambda: self.check_window_win32(window_class)[0]
+            def check_is_window():
+                'return is_window'
+                return self.check_window_win32(window_class)[0]
+
             popup_name = LAUNCH_ZOOM_KEY_MAPPER[window_class]
         else:
-            check_is_window = lambda: self.check_window_darwin(ZOOM_APPLICATION_NAME, window_title)[0]
+            def check_is_window():
+                'return is_window'
+                return self.check_window_darwin(ZOOM_APPLICATION_NAME, window_title)[0]
+
             popup_name = LAUNCH_ZOOM_KEY_MAPPER[window_title]
         # wait while it is visible
         while check_is_window():
@@ -194,7 +198,7 @@ class LaunchZoom(PrepareSendEmail, UseSelenium):
             is_window, hwnd = self.check_window_win32(window_class)
             print(window_class)
             popup_name = LAUNCH_ZOOM_KEY_MAPPER[window_class]
-        elif platform == 'darwin':
+        else:
             is_window, hwnd = self.check_window_darwin(ZOOM_APPLICATION_NAME, window_title)
             print(window_title)
             popup_name = LAUNCH_ZOOM_KEY_MAPPER[window_title]
@@ -225,17 +229,33 @@ class LaunchZoom(PrepareSendEmail, UseSelenium):
         if self.check_launch_result():
             if platform == 'win32':
                 tab_num = 2
-            # elif platform == 'darwin': # darwin is shit when handling windows. everything is missing value
+            # else: # darwin is shit when handling windows. everything is missing value
             #     tab_num = 0
             # # double check recording consent
-            # self.process_popup(ZOOM_AGREE_RECORDING_POPUP_CLASS, ZOOM_AGREE_RECORDING_POPUP_NAME, tab_num, reverse=True, send_alt=True)
+            # self.process_popup(ZOOM_AGREE_RECORDING_POPUP_CLASS,
+            #                    ZOOM_AGREE_RECORDING_POPUP_NAME,
+            #                    tab_num,
+            #                    reverse=True,
+            #                    send_alt=True)
             # print_with_time('동의 재확인')
-            # self.process_popup(ZOOM_AGREE_RECORDING_POPUP_CLASS, ZOOM_AGREE_RECORDING_POPUP_NAME, tab_num, reverse=True, send_alt=True)
+            # self.process_popup(ZOOM_AGREE_RECORDING_POPUP_CLASS,
+            #                    ZOOM_AGREE_RECORDING_POPUP_NAME,
+            #                    tab_num,
+            #                    reverse=True,
+            #                    send_alt=True)
                 # double check recording consent
-                self.process_popup(ZOOM_AGREE_RECORDING_POPUP_CLASS, ZOOM_AGREE_RECORDING_POPUP_NAME, tab_num, reverse=True, send_alt=True)
+                self.process_popup(ZOOM_AGREE_RECORDING_POPUP_CLASS,
+                                   ZOOM_AGREE_RECORDING_POPUP_NAME,
+                                   tab_num,
+                                   reverse=True,
+                                   send_alt=True)
                 print_with_time('동의 재확인')
-                self.process_popup(ZOOM_AGREE_RECORDING_POPUP_CLASS, ZOOM_AGREE_RECORDING_POPUP_NAME, tab_num, reverse=True, send_alt=True)
-            elif platform == 'darwin':
+                self.process_popup(ZOOM_AGREE_RECORDING_POPUP_CLASS,
+                                   ZOOM_AGREE_RECORDING_POPUP_NAME,
+                                   tab_num,
+                                   reverse=True,
+                                   send_alt=True)
+            else:
                 keyboard.press_and_release('enter')
                 self.result_dict['줌 녹화 동의']['content'] = True
                 print_with_time('줌 녹화 동의 완료')
