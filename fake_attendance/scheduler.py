@@ -14,7 +14,6 @@ from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.combining import OrTrigger
 from apscheduler.triggers.cron import CronTrigger
 
-# import keyboard
 from pynput import keyboard
 
 sys.path.append(os.getcwd())
@@ -238,7 +237,6 @@ class MyScheduler(BaseClass):
                 self.add_run(job_id, datetime.now() + timedelta(seconds=1))
             else:
                 print_with_time(f'{job_id} 스크립트 이미 실행중. 완료 후 실행 바람')
-            time.sleep(1)
 
         # adding the wrapper to dictionary
         for job_id in self.job_ids:
