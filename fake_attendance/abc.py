@@ -76,6 +76,13 @@ class UseSelenium(BaseClass):
         # return webdriver.Chrome(service=auto_driver, options=options)
         return webdriver.Chrome(options=options)
 
+    def check_window(self, window_class=None, window_title=None):
+        'check and return window'
+        hwnd = win32gui.FindWindow(window_class, window_title)
+        is_window = win32gui.IsWindowVisible(hwnd)
+
+        return bool(is_window), hwnd
+
     def maximize_window(self, hwnd):
         'maximize window'
         # force normal size from possible out-of-size maximized window

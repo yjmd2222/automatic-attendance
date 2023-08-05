@@ -19,16 +19,17 @@ def get_file_path(filename, sub=None):
 
 def get_last_match(image):
     'For checking distinct elements. Nothing found if (0,0,0,0) returned'
-    positions = [(0,0,0,0)]
+    dimensions = [(0,0,0,0)]
     threshhold = 8
 
     all_locations = list(pyautogui.locateAllOnScreen(image, confidence=0.7))
-    for idx, pos in enumerate(all_locations):
+    for idx, dim in enumerate(all_locations):
         if idx == len(all_locations) - 1:
             break
-        if abs(all_locations[idx][0] - positions[-1][0]) +\
-            abs(all_locations[idx][1] - positions[-1][1]) > threshhold:
-            positions.append(pos)
+        if abs(all_locations[idx][0] - dimensions[-1][0]) +\
+            abs(all_locations[idx][1] - dimensions[-1][1]) > threshhold:
+            dimensions.append(dim)
+    positions = [(dim[0]+dim[2]/2, dim[1]+dim[3]/2) for dim in dimensions]
 
     return positions[-1]
 
