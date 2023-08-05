@@ -93,7 +93,7 @@ class UseSelenium(BaseClass):
     def check_window_win32(self, window_class_name):
         'check and return window on win32'
         hwnd = win32gui.FindWindow(window_class_name, None)
-        is_window = win32gui.IsWindowVisible(hwnd)
+        is_window = bool(win32gui.IsWindowVisible(hwnd))
 
         return is_window, hwnd
 

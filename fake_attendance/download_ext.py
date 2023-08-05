@@ -4,6 +4,7 @@ Download Screen QR Reader source code
 
 import os
 import sys
+from sys import platform
 
 import time
 
@@ -22,10 +23,13 @@ from fake_attendance.helper import (
     print_with_time)
 from fake_attendance.scheduler import MyScheduler
 from fake_attendance.settings import (
-    CONTINUE_IMAGE,
     GET_CRX_LINK,
     SCREEN_QR_READER_SOURCE,
     SCREEN_QR_READER_WEBSTORE_LINK)
+if platform == 'win32':
+    from fake_attendance.settings import CONTINUE_IMAGE_WIN32 as CONTINUE_IMAGE
+elif platform == 'darwin':
+    from fake_attendance.settings import CONTINUE_IMAGE_DARWIN as CONTINUE_IMAGE
 # pylint: enable=wrong-import-position
 
 class DownloadExtensionSource(UseSelenium):
@@ -34,7 +38,6 @@ class DownloadExtensionSource(UseSelenium):
 
     def __init__(self, scheduler:MyScheduler|None=None):
         'initialize'
-        self.image = CONTINUE_IMAGE
         self.scheduler = scheduler
         super().__init__()
 
@@ -75,8 +78,8 @@ class DownloadExtensionSource(UseSelenium):
         bring_chrome_to_front(self.driver)
 
         # Recent Chrome does not allow bypassing 'harmful download', so use pyautogui.
-        pos = get_last_match(self.image)
-        if pos != (0,0,0,0):
+        pos = get_last_match(CONTINUE_IMAGE)
+        if pos != (0.0,0.0):
             print_with_time('다운로드 "계속" 버튼 확인')
             pyautogui.click(pos) # must be on the bottom
             time.sleep(5)
@@ -93,6 +96,7 @@ class DownloadExtensionSource(UseSelenium):
         if self.check_source_exists():
             print_with_time('이미 디렉터리 안에 확장자 소스 파일 있음')
             return
+        print_with_time('디렉터리 안에 확장자 소스 파일 없음. 다운로드 진행')
 
         # init selenium
         self.driver = self.initialize_selenium()

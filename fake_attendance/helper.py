@@ -24,16 +24,16 @@ def get_file_path(filename, sub=None):
 
 def get_last_match(image):
     'For checking distinct elements. Nothing found if (0,0,0,0) returned'
-    positions = [(0,0,0,0)]
+    dimensions = [(0,0,0,0)]
     threshhold = 8
 
     all_locations = list(pyautogui.locateAllOnScreen(image, confidence=0.7))
-    for idx, pos in enumerate(all_locations):
-        if idx == len(all_locations) - 1:
-            break
-        if abs(all_locations[idx][0] - positions[-1][0]) +\
-            abs(all_locations[idx][1] - positions[-1][1]) > threshhold:
-            positions.append(pos)
+    for idx, dim in enumerate(all_locations):
+        if abs(all_locations[idx][0] - dimensions[-1][0]) +\
+            abs(all_locations[idx][1] - dimensions[-1][1]) > threshhold:
+            dimensions.append(dim)
+    positions = [(dimension[0]+dimension[2]/2, dimension[1]+dimension[3]/2)
+                 for dimension in dimensions]
 
     return positions[-1]
 
@@ -128,3 +128,13 @@ def get_screen_resolution():
     'get screen resolution'
     pos_x, pos_y = pyautogui.size()
     return pos_x, pos_y
+
+def check_appearance():
+    """
+    Checks DARK/LIGHT mode of macOS\n
+    if DARK: True, elif LIGHT: False
+    """
+    cmd = 'defaults read -g AppleInterfaceStyle'
+    p = subprocess.Popen(cmd, stdout=subprocess.PIPE,
+                         stderr=subprocess.PIPE, shell=True)
+    return bool(p.communicate()[0])

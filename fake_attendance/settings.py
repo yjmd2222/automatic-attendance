@@ -4,6 +4,7 @@ Settings
 
 import os
 import sys
+from sys import platform
 sys.path.append(os.getcwd())
 
 # pylint: disable=wrong-import-position
@@ -12,6 +13,8 @@ from fake_attendance.helper import (
     get_file_path,
     extrapolate_time_sets,
     unfoil_time_sets)
+if platform == 'darwin':
+    from fake_attendance.helper import check_appearance
 # pylint: enable=wrong-import-position
 
 # Screen QR Reader download
@@ -26,8 +29,17 @@ SCREEN_QR_READER_BLANK = 'about:blank'
 SCREEN_QR_READER_SOURCE = get_file_path('extension_0_1_2_0.crx')
 
 # PyAutoGUI
-# continue with download
-CONTINUE_IMAGE = get_file_path('continue_with_download.png', 'images')
+# continue with download on win32
+CONTINUE_IMAGE_WIN32 = get_file_path('continue_with_download_win32.png', 'images')
+if platform == 'darwin':
+    if check_appearance():
+        # continue with download on darwin
+        CONTINUE_IMAGE_DARWIN = get_file_path('continue_with_download_darwin_dark.png', 'images')
+        # open in zoom on darwin
+        OPEN_IN_ZOOM_IMAGE_DARWIN = get_file_path('open_in_zoom_darwin_dark.png', 'images')
+    else:
+        CONTINUE_IMAGE_DARWIN = get_file_path('continue_with_download_darwin_light.png', 'images')
+        OPEN_IN_ZOOM_IMAGE_DARWIN = get_file_path('open_in_zoom_darwin_light.png', 'images')
 
 # APScheduler timings
 # 11:20, 13:00, 15:20 normal
@@ -79,17 +91,19 @@ ZOOM_QUIT_TIMES = [convert_to_datetime(TIME_) for TIME_ in ['12:05', '18:05']]
 SCHED_QUIT_TIMES = [convert_to_datetime('18:10')] # conform to the format of other 'times'
 
 # Zoom props
-# common
+# win32
 ZOOM_AGREE_RECORDING_POPUP_CLASS = 'ZPRecordingConsentClass' # '이 회의는 호스트 또는 참가자가 기록 중입니다'
 ZOOM_UPDATE_POPUP_CLASS = 'ZPForceUpdateWnd' # update popup when launching Zoom
 ZOOM_UPDATE_DOWNLOAD_CLASS = 'CZPUpdateWndCls'
 ZOOM_UPDATE_ACTUAL_UPDATE_CLASS = 'zoom.us Installer Engine'
-# win32
 ZOOM_CLASSROOM_CLASS = 'ZPContentViewWndClass'
 # darwin
 ZOOM_APPLICATION_NAME = 'zoom.us'
 ZOOM_AGREE_RECORDING_POPUP_NAME = '이 회의는 기록되고 있습니다'
-ZOOM_CLASSROOM_NAME = 'Zoom 회의' # same name used for Screen QR Reader. See fake_check_in.py
+ZOOM_UPDATE_POPUP_NAME = 'UNKNOWN0'
+ZOOM_UPDATE_DOWNLOAD_NAME = 'UNKNOWN1'
+ZOOM_UPDATE_ACTUAL_UPDATE_NAME = 'UNKNOWN2'
+ZOOM_CLASSROOM_NAME = 'Zoom 회의   40-분' # same name used for Screen QR Reader. See fake_check_in.py
 
 # Check-in props
 LOGIN_WITH_KAKAO_BUTTON = 'login-form__button-title.css-caslt6'
@@ -113,17 +127,25 @@ FAKE_CHECK_IN_DEFAULT_RESULT_DICT = {
     }
 }
 LAUNCH_ZOOM_DEFAULT_RESULT_DICT = {
-    ZOOM_UPDATE_POPUP_CLASS: {
+    '줌 업데이트': {
         'name': '줌 업데이트',
         'content': False
     },
-    ZOOM_CLASSROOM_CLASS:{
+    '줌 회의 입장':{
         'name': '줌 회의 입장',
         'content': False
     },
-    ZOOM_AGREE_RECORDING_POPUP_CLASS: {
+    '줌 녹화 동의': {
         'name': '줌 녹화 동의',
         'content': False}
+}
+LAUNCH_ZOOM_KEY_MAPPER = {
+    ZOOM_UPDATE_POPUP_CLASS: '줌 업데이트',
+    ZOOM_UPDATE_POPUP_NAME: '줌 업데이트',
+    ZOOM_CLASSROOM_CLASS: '줌 회의 입장',
+    ZOOM_CLASSROOM_NAME: '줌 회의 입장',
+    ZOOM_AGREE_RECORDING_POPUP_CLASS: '줌 녹화 동의',
+    ZOOM_AGREE_RECORDING_POPUP_NAME: '줌 녹화 동의'
 }
 QUIT_ZOOM_DEFAULT_RESULT_DICT = {
     'quit': {
