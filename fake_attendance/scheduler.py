@@ -136,22 +136,18 @@ class MyScheduler(BaseClass):
             # reschedule
             rescheduled_trigger = self.build_trigger(new_time_sets)
             self.sched.reschedule_job(job_id, trigger=rescheduled_trigger)
-        # else remove job
-        else:
-            self.remove_job(job_id)
-
-    def remove_job(self, job_id):
-        'remove job'
-        try:
-            self.sched.remove_job(job_id)
-        except JobLookupError:
-            print_with_time(f'오늘 남은 {job_id} 작업 없음')
 
     def add_run(self, job_id, time_set):
         'extend trigger at given time'
         new_time_sets = self.get_current_timesets(job_id) + [time_set]
         rescheduled_trigger = self.build_trigger(new_time_sets)
-        self.sched.reschedule_job(job_id, trigger=rescheduled_trigger)
+        try:
+            self.sched.reschedule_job(job_id, trigger=rescheduled_trigger)
+        except JobLookupError:
+            self.sched.add_job(
+                func = self.all_job_funcs[job_id],
+                trigger = rescheduled_trigger,
+                id = job_id)
 
     def get_timesets_from_terminal(self):
         'receive argument from command line for which time sets to add to schedule'
@@ -241,7 +237,7 @@ class MyScheduler(BaseClass):
                     print_with_time(f'강제 {job_id} 커맨드 입력 확인')
                     job = self.sched.get_job(job_id)
                     # check if job is not already running
-                    if job and not job.pending:
+                    if (job and not job.pending) or not job:
                         self.add_run(job_id, datetime.now() + timedelta(seconds=1))
                     else:
                         print_with_time(f'{job_id} 스크립트 이미 실행중. 완료 후 실행 바람')
