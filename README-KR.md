@@ -13,3 +13,9 @@
 리포 로컬로 클론한 후 `macos` 브랜치로 이동(`git checkout macos`). `pip install -r requirements.txt` 입력해서 필요 모듈 설치
 
 터미널에 `python -m fake_attendance` 입력해서 실행. 현재 프로젝트 기간이므로 `python -m fake_attendance -p 'project section'` 입력으로 프로젝트 기간에 맞는 스케줄러 실행
+
+# 커맨드
+- 줌 실행: `Ctrl + Alt + L`
+- QR 체크인: `Ctrl + Alt + C`
+- 줌 종료: `Ctrl + Alt + Q`
+- 스케줄러 종료: `Ctrl + Alt + E`
