@@ -5,7 +5,7 @@ Launch Zoom
 import time
 
 import keyboard
-import win32gui
+
 from fake_attendance.abc import UseSelenium
 from fake_attendance.info import ZOOM_LINK
 from fake_attendance.helper import (
