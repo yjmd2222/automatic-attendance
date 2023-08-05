@@ -14,7 +14,8 @@ from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.combining import OrTrigger
 from apscheduler.triggers.cron import CronTrigger
 
-import keyboard
+# import keyboard
+from pynput import keyboard
 
 sys.path.append(os.getcwd())
 
@@ -224,24 +225,35 @@ class MyScheduler(BaseClass):
         self.is_quit = True
         time.sleep(1)
 
+    def keyboard_command_listener(self):
+        'setting up listener for keyboard commands'
+        # dictionary for storing command: on_activate_wrapper
+        on_activate_dict = {}
+        def on_activate(job_id):
+            'inner on_activate function that is fired on command'
+            print_with_time(f'강제 {job_id} 커맨드 입력 확인')
+            job = self.sched.get_job(job_id)
+            # check if job is not already running
+            if (job and not job.pending) or not job:
+                self.add_run(job_id, datetime.now() + timedelta(seconds=1))
+            else:
+                print_with_time(f'{job_id} 스크립트 이미 실행중. 완료 후 실행 바람')
+            time.sleep(1)
+
+        # adding the wrapper to dictionary
+        for job_id in self.job_ids:
+            # avoid cell-var-from-loop by using x in loop instead of last job_id
+            on_activate_dict[SEQUENCE_MAP[job_id]] = lambda x=job_id: on_activate(x)
+        listener = keyboard.GlobalHotKeys(on_activate_dict)
+        listener.start()
+
     def wait_for_event(self):
         'runs APScheduler in background and waits for commands until quit command is passed'
+        # wait for commands
         while True:
             # quit if no job left
             if all((not next_run for next_run in self.next_times.values())):
                 self.quit('남은 작업 없음')
-            # fire job on command
-            for job_id in self.job_ids:
-                # if sequence for job is pressed
-                if keyboard.is_pressed(SEQUENCE_MAP[job_id]):
-                    print_with_time(f'강제 {job_id} 커맨드 입력 확인')
-                    job = self.sched.get_job(job_id)
-                    # check if job is not already running
-                    if (job and not job.pending) or not job:
-                        self.add_run(job_id, datetime.now() + timedelta(seconds=1))
-                    else:
-                        print_with_time(f'{job_id} 스크립트 이미 실행중. 완료 후 실행 바람')
-                    time.sleep(1)
             # quit
             if self.is_quit:
                 self.sched.remove_all_jobs()
@@ -254,7 +266,8 @@ class MyScheduler(BaseClass):
         self.add_jobs() # add all jobs
         self.sched.start() # start the scheduler
         self.print_next_time() # print time first job fires
-        self.wait_for_event() # quit with keyboard, force qr check, or at self.quit job time
+        self.keyboard_command_listener() # listens to launch, check-in, quit, exit commands
+        self.wait_for_event() # while loop that runs until quit
 # pylint: enable=too-many-instance-attributes
 
 if __name__ == '__main__':

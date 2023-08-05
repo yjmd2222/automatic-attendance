@@ -160,10 +160,16 @@ RESULT_DICTS = {
 }
 
 # misc
-LAUNCH_ZOOM_SEQUENCE = 'ctrl+alt+l'
-CHECK_IN_SEQUENCE = 'ctrl+alt+c'
-QUIT_ZOOM_SEQUENCE = 'ctrl+alt+q'
-QUIT_SCHED_SEQUENCE = 'ctrl+alt+e'
+if platform == 'win32':
+    LAUNCH_ZOOM_SEQUENCE = '<ctrl>+<alt>+l'
+    CHECK_IN_SEQUENCE = '<ctrl>+<alt>+c'
+    QUIT_ZOOM_SEQUENCE = '<ctrl>+<alt>+q'
+    QUIT_SCHED_SEQUENCE = '<ctrl>+<alt>+e'
+else:
+    LAUNCH_ZOOM_SEQUENCE = '<ctrl>+<cmd>+l'
+    CHECK_IN_SEQUENCE = '<ctrl>+<cmd>+c'
+    QUIT_ZOOM_SEQUENCE = '<ctrl>+<cmd>+q'
+    QUIT_SCHED_SEQUENCE = '<ctrl>+<cmd>+e'
 SEQUENCE_MAP = {
     '줌 실행': LAUNCH_ZOOM_SEQUENCE,
     'QR 체크인': CHECK_IN_SEQUENCE,
