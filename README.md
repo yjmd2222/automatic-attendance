@@ -5,6 +5,9 @@
 # Fake attendance script for you-know-what
 For educational purposes only
 
+# macOS support
+This is an experimental branch to support macOS. Check out the main branch for Windows as the code is messy and may be unstable here.
+
 # A message, mostly for myself
 It is complete (well, for windows 10/11 and none else because that's the only OS this script supports). What I have been doing since July 3 is not related to functionality; I was trying to improve code style and teach myself various techniques. But now it is becoming more 'coding to code' instead of 'adding necessary features.' I probably should not focus on this much because there are other things to learn.
 
@@ -22,6 +25,8 @@ Install the Chrome extension [Screen QR Reader](https://chrome.google.com/websto
 Fill out the template [info_template.py](fake_attendance/info_template.py) with your login, email information, and the zoom link without the `#success`. Rename the file to `info.py`
 
 Note: If the module fails to download the Chrome extension source, you can try downloading it manually. Check that its name is `extension_0_1_2_0.crx`, and put it in the root of the repository. See [this](https://crx-downloader.com/how-it-works).
+
+Also note: You may need to grant permission to the workspace environment access to System Events and Zoom. Go to `System Settings - Privacy & Security - Automation` and give it access to them.
 
 ## Run
 Run `python -m fake_attendance` for download, Zoom launch, and check-in. Read [How it works and why](#how-it-works-and-why) for explanation.
