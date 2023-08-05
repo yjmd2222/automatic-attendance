@@ -150,14 +150,19 @@ class LaunchZoom(PrepareSendEmail, UseSelenium):
             for _ in range(3):
                 print_with_time('줌 회의 실행/발견 실패. 업데이트 중인지 확인 후 재실행')
                 # check update
-                self.process_popup(ZOOM_UPDATE_POPUP_CLASS, ZOOM_UPDATE_POPUP_NAME, reverse=True, send_alt=True)
+                self.process_popup(ZOOM_UPDATE_POPUP_CLASS,
+                                   ZOOM_UPDATE_POPUP_NAME,
+                                   reverse=True,
+                                   send_alt=True)
                 # if agreed to update
                 if self.result_dict['줌 업데이트']['content']:
                     # downloading updates
-                    self.check_window_down(ZOOM_UPDATE_DOWNLOAD_CLASS, ZOOM_UPDATE_DOWNLOAD_NAME)
+                    self.check_window_down(ZOOM_UPDATE_DOWNLOAD_CLASS,
+                                           ZOOM_UPDATE_DOWNLOAD_NAME)
                     print_all_windows() # debug
                     # updating Zoom
-                    self.check_window_down(ZOOM_UPDATE_ACTUAL_UPDATE_CLASS, ZOOM_UPDATE_ACTUAL_UPDATE_NAME)
+                    self.check_window_down(ZOOM_UPDATE_ACTUAL_UPDATE_CLASS,
+                                           ZOOM_UPDATE_ACTUAL_UPDATE_NAME)
                     print_all_windows() # debug
                 self.launch_zoom()
                 # check if now zoom window is visible

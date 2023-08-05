@@ -135,6 +135,6 @@ def check_appearance():
     if DARK: True, elif LIGHT: False
     """
     cmd = 'defaults read -g AppleInterfaceStyle'
-    popen = subprocess.Popen(cmd, stdout=subprocess.PIPE,
-                         stderr=subprocess.PIPE, shell=True)
-    return bool(popen.communicate()[0])
+    with subprocess.Popen(cmd, stdout=subprocess.PIPE,
+                          stderr=subprocess.PIPE, shell=True) as popen:
+        return bool(popen.communicate()[0])
