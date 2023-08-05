@@ -15,6 +15,7 @@
 터미널에 `python -m fake_attendance` 입력해서 실행. 현재 프로젝트 기간이므로 `python -m fake_attendance -p 'project section'` 입력으로 프로젝트 기간에 맞는 스케줄러 실행
 
 # 커맨드
+스크립트 실행 중 아래 커맨드 입력해서 강제 스케줄 실행 가능
 - 줌 실행: `Ctrl + Alt + L`
 - QR 체크인: `Ctrl + Alt + C`
 - 줌 종료: `Ctrl + Alt + Q`
