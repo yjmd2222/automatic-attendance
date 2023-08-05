@@ -9,7 +9,7 @@ from sys import platform
 
 import time
 
-import keyboard
+from pynput.keyboard import Key, Controller
 
 if platform == 'darwin':
     import pyautogui
@@ -54,6 +54,7 @@ class LaunchZoom(PrepareSendEmail, UseSelenium):
     def __init__(self):
         'initialize'
         self.hwnd_zoom_classroom = 0
+        self.keyboard = Controller()
         PrepareSendEmail.define_attributes(self)
         PrepareSendEmail.decorate_run(self)
         UseSelenium.__init__(self)
@@ -178,13 +179,29 @@ class LaunchZoom(PrepareSendEmail, UseSelenium):
         'press tabs and space in popup'
         # send alt because first key sent may be ignored
         if send_alt:
-            keyboard.press_and_release('alt')
+            self.keyboard.tap(Key.alt)
             time.sleep(0.1)
-        hotkey = 'shift+tab' if reverse else 'tab'
+
+        keys = [Key.shift, Key.tab] if reverse else [Key.tab]
+
+        def press_keys(keys:list):
+            'press keys in sequence'
+            keys_ = keys.copy()
+            # base
+            if not keys_:
+                return
+
+            # recursion
+            current_key = keys_.pop(0)
+            self.keyboard.press(current_key)
+            press_keys(keys_)
+            self.keyboard.release(current_key)
+            return
+
         for _ in range(tab_num):
-            keyboard.press_and_release(hotkey)
+            press_keys(keys)
             time.sleep(0.1)
-        keyboard.press_and_release('space')
+        self.keyboard.tap(Key.space)
         time.sleep(10)
 
     # pylint: disable=too-many-arguments
@@ -201,11 +218,9 @@ class LaunchZoom(PrepareSendEmail, UseSelenium):
         # get hwnd
         if platform == 'win32':
             is_window, hwnd = self.check_window_win32(window_class)
-            print(window_class)
             popup_name = LAUNCH_ZOOM_KEY_MAPPER[window_class]
         else:
             is_window, hwnd = self.check_window_darwin(ZOOM_APPLICATION_NAME, window_title)
-            print(window_title)
             popup_name = LAUNCH_ZOOM_KEY_MAPPER[window_title]
         # window/popup visible
         if is_window:
@@ -261,7 +276,7 @@ class LaunchZoom(PrepareSendEmail, UseSelenium):
                                    reverse=True,
                                    send_alt=True)
             else:
-                keyboard.press_and_release('enter')
+                self.keyboard.tap(Key.enter)
                 self.result_dict['줌 녹화 동의']['content'] = True
                 print_with_time('줌 녹화 동의 완료')
         # maximize if everything done correctly
