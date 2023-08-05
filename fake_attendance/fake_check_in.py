@@ -27,6 +27,7 @@ from fake_attendance.abc import UseSelenium
 from fake_attendance.info import KAKAO_ID, KAKAO_PASSWORD
 from fake_attendance.helper import print_with_time, set_foreground
 from fake_attendance.settings import (
+    ZOOM_APPLICATION_NAME,
     ZOOM_CLASSROOM_NAME,
     SCREEN_QR_READER_BLANK,
     SCREEN_QR_READER_POPUP_LINK,
@@ -39,10 +40,6 @@ from fake_attendance.settings import (
     AGREE,
     CHECK_IN,
     SUBMIT)
-if platform == 'darwin':
-    from fake_attendance.settings import (
-        ZOOM_APPLICATION_NAME
-    )
 from fake_attendance.notify import PrepareSendEmail
 # pylint: enable=wrong-import-position
 
@@ -66,7 +63,7 @@ class FakeCheckIn(PrepareSendEmail, UseSelenium):
     def reset_attributes(self):
         'reset attributes for next run'
         self.is_window, self.hwnd = self.check_window()
-        self.rect = self.maximize_window(self.hwnd)
+        self.rect = self.maximize_window(self.hwnd) if self.is_window else [100,100,100,100]
         self.driver = None
         self.is_wait = False
         PrepareSendEmail.define_attributes(self)
