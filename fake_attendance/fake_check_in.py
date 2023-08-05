@@ -25,7 +25,7 @@ sys.path.append(os.getcwd())
 # pylint: disable=wrong-import-position
 from fake_attendance.abc import UseSelenium
 from fake_attendance.info import KAKAO_ID, KAKAO_PASSWORD
-from fake_attendance.helper import print_with_time
+from fake_attendance.helper import print_with_time, set_foreground
 from fake_attendance.settings import (
     ZOOM_CLASSROOM_NAME,
     SCREEN_QR_READER_BLANK,
@@ -161,6 +161,8 @@ class FakeCheckIn(PrepareSendEmail, UseSelenium):
         'method to actually fire Screen QR Reader inside loop'
         # apply new window size
         self.resize_window(rect_resized)
+        # bring it to foreground so that Screen QR Reader recognizes the first 'Zoom' match
+        set_foreground(self.hwnd, ZOOM_APPLICATION_NAME, ZOOM_CLASSROOM_NAME)
 
         self.driver.get(SCREEN_QR_READER_POPUP_LINK) # Screen QR Reader
         time.sleep(2)
@@ -184,7 +186,7 @@ class FakeCheckIn(PrepareSendEmail, UseSelenium):
         # Screen QR Reader source required
         options.add_extension(self.extension_source)
         # automatically select Zoom meeting
-        options.add_argument(f'--auto-select-desktop-capture-source="{ZOOM_CLASSROOM_NAME}"')
+        options.add_argument('--auto-select-desktop-capture-source=Zoom')
 
         return options
 
