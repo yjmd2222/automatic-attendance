@@ -92,7 +92,7 @@ ZOOM_AGREE_RECORDING_POPUP_NAME = '이 회의는 기록되고 있습니다'
 ZOOM_UPDATE_POPUP_NAME = 'UNKNOWN0'
 ZOOM_UPDATE_DOWNLOAD_NAME = 'UNKNOWN1'
 ZOOM_UPDATE_ACTUAL_UPDATE_NAME = 'UNKNOWN2'
-ZOOM_CLASSROOM_NAME = 'Zoom 회의' # same name used for Screen QR Reader. See fake_check_in.py
+ZOOM_CLASSROOM_NAME = 'Zoom 회의'
 
 # PyAutoGUI
 if platform == 'win32':
