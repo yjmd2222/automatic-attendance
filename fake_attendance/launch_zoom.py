@@ -9,6 +9,7 @@ from sys import platform
 
 import time
 
+from selenium.webdriver.common.by import By
 from pynput.keyboard import Key, Controller
 
 if platform == 'darwin':
@@ -37,15 +38,15 @@ from fake_attendance.settings import (
     ZOOM_UPDATE_ACTUAL_UPDATE_NAME, # values
     ZOOM_CLASSROOM_CLASS,
     ZOOM_CLASSROOM_NAME,
-    LAUNCH_ZOOM_KEY_MAPPER)
+    LAUNCH_ZOOM_KEY_MAPPER,
+    TAB_COUNT_MAPPER)
 if platform == 'win32':
     from fake_attendance.helper import (
         print_all_windows)
 else:
     from fake_attendance.settings import (
         WINDOW_CHECK_IMAGE_MAPPER,
-        OK_BUTTON_IMAGE_MAPPER,
-        OPEN_IN_ZOOM_IMAGE_DARWIN)
+        OK_BUTTON_IMAGE_MAPPER)
 # pylint: enable=wrong-import-position
 
 class LaunchZoom(PrepareSendEmail, UseSelenium):
@@ -104,17 +105,16 @@ class LaunchZoom(PrepareSendEmail, UseSelenium):
         # hack to focus on top
         # because recent Chrome does not allow bypassing this popup
         bring_chrome_to_front(self.driver)
+
+        # click 회의 시작
+        self.driver.find_element(By.XPATH, r'//*[text()="회의 시작"]').click()
+        time.sleep(1)
+
         # click 'open Zoom in app'
-        if platform == 'win32':
-            self.press_tabs_and_space(tab_num=2, reverse=False, send_alt=False)
-        else:
-            # darwin is slower to minimize and maximize
-            time.sleep(3)
-            pos = get_last_image_match(OPEN_IN_ZOOM_IMAGE_DARWIN)
-            if pos != (0.0, 0.0):
-                pyautogui.click(pos)
-                # again very slow to launch Zoom
-                time.sleep(20)
+        self.press_tabs_and_space(tab_num=TAB_COUNT_MAPPER['open_in_zoom'],
+                                  reverse=False,
+                                  send_alt=False)
+        time.sleep(10)
 
         # quit driver for multiple tries
         self.driver.quit()
@@ -174,6 +174,10 @@ class LaunchZoom(PrepareSendEmail, UseSelenium):
             # check update
             self.process_popup(ZOOM_UPDATE_POPUP_CLASS,
                                 ZOOM_UPDATE_POPUP_NAME,
+                                tab_num=TAB_COUNT_MAPPER[self.pick_os_dep_window_name(
+                                    ZOOM_UPDATE_POPUP_CLASS,
+                                    ZOOM_UPDATE_POPUP_NAME
+                                )],
                                 reverse=True,
                                 send_alt=True)
             # if agreed to update
@@ -306,6 +310,7 @@ class LaunchZoom(PrepareSendEmail, UseSelenium):
             assert (ok_button_image, ok_button_pos) !=\
                 (ok_button_image, (0.0, 0.0))
             # click on ok button
+            print(ok_button_image)
             pyautogui.click(ok_button_pos)
             # store result
             self.result_dict[popup_name]['content'] = True
@@ -330,13 +335,20 @@ class LaunchZoom(PrepareSendEmail, UseSelenium):
             # double check recording consent
             self.process_popup(ZOOM_AGREE_RECORDING_POPUP_CLASS,
                                 ZOOM_AGREE_RECORDING_POPUP_NAME,
-                                tab_num=2,
+                                tab_num=TAB_COUNT_MAPPER[self.pick_os_dep_window_name(
+                                    ZOOM_AGREE_RECORDING_POPUP_CLASS,
+                                    ZOOM_AGREE_RECORDING_POPUP_NAME
+                                )],
                                 reverse=True,
                                 send_alt=True)
             print_with_time('동의 재확인')
+            # pyautogui confidence is low, so second time on mac may match '회의' in the menu bar
             self.process_popup(ZOOM_AGREE_RECORDING_POPUP_CLASS,
                                 ZOOM_AGREE_RECORDING_POPUP_NAME,
-                                tab_num=2,
+                                tab_num=TAB_COUNT_MAPPER[self.pick_os_dep_window_name(
+                                    ZOOM_AGREE_RECORDING_POPUP_CLASS,
+                                    ZOOM_AGREE_RECORDING_POPUP_NAME
+                                )],
                                 reverse=True,
                                 send_alt=True)
         # maximize if everything done correctly
@@ -347,4 +359,12 @@ class LaunchZoom(PrepareSendEmail, UseSelenium):
     # pylint: enable=attribute-defined-outside-init
 
 if __name__ == '__main__':
+    # quick hack to fix error in pyautogui
+    import pyscreeze
+    import PIL
+
+    __PIL_TUPLE_VERSION = tuple(int(x) for x in PIL.__version__.split("."))
+    pyscreeze.PIL__version__ = __PIL_TUPLE_VERSION
+    # end
+
     LaunchZoom().run()

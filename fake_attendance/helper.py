@@ -36,6 +36,7 @@ def map_dict(keys, values, func=None):
 
 def get_last_image_match(image):
     'For checking distinct elements. Nothing found if (0,0,0,0) returned'
+    print(image)
     dimensions = [(0,0,0,0)]
     threshhold = 8
 

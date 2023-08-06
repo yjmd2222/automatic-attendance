@@ -102,12 +102,9 @@ if platform == 'darwin':
     if check_appearance():
         # continue with download on darwin
         CONTINUE_DOWNLOAD_IMAGE = get_file_path('continue_download_image_darwin_dark.png', 'images')
-        # open in zoom on darwin
-        OPEN_IN_ZOOM_IMAGE_DARWIN = get_file_path('open_in_zoom_image_darwin_dark.png', 'images')
     else:
         CONTINUE_DOWNLOAD_IMAGE =\
             get_file_path('continue_download_image_darwin_light.png', 'images')
-        OPEN_IN_ZOOM_IMAGE_DARWIN = get_file_path('open_in_zoom_image_darwin_light.png', 'images')
     IMAGE_MAPPER_KEYS = [
         ZOOM_AGREE_RECORDING_POPUP_NAME,
         ZOOM_UPDATE_POPUP_NAME,
@@ -198,3 +195,13 @@ for name, key in zip(['줌 실행', 'QR 체크인', '줌 종료', '스케줄러 
 
 # misc
 VERBOSITY__INFO = 3
+TAB_COUNT_MAPPER = {
+    ZOOM_UPDATE_POPUP_CLASS: 2,
+    ZOOM_UPDATE_POPUP_NAME: -1,
+    ZOOM_AGREE_RECORDING_POPUP_CLASS: 2,
+    ZOOM_AGREE_RECORDING_POPUP_NAME: 2
+}
+if platform == 'win32':
+    TAB_COUNT_MAPPER['open_in_zoom'] = 2
+else:
+    TAB_COUNT_MAPPER['open_in_zoom'] = 1
