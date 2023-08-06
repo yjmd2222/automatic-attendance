@@ -14,11 +14,6 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 
-if platform == 'win32':
-    import win32gui
-else:
-    import subprocess
-
 from fake_attendance.abc import UseSelenium, ManipulateWindow
 from fake_attendance.info import KAKAO_ID, KAKAO_PASSWORD
 from fake_attendance.helper import print_with_time, set_foreground
@@ -38,6 +33,11 @@ from fake_attendance.settings import (
     CHECK_IN,
     SUBMIT)
 from fake_attendance.notify import PrepareSendEmail
+
+if platform == 'win32':
+    import win32gui
+else:
+    import subprocess
 
 # pylint: disable=too-many-instance-attributes
 class FakeCheckIn(PrepareSendEmail, UseSelenium, ManipulateWindow):

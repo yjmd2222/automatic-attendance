@@ -5,12 +5,6 @@ Quit Zoom
 import os
 from sys import platform
 
-if platform == 'win32':
-    import pywinauto
-    from pywinauto.findwindows import ElementNotFoundError
-else:
-    import subprocess
-
 from fake_attendance.abc import BaseClass
 from fake_attendance.helper import print_with_time
 from fake_attendance.notify import PrepareSendEmail
@@ -18,6 +12,12 @@ if platform == 'win32':
     from fake_attendance.settings import ZOOM_CLASSROOM_CLASS
 else:
     from fake_attendance.settings import ZOOM_APPLICATION_NAME
+
+if platform == 'win32':
+    import pywinauto
+    from pywinauto.findwindows import ElementNotFoundError
+else:
+    import subprocess
 
 class QuitZoom(PrepareSendEmail, BaseClass):
     'A class for quitting Zoom'

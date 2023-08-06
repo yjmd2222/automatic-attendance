@@ -9,9 +9,6 @@ import time
 from selenium.webdriver.common.by import By
 from pynput.keyboard import Key, Controller
 
-if platform == 'darwin':
-    import pyautogui
-
 from fake_attendance.abc import UseSelenium, ManipulateWindow
 from fake_attendance.info import ZOOM_LINK
 from fake_attendance.helper import (
@@ -41,6 +38,8 @@ else:
     from fake_attendance.settings import (
         WINDOW_CHECK_IMAGE_MAPPER,
         OK_BUTTON_IMAGE_MAPPER)
+
+    import pyautogui
 
 class LaunchZoom(PrepareSendEmail, UseSelenium, ManipulateWindow):
     'A class for launching Zoom'
@@ -357,6 +356,7 @@ class LaunchZoom(PrepareSendEmail, UseSelenium, ManipulateWindow):
     # pylint: enable=attribute-defined-outside-init
 
 if __name__ == '__main__':
+    # pylint: disable=duplicate-code
     # quick hack to fix error in pyautogui
     import pyscreeze
     import PIL
@@ -364,5 +364,6 @@ if __name__ == '__main__':
     __PIL_TUPLE_VERSION = tuple(int(x) for x in PIL.__version__.split("."))
     pyscreeze.PIL__version__ = __PIL_TUPLE_VERSION
     # end
+    # pylint: enable=duplicate-code
 
     LaunchZoom().run()

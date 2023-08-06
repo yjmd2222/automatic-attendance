@@ -10,13 +10,13 @@ from datetime import datetime, timedelta
 import time
 
 import pyautogui
+
+from fake_attendance._settings import _ZOOM_APPLICATION_NAME as ZOOM_APPLICATION_NAME
 if platform == 'win32':
     from win32com.client import Dispatch
     import win32gui
 else:
     import subprocess
-
-from fake_attendance._settings import _ZOOM_APPLICATION_NAME as ZOOM_APPLICATION_NAME
 
 def get_file_path(filename, parent=None):
     'return full file path'

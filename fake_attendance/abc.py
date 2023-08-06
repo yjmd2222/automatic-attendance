@@ -11,12 +11,6 @@ from selenium.webdriver.chrome.options import Options
 # from selenium.webdriver.chrome.service import Service
 # from webdriver_manager.chrome import ChromeDriverManager
 
-if platform == 'win32':
-    import win32con
-    import win32gui
-else:
-    import subprocess
-
 from fake_attendance.arg_parse import parsed_args
 from fake_attendance.helper import print_with_time
 from fake_attendance.settings import (
@@ -24,6 +18,11 @@ from fake_attendance.settings import (
     ZOOM_APPLICATION_NAME)
 if platform == 'darwin':
     from fake_attendance.helper import get_screen_resolution
+
+    import subprocess
+else:
+    import win32con
+    import win32gui
 
 class BaseClass(ABC):
     'base class for abstraction'
