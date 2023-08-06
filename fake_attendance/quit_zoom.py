@@ -2,19 +2,13 @@
 Quit Zoom
 '''
 
-import os
-import sys
 import pywinauto
 from pywinauto.findwindows import ElementNotFoundError
 
-sys.path.append(os.getcwd())
-
-# pylint: disable=wrong-import-position
 from fake_attendance.abc import BaseClass
 from fake_attendance.helper import print_with_time
 from fake_attendance.notify import PrepareSendEmail
 from fake_attendance.settings import ZOOM_CLASSROOM_CLASS
-# pylint: enable=wrong-import-position
 
 class QuitZoom(PrepareSendEmail, BaseClass):
     'A class for quitting Zoom'

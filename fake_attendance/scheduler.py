@@ -2,9 +2,6 @@
 Scheduler that runs FakeCheckIn and TurnOnCamera
 '''
 
-import os
-import sys
-
 from datetime import datetime, timedelta
 import time
 
@@ -16,9 +13,6 @@ from apscheduler.triggers.cron import CronTrigger
 
 import keyboard
 
-sys.path.append(os.getcwd())
-
-# pylint: disable=wrong-import-position
 from fake_attendance.abc import BaseClass
 from fake_attendance.arg_parse import parsed_args
 from fake_attendance.fake_check_in import FakeCheckIn
@@ -31,7 +25,6 @@ from fake_attendance.settings import (
     ZOOM_QUIT_TIMES,
     SCHED_QUIT_TIMES,
     SEQUENCE_MAP)
-# pylint: enable=wrong-import-position
 
 # pylint: disable=too-many-instance-attributes
 class MyScheduler(BaseClass):
@@ -136,22 +129,19 @@ class MyScheduler(BaseClass):
             # reschedule
             rescheduled_trigger = self.build_trigger(new_time_sets)
             self.sched.reschedule_job(job_id, trigger=rescheduled_trigger)
-        # else remove job
-        else:
-            self.remove_job(job_id)
-
-    def remove_job(self, job_id):
-        'remove job'
-        try:
-            self.sched.remove_job(job_id)
-        except JobLookupError:
-            print_with_time(f'오늘 남은 {job_id} 작업 없음')
 
     def add_run(self, job_id, time_set):
-        'extend trigger at given time'
+        'extend trigger at given time. Adds job if no job found'
         new_time_sets = self.get_current_timesets(job_id) + [time_set]
         rescheduled_trigger = self.build_trigger(new_time_sets)
-        self.sched.reschedule_job(job_id, trigger=rescheduled_trigger)
+        # extend trigger
+        try:
+            self.sched.reschedule_job(job_id, trigger=rescheduled_trigger)
+        except JobLookupError:
+            self.sched.add_job(
+                func = self.all_job_funcs[job_id],
+                trigger = rescheduled_trigger,
+                id = job_id)
 
     def get_timesets_from_terminal(self):
         'receive argument from command line for which time sets to add to schedule'
@@ -159,9 +149,9 @@ class MyScheduler(BaseClass):
 
         def parse_time(raw_time_sets):
             'parse time sets from raw list'
-            # pylint: disable=wrong-import-position,import-outside-toplevel
+            # pylint: disable=import-outside-toplevel
             from fake_attendance.helper import convert_to_datetime
-            # pylint: enable=wrong-import-position,import-outside-toplevel
+            # pylint: enable=import-outside-toplevel
             parsed_time_sets = []
             is_success = None
             for raw in raw_time_sets:
@@ -206,9 +196,9 @@ class MyScheduler(BaseClass):
                 time_sets, is_success = parse_time(parsed_args.time)
             if parsed_args.extrapolate:
                 if is_success == 'true':
-                    # pylint: disable=wrong-import-position,import-outside-toplevel
+                    # pylint: disable=import-outside-toplevel
                     from fake_attendance.helper import extrapolate_time_sets, unfoil_time_sets
-                    # pylint: enable=wrong-import-position,import-outside-toplevel
+                    # pylint: enable=import-outside-toplevel
                     time_sets = unfoil_time_sets(
                         [extrapolate_time_sets(time_set) for time_set in time_sets]
                     )
@@ -239,12 +229,7 @@ class MyScheduler(BaseClass):
                 # if sequence for job is pressed
                 if keyboard.is_pressed(SEQUENCE_MAP[job_id]):
                     print_with_time(f'강제 {job_id} 커맨드 입력 확인')
-                    job = self.sched.get_job(job_id)
-                    # check if job is not already running
-                    if job and not job.pending:
-                        self.add_run(job_id, datetime.now() + timedelta(seconds=1))
-                    else:
-                        print_with_time(f'{job_id} 스크립트 이미 실행중. 완료 후 실행 바람')
+                    self.add_run(job_id, datetime.now() + timedelta(seconds=1))
                     time.sleep(1)
             # quit
             if self.is_quit:
