@@ -219,10 +219,11 @@ class MyScheduler(BaseClass):
         return time_sets
 
     def quit(self, message='스케줄러 종료 요청'):
-        'quit scheduler'
+        'sets flag self.is_quit to True'
         print_with_time(message)
         self.is_quit = True
-        time.sleep(1)
+        self.sched.remove_all_jobs()
+        self.sched.remove_listener(self.print_next_time)
 
     def keyboard_command_listener(self):
         'setting up listener for keyboard commands'
@@ -243,16 +244,20 @@ class MyScheduler(BaseClass):
     def wait_for_event(self):
         'runs APScheduler in background and waits for commands until quit command is passed'
         # wait for commands
-        while True:
-            # quit if no job left
-            if all((not next_run for next_run in self.next_times.values())):
-                self.quit('남은 작업 없음')
-            # quit
-            if self.is_quit:
-                self.sched.remove_all_jobs()
-                self.sched.remove_listener(self.print_next_time)
-                self.sched.shutdown()
-                break
+        try:
+            while True:
+                # quit if no job left
+                if all((not next_run for next_run in self.next_times.values())):
+                    self.quit('남은 작업 없음')
+                # quit
+                if self.is_quit:
+                    break
+        # quit with ctrl + c
+        except KeyboardInterrupt:
+            print_with_time('Ctrl + C 입력 확인')
+            self.quit()
+        # shutdown scheduler
+        self.sched.shutdown()
 
     def run(self):
         'run scheduler'
