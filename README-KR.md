@@ -16,7 +16,7 @@
 
 # 커맨드
 스크립트 실행 중 아래 커맨드 입력해서 강제 스케줄 실행 가능
-- 줌 실행: `Ctrl + Alt + L`
-- QR 체크인: `Ctrl + Alt + C`
-- 줌 종료: `Ctrl + Alt + Q`
-- 스케줄러 종료: `Ctrl + Alt + E`
+- 줌 실행: `Ctrl + Alt(cmd) + Shift + L`
+- QR 체크인: `Ctrl + Alt(cmd) + Shift + C`
+- 줌 종료: `Ctrl + Alt(cmd) + Shift + Q`
+- 스케줄러 종료: `Ctrl + Alt(cmd) + Shift + E`
