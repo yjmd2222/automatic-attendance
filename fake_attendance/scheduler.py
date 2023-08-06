@@ -6,7 +6,6 @@ import os
 import sys
 
 from datetime import datetime, timedelta
-import time
 
 from apscheduler.events import EVENT_JOB_EXECUTED
 from apscheduler.jobstores.base import JobLookupError
