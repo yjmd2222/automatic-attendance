@@ -26,7 +26,6 @@ from fake_attendance.settings import (
     ZOOM_QUIT_TIMES,
     SCHED_QUIT_TIMES,
     HOTKEYS_MAP)
-# pylint: enable=wrong-import-position
 
 # pylint: disable=too-many-instance-attributes
 class MyScheduler(BaseClass):

@@ -18,7 +18,6 @@ if platform == 'win32':
     from fake_attendance.settings import ZOOM_CLASSROOM_CLASS
 else:
     from fake_attendance.settings import ZOOM_APPLICATION_NAME
-# pylint: enable=wrong-import-position
 
 class QuitZoom(PrepareSendEmail, BaseClass):
     'A class for quitting Zoom'

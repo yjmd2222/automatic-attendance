@@ -335,9 +335,8 @@ class LaunchZoom(PrepareSendEmail, UseSelenium, ManipulateWindow):
             self.process_popup(ZOOM_AGREE_RECORDING_POPUP_CLASS,
                                 ZOOM_AGREE_RECORDING_POPUP_NAME,
                                 tab_num=TAB_COUNT_MAPPER[self.pick_os_dep_window_name(
-                                    ZOOM_AGREE_RECORDING_POPUP_CLASS,
-                                    ZOOM_AGREE_RECORDING_POPUP_NAME
-                                )],
+                                                         ZOOM_AGREE_RECORDING_POPUP_CLASS,
+                                                         ZOOM_AGREE_RECORDING_POPUP_NAME)],
                                 reverse=True,
                                 send_alt=True)
             print_with_time('동의 재확인')
@@ -345,9 +344,8 @@ class LaunchZoom(PrepareSendEmail, UseSelenium, ManipulateWindow):
             self.process_popup(ZOOM_AGREE_RECORDING_POPUP_CLASS,
                                 ZOOM_AGREE_RECORDING_POPUP_NAME,
                                 tab_num=TAB_COUNT_MAPPER[self.pick_os_dep_window_name(
-                                    ZOOM_AGREE_RECORDING_POPUP_CLASS,
-                                    ZOOM_AGREE_RECORDING_POPUP_NAME
-                                )],
+                                                         ZOOM_AGREE_RECORDING_POPUP_CLASS,
+                                                         ZOOM_AGREE_RECORDING_POPUP_NAME)],
                                 reverse=True,
                                 send_alt=True)
         # maximize if everything done correctly
