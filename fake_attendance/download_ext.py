@@ -4,7 +4,6 @@ Download Screen QR Reader source code
 
 import os
 import sys
-from sys import platform
 
 import time
 
@@ -19,17 +18,14 @@ from fake_attendance.abc import UseSelenium
 from fake_attendance.helper import (
     bring_chrome_to_front,
     get_file_path,
-    get_last_match,
+    get_last_image_match,
     print_with_time)
 from fake_attendance.scheduler import MyScheduler
 from fake_attendance.settings import (
+    CONTINUE_DOWNLOAD_IMAGE,
     GET_CRX_LINK,
     SCREEN_QR_READER_SOURCE,
     SCREEN_QR_READER_WEBSTORE_LINK)
-if platform == 'win32':
-    from fake_attendance.settings import CONTINUE_IMAGE_WIN32 as CONTINUE_IMAGE
-elif platform == 'darwin':
-    from fake_attendance.settings import CONTINUE_IMAGE_DARWIN as CONTINUE_IMAGE
 # pylint: enable=wrong-import-position
 
 class DownloadExtensionSource(UseSelenium):
@@ -78,7 +74,7 @@ class DownloadExtensionSource(UseSelenium):
         bring_chrome_to_front(self.driver)
 
         # Recent Chrome does not allow bypassing 'harmful download', so use pyautogui.
-        pos = get_last_match(CONTINUE_IMAGE)
+        pos = get_last_image_match(CONTINUE_DOWNLOAD_IMAGE)
         if pos != (0.0,0.0):
             print_with_time('다운로드 "계속" 버튼 확인')
             pyautogui.click(pos) # must be on the bottom

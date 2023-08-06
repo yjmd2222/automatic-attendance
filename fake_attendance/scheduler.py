@@ -21,7 +21,9 @@ sys.path.append(os.getcwd())
 from fake_attendance.abc import BaseClass
 from fake_attendance.arg_parse import parsed_args
 from fake_attendance.fake_check_in import FakeCheckIn
-from fake_attendance.helper import print_with_time
+from fake_attendance.helper import (
+    print_with_time,
+    map_dict)
 from fake_attendance.launch_zoom import LaunchZoom
 from fake_attendance.quit_zoom import QuitZoom
 from fake_attendance.settings import (
@@ -49,29 +51,25 @@ class MyScheduler(BaseClass):
             self.launch_zoom.print_name,
             self.quit_zoom.print_name,
             self.quit_scheduler_job_id]
-        self.all_time_sets = self.map_dict(
+        self.all_time_sets = map_dict(
             self.job_ids,
             (self.get_timesets_from_terminal(),
              ZOOM_ON_TIMES,
              ZOOM_QUIT_TIMES,
              SCHED_QUIT_TIMES))
-        self.all_job_funcs = self.map_dict(
+        self.all_job_funcs = map_dict(
             self.job_ids,
             (self.fake_check_in.run,
              self.launch_zoom.run,
              self.quit_zoom.run,
              self.quit))
-        self.all_triggers = self.map_dict(
+        self.all_triggers = map_dict(
             self.job_ids,
             (self.build_trigger(self.all_time_sets[job_id]) for job_id in self.job_ids))
         self.next_times = {}
         self.until = None
         self.is_quit = False
         super().__init__()
-
-    def map_dict(self, keys, values):
-        'build dict with given iterables'
-        return {zipped[0]: zipped[1] for zipped in zip(keys, values)}
 
     def build_trigger(self, time_sets):
         'build trigger with given time_sets'

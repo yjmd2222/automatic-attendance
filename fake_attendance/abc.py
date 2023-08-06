@@ -20,14 +20,11 @@ else:
 # pylint: disable=wrong-import-position
 from fake_attendance.arg_parse import parsed_args
 from fake_attendance.helper import print_with_time
-if platform == 'win32':
-    from fake_attendance.settings import ZOOM_CLASSROOM_CLASS
-else:
+from fake_attendance.settings import (
+    VERBOSITY__INFO,
+    ZOOM_APPLICATION_NAME)
+if platform == 'darwin':
     from fake_attendance.helper import get_screen_resolution
-    from fake_attendance.settings import (
-        ZOOM_APPLICATION_NAME,
-        ZOOM_CLASSROOM_NAME)
-from fake_attendance.settings import VERBOSITY__INFO
 # pylint: enable=wrong-import-position
 
 class BaseClass(ABC):
@@ -90,20 +87,20 @@ class UseSelenium(BaseClass):
         # return webdriver.Chrome(service=auto_driver, options=options)
         return webdriver.Chrome(options=options)
 
-    def check_window_win32(self, window_class_name):
+    def _check_window_win32(self, window_class):
         'check and return window on win32'
-        hwnd = win32gui.FindWindow(window_class_name, None)
+        hwnd = win32gui.FindWindow(window_class, None)
         is_window = bool(win32gui.IsWindowVisible(hwnd))
 
         return is_window, hwnd
 
-    def check_window_darwin(self, app_name, window_name):
-        'check window and return True on darwin'
+    def _check_window_darwin(self, window_title, app_name=ZOOM_APPLICATION_NAME):
+        'check and return window on darwin'
         applescript_code = f'''
         tell application "System Events"
             if exists application process "{app_name}" then
                 tell application process "{app_name}"
-                    if exists (window 1 whose title is "{window_name}") then
+                    if exists (window 1 whose title is "{window_title}") then
                         return 1
                     else
                         return 0
@@ -121,21 +118,23 @@ class UseSelenium(BaseClass):
                                 check=True)
         is_window = bool(int(result.stdout.strip()))
 
-        return is_window, None
+        return is_window, window_title
 
-    def check_window(self):
+    def check_window(self, window_class:str, window_title:str):
         '''
         check Zoom conference window presence\n
         returns is_window, hwnd on win32\n
-        and returns is_window, None on darwin
+        and returns is_window, window_title on darwin.\n
+        currently only works with Zoom conference window\n
+        because Zoom does not properly support AppleScript
         '''
         if platform == 'win32':
-            is_window, hwnd = self.check_window_win32(ZOOM_CLASSROOM_CLASS)
+            is_window, hwnd = self._check_window_win32(window_class)
         else:
-            is_window, hwnd = self.check_window_darwin(ZOOM_APPLICATION_NAME, ZOOM_CLASSROOM_NAME)
+            is_window, hwnd = self._check_window_darwin(window_title)
         return is_window, hwnd
 
-    def maximize_window_win32(self, hwnd):
+    def _maximize_window_win32(self, hwnd):
         '''
         maximize window on win32
         '''
@@ -148,7 +147,7 @@ class UseSelenium(BaseClass):
 
         return rect
 
-    def maximize_window_darwin(self, app_name, window_name):
+    def _maximize_window_darwin(self, window_name, app_name=ZOOM_APPLICATION_NAME):
         '''
         maximize window on darwin
         '''
@@ -176,15 +175,15 @@ class UseSelenium(BaseClass):
 
         return rect
 
-    def maximize_window(self, hwnd:int|None):
+    def maximize_window(self, hwnd:int|str):
         '''
         maximize window and returns rect\n
-        hwnd is just a placeholder on darwin
+        hwnd is window_title on darwin
         '''
         if platform == 'win32':
-            rect =  self.maximize_window_win32(hwnd)
+            rect =  self._maximize_window_win32(hwnd)
         else:
-            rect  = self.maximize_window_darwin(ZOOM_APPLICATION_NAME, ZOOM_CLASSROOM_NAME)
+            rect  = self._maximize_window_darwin(hwnd)
         return rect
 
     # def maximize_window_darwin(self, hwnd, app_name=None):

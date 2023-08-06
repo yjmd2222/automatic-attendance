@@ -28,6 +28,7 @@ from fake_attendance.info import KAKAO_ID, KAKAO_PASSWORD
 from fake_attendance.helper import print_with_time, set_foreground
 from fake_attendance.settings import (
     ZOOM_APPLICATION_NAME,
+    ZOOM_CLASSROOM_CLASS,
     ZOOM_CLASSROOM_NAME,
     SCREEN_QR_READER_BLANK,
     SCREEN_QR_READER_POPUP_LINK,
@@ -62,22 +63,22 @@ class FakeCheckIn(PrepareSendEmail, UseSelenium):
 
     def reset_attributes(self):
         'reset attributes for next run'
-        self.is_window, self.hwnd = self.check_window()
+        self.is_window, self.hwnd = self.check_window(ZOOM_CLASSROOM_CLASS, ZOOM_CLASSROOM_NAME)
         self.rect = self.maximize_window(self.hwnd) if self.is_window else [100,100,100,100]
         self.driver = None
         self.is_wait = False
         PrepareSendEmail.define_attributes(self)
 
-    def resize_window_win32(self, rect, hwnd):
+    def _resize_window_win32(self, rect, hwnd):
         'resize window to given rect on win32'
         win32gui.MoveWindow(hwnd, *rect, True)
 
-    def resize_window_darwin(self, rect, app_name, window_name):
+    def _resize_window_darwin(self, rect, window_title, app_name=ZOOM_APPLICATION_NAME):
         'resize window to given rect on darwin'
         applescript_code = f'''
         tell application "System Events"
             tell application process "{app_name}"
-                set zoom_conference to window 1 whose title is "{window_name}"
+                set zoom_conference to window 1 whose title is "{window_title}"
                 tell zoom_conference
                     set position to {rect[:2]}
                     set size to {rect[2:]}
@@ -94,9 +95,9 @@ class FakeCheckIn(PrepareSendEmail, UseSelenium):
     def resize_window(self, rect):
         'resize window to given rect'
         if platform == 'win32':
-            self.resize_window_win32(rect, self.hwnd)
+            self._resize_window_win32(rect, self.hwnd)
         else:
-            self.resize_window_darwin(rect, ZOOM_APPLICATION_NAME, ZOOM_CLASSROOM_NAME)
+            self._resize_window_darwin(rect, self.hwnd)
 
     # def check_window(self):
     #     'check and return window'
@@ -159,7 +160,7 @@ class FakeCheckIn(PrepareSendEmail, UseSelenium):
         # apply new window size
         self.resize_window(rect_resized)
         # bring it to foreground so that Screen QR Reader recognizes the first 'Zoom' match
-        set_foreground(self.hwnd, ZOOM_APPLICATION_NAME, ZOOM_CLASSROOM_NAME)
+        set_foreground(self.hwnd)
 
         self.driver.get(SCREEN_QR_READER_POPUP_LINK) # Screen QR Reader
         time.sleep(2)
@@ -296,7 +297,7 @@ class FakeCheckIn(PrepareSendEmail, UseSelenium):
     def run(self):
         'run whole check-in process'
         # get Zoom window
-        self.is_window, self.hwnd = self.check_window()
+        self.is_window, self.hwnd = self.check_window(ZOOM_CLASSROOM_CLASS, ZOOM_CLASSROOM_NAME)
         # if it is visible
         if self.is_window:
             # get max rect

@@ -38,7 +38,7 @@ class QuitZoom(PrepareSendEmail, BaseClass):
         'reset attributes for next run'
         PrepareSendEmail.define_attributes(self)
 
-    def kill_zoom_win32(self, kill_hidden):
+    def _kill_zoom_win32(self, kill_hidden):
         'kill Zoom conference on win32'
         for _ in range(3):
             try:
@@ -61,7 +61,7 @@ class QuitZoom(PrepareSendEmail, BaseClass):
                     self.result_dict['quit']['content'] = False
                 break
 
-    def kill_zoom_darwin(self, kill_hidden):
+    def _kill_zoom_darwin(self, kill_hidden):
         'kill Zoom conference on darwin'
         applescript_code = f'''
         tell application "System Events"
@@ -94,9 +94,9 @@ class QuitZoom(PrepareSendEmail, BaseClass):
     def kill_zoom(self, kill_hidden):
         'kill Zoom conference'
         if platform == 'win32':
-            self.kill_zoom_win32(kill_hidden)
+            self._kill_zoom_win32(kill_hidden)
         else:
-            self.kill_zoom_darwin(kill_hidden)
+            self._kill_zoom_darwin(kill_hidden)
 
     # pylint: disable=attribute-defined-outside-init
     def run(self, kill_hidden=False):

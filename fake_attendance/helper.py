@@ -16,13 +16,25 @@ if platform == 'win32':
 else:
     import subprocess
 
-def get_file_path(filename, sub=None):
-    'return full file path'
-    if sub:
-        return os.path.join(os.getcwd(), sub, filename)
-    return os.path.join(os.getcwd(), filename)
+from fake_attendance._settings import _ZOOM_APPLICATION_NAME as ZOOM_APPLICATION_NAME
 
-def get_last_match(image):
+def get_file_path(filename, parent=None):
+    'return full file path'
+    if parent:
+        _path = os.path.join(os.getcwd(), parent, filename)
+    else:
+        _path = os.path.join(os.getcwd(), filename)
+    return _path
+
+def map_dict(keys, values, func=None):
+    'build dict with given iterables. func applied to values'
+    if func:
+        dict_ = {key: func(value) for key, value in zip(keys, values)}
+    else:
+        dict_ = dict(zip(keys, values))
+    return dict_
+
+def get_last_image_match(image):
     'For checking distinct elements. Nothing found if (0,0,0,0) returned'
     dimensions = [(0,0,0,0)]
     threshhold = 8
@@ -34,7 +46,6 @@ def get_last_match(image):
             dimensions.append(dim)
     positions = [(dimension[0]+dimension[2]/2, dimension[1]+dimension[3]/2)
                  for dimension in dimensions]
-
     return positions[-1]
 
 def convert_to_datetime(time_, format_='%H:%M'):
@@ -74,15 +85,16 @@ def bring_chrome_to_front(driver):
     driver.maximize_window()
     time.sleep(0.5)
 
-def send_alt_key_and_set_foreground(hwnd):
+def _set_foreground_win32(hwnd):
     '''
+    set window to foreground on win32
     send alt key to shell before setting foreground with win32gui to workaround
     error: (0, 'SetForegroundWindow', 'No error message is available')
     '''
     Dispatch('WScript.Shell').SendKeys('%')
     win32gui.SetForegroundWindow(hwnd)
 
-def set_foreground_darwin(app_name, window_name):
+def _set_foreground_darwin(window_name, app_name=ZOOM_APPLICATION_NAME):
     'set window to foreground on darwin'
     applescript_code = f'''
     tell application "System Events"
@@ -100,15 +112,15 @@ def set_foreground_darwin(app_name, window_name):
                         stdout=devnull,
                         check=True)
 
-def set_foreground(hwnd=None, app_name=None, window_name=None):
+def set_foreground(hwnd:int|str):
     '''
     set window to foreground\n
     hwnd is used on win32 and others on darwin
     '''
     if platform == 'win32':
-        send_alt_key_and_set_foreground(hwnd)
+        _set_foreground_win32(hwnd)
     else:
-        set_foreground_darwin(app_name, window_name)
+        _set_foreground_darwin(hwnd)
 
 def print_all_windows(title='Zoom'):
     'wrapper'

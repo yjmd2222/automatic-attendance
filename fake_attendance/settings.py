@@ -12,7 +12,9 @@ from fake_attendance.helper import (
     convert_to_datetime,
     get_file_path,
     extrapolate_time_sets,
-    unfoil_time_sets)
+    unfoil_time_sets,
+    map_dict)
+from fake_attendance._settings import _ZOOM_APPLICATION_NAME
 if platform == 'darwin':
     from fake_attendance.helper import check_appearance
 # pylint: enable=wrong-import-position
@@ -27,19 +29,6 @@ SCREEN_QR_READER_POPUP_LINK = \
     'chrome-extension://ekoaehpknadfoaolagjfdefeopkhfhln/src/popup/popup.html'
 SCREEN_QR_READER_BLANK = 'about:blank'
 SCREEN_QR_READER_SOURCE = get_file_path('extension_0_1_2_0.crx')
-
-# PyAutoGUI
-# continue with download on win32
-CONTINUE_IMAGE_WIN32 = get_file_path('continue_with_download_win32.png', 'images')
-if platform == 'darwin':
-    if check_appearance():
-        # continue with download on darwin
-        CONTINUE_IMAGE_DARWIN = get_file_path('continue_with_download_darwin_dark.png', 'images')
-        # open in zoom on darwin
-        OPEN_IN_ZOOM_IMAGE_DARWIN = get_file_path('open_in_zoom_darwin_dark.png', 'images')
-    else:
-        CONTINUE_IMAGE_DARWIN = get_file_path('continue_with_download_darwin_light.png', 'images')
-        OPEN_IN_ZOOM_IMAGE_DARWIN = get_file_path('open_in_zoom_darwin_light.png', 'images')
 
 # APScheduler timings
 # 11:20, 13:00, 15:20 normal
@@ -98,12 +87,50 @@ ZOOM_UPDATE_DOWNLOAD_CLASS = 'CZPUpdateWndCls'
 ZOOM_UPDATE_ACTUAL_UPDATE_CLASS = 'zoom.us Installer Engine'
 ZOOM_CLASSROOM_CLASS = 'ZPContentViewWndClass'
 # darwin
-ZOOM_APPLICATION_NAME = 'zoom.us'
+ZOOM_APPLICATION_NAME = _ZOOM_APPLICATION_NAME
 ZOOM_AGREE_RECORDING_POPUP_NAME = '이 회의는 기록되고 있습니다'
 ZOOM_UPDATE_POPUP_NAME = 'UNKNOWN0'
 ZOOM_UPDATE_DOWNLOAD_NAME = 'UNKNOWN1'
 ZOOM_UPDATE_ACTUAL_UPDATE_NAME = 'UNKNOWN2'
 ZOOM_CLASSROOM_NAME = 'Zoom 회의' # same name used for Screen QR Reader. See fake_check_in.py
+
+# PyAutoGUI
+if platform == 'win32':
+    # continue with download on win32
+    CONTINUE_DOWNLOAD_IMAGE = get_file_path('continue_download_image_win32.png', 'images')
+if platform == 'darwin':
+    if check_appearance():
+        # continue with download on darwin
+        CONTINUE_DOWNLOAD_IMAGE = get_file_path('continue_download_image_darwin_dark.png', 'images')
+        # open in zoom on darwin
+        OPEN_IN_ZOOM_IMAGE_DARWIN = get_file_path('open_in_zoom_image_darwin_dark.png', 'images')
+    else:
+        CONTINUE_DOWNLOAD_IMAGE =\
+            get_file_path('continue_download_image_darwin_light.png', 'images')
+        OPEN_IN_ZOOM_IMAGE_DARWIN = get_file_path('open_in_zoom_image_darwin_light.png', 'images')
+    IMAGE_MAPPER_KEYS = [
+        ZOOM_AGREE_RECORDING_POPUP_NAME,
+        ZOOM_UPDATE_POPUP_NAME,
+        ZOOM_UPDATE_DOWNLOAD_NAME,
+        ZOOM_UPDATE_ACTUAL_UPDATE_NAME]
+    WINDOW_CHECK_IMAGE_NAMES = [
+        'zoom_agree_recording_popup_window_image_darwin.png',
+        'zoom_update_popup_window_image_darwin.png',
+        'zoom_update_download_window_image_darwin.png',
+        'zoom_update_actual_update_window_image_darwin.png']
+    OK_BUTTON_IMAGE_NAMES = [
+        'zoom_agree_recording_popup_ok_image_darwin.png',
+        'zoom_update_popup_ok_image_darwin.png',
+        'zoom_update_download_ok_image_darwin.png',
+        'zoom_update_actual_update_ok_image_darwin.png']
+    WINDOW_CHECK_IMAGE_MAPPER = map_dict(
+        IMAGE_MAPPER_KEYS,
+        WINDOW_CHECK_IMAGE_NAMES,
+        lambda value: get_file_path(value, 'images'))
+    OK_BUTTON_IMAGE_MAPPER = map_dict(
+        IMAGE_MAPPER_KEYS,
+        OK_BUTTON_IMAGE_NAMES,
+        lambda value: get_file_path(value, 'images'))
 
 # Check-in props
 LOGIN_WITH_KAKAO_BUTTON = 'login-form__button-title.css-caslt6'
