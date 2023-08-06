@@ -126,10 +126,10 @@ RESULT_DICTS = {
 }
 
 # misc
-LAUNCH_ZOOM_SEQUENCE = 'ctrl+alt+l'
-CHECK_IN_SEQUENCE = 'ctrl+alt+c'
-QUIT_ZOOM_SEQUENCE = 'ctrl+alt+q'
-QUIT_SCHED_SEQUENCE = 'ctrl+alt+e'
+LAUNCH_ZOOM_SEQUENCE = 'ctrl+alt+shift+l'
+CHECK_IN_SEQUENCE = 'ctrl+alt+shift+c'
+QUIT_ZOOM_SEQUENCE = 'ctrl+alt+shift+q'
+QUIT_SCHED_SEQUENCE = 'ctrl+alt+shift+e'
 SEQUENCE_MAP = {
     '줌 실행': LAUNCH_ZOOM_SEQUENCE,
     'QR 체크인': CHECK_IN_SEQUENCE,
