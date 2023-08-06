@@ -30,7 +30,7 @@ from fake_attendance.settings import (
     ZOOM_ON_TIMES,
     ZOOM_QUIT_TIMES,
     SCHED_QUIT_TIMES,
-    SEQUENCE_MAP)
+    HOTKEYS_MAP)
 # pylint: enable=wrong-import-position
 
 # pylint: disable=too-many-instance-attributes
@@ -236,7 +236,7 @@ class MyScheduler(BaseClass):
         # adding the wrapper to dictionary
         for job_id in self.job_ids:
             # avoid cell-var-from-loop by using x in loop instead of last job_id
-            on_activate_dict[SEQUENCE_MAP[job_id]] = lambda x=job_id: on_activate(x)
+            on_activate_dict[HOTKEYS_MAP[job_id]] = lambda x=job_id: on_activate(x)
         listener = keyboard.GlobalHotKeys(on_activate_dict)
         listener.start()
 
