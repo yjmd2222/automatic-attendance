@@ -22,7 +22,7 @@ Run below in a Python 3 environment, 3.11.3 recommended.
 
 Install the Chrome extension [Screen QR Reader](https://chrome.google.com/webstore/detail/screen-qr-reader/ekoaehpknadfoaolagjfdefeopkhfhln).
 
-Fill out the template [info_template.py](fake_attendance/info_template.py) with your login, email information, and the zoom link without the `#success`. Rename the file to `info.py`
+Fill out the template [info_template.py](fake_attendance/info_template.py) with your login, email information, and the zoom link _with_ the `#success`. Rename the file to `info.py`
 
 Note: If the module fails to download the Chrome extension source, you can try downloading it manually. Check that its name is `extension_0_1_2_0.crx`, and put it in the root of the repository. See [this](https://crx-downloader.com/how-it-works).
 

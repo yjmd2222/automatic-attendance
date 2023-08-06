@@ -12,5 +12,5 @@ SMTP_PORT = 123
 KAKAO_ID = 'whatisit'
 KAKAO_PASSWORD = 'password'
 
-# your Zoom link without #success at the end of the URL
-ZOOM_LINK = 'https://your.zoom.link.goes.here'
+# your Zoom link with #success at the end of the URL
+ZOOM_LINK = 'https://your.zoom.link.goes.here#success'
