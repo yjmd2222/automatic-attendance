@@ -11,9 +11,6 @@ from selenium.webdriver.common.by import By
 
 import pyautogui
 
-sys.path.append(os.getcwd())
-
-# pylint: disable=wrong-import-position
 from fake_attendance.abc import UseSelenium
 from fake_attendance.helper import (
     bring_chrome_to_front,
@@ -26,7 +23,6 @@ from fake_attendance.settings import (
     GET_CRX_LINK,
     SCREEN_QR_READER_SOURCE,
     SCREEN_QR_READER_WEBSTORE_LINK)
-# pylint: enable=wrong-import-position
 
 class DownloadExtensionSource(UseSelenium):
     'A class for downloading the source of Screen QR Reader'
@@ -82,10 +78,6 @@ class DownloadExtensionSource(UseSelenium):
             time.sleep(5)
         else:
             print_with_time('다운로드 "계속" 버튼 찾을 수 없음')
-
-    def maximize_window(self, hwnd):
-        'not implemented'
-        return None
 
     def run(self):
         'Run the download'

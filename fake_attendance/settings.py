@@ -2,17 +2,11 @@
 Settings
 '''
 
-import os
-import sys
-sys.path.append(os.getcwd())
-
-# pylint: disable=wrong-import-position
 from fake_attendance.helper import (
     convert_to_datetime,
     get_file_path,
     extrapolate_time_sets,
     unfoil_time_sets)
-# pylint: enable=wrong-import-position
 
 # Screen QR Reader download
 GET_CRX_LINK = 'https://crx-downloader.com/'
@@ -132,10 +126,10 @@ RESULT_DICTS = {
 }
 
 # misc
-LAUNCH_ZOOM_SEQUENCE = 'ctrl+alt+l'
-CHECK_IN_SEQUENCE = 'ctrl+alt+c'
-QUIT_ZOOM_SEQUENCE = 'ctrl+alt+q'
-QUIT_SCHED_SEQUENCE = 'ctrl+alt+e'
+LAUNCH_ZOOM_SEQUENCE = 'ctrl+alt+shift+l'
+CHECK_IN_SEQUENCE = 'ctrl+alt+shift+c'
+QUIT_ZOOM_SEQUENCE = 'ctrl+alt+shift+q'
+QUIT_SCHED_SEQUENCE = 'ctrl+alt+shift+e'
 SEQUENCE_MAP = {
     '줌 실행': LAUNCH_ZOOM_SEQUENCE,
     'QR 체크인': CHECK_IN_SEQUENCE,

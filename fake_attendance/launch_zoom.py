@@ -2,18 +2,11 @@
 Launch Zoom
 '''
 
-import os
-import sys
-
 import time
 
 import keyboard
-import win32gui
 
-sys.path.append(os.getcwd())
-
-# pylint: disable=wrong-import-position
-from fake_attendance.abc import UseSelenium
+from fake_attendance.abc import UseSelenium, ManipulateWindow
 from fake_attendance.info import ZOOM_LINK
 from fake_attendance.helper import (
     bring_chrome_to_front,
@@ -28,9 +21,8 @@ from fake_attendance.settings import (
     ZOOM_UPDATE_POPUP_CLASS,
     ZOOM_UPDATE_DOWNLOAD_CLASS,
     ZOOM_UPDATE_ACTUAL_UPDATE_CLASS)
-# pylint: enable=wrong-import-position
 
-class LaunchZoom(PrepareSendEmail, UseSelenium):
+class LaunchZoom(PrepareSendEmail, UseSelenium, ManipulateWindow):
     'A class for launching Zoom'
     print_name = '줌 실행'
 
@@ -59,9 +51,9 @@ class LaunchZoom(PrepareSendEmail, UseSelenium):
     def connect(self):
         'connect to Zoom conference'
         # check presence of Zoom conference
-        self.hwnd_zoom_classroom = win32gui.FindWindow(ZOOM_CLASSROOM_CLASS, None)
+        is_window, self.hwnd_zoom_classroom = self.check_window(ZOOM_CLASSROOM_CLASS)
         # if visible
-        if win32gui.IsWindowVisible(self.hwnd_zoom_classroom):
+        if is_window:
             send_alt_key_and_set_foreground(self.hwnd_zoom_classroom)
             print_with_time('줌 회의 입장 확인')
         # if not visible
@@ -94,30 +86,23 @@ class LaunchZoom(PrepareSendEmail, UseSelenium):
     def check_window_down(self, window_class=None, window_title=None):
         'wait until window is down'
         if window_class:
-            hwnd = win32gui.FindWindow(window_class, None)
+            is_window, _ = self.check_window(window_class=window_class)
             window_name = window_class
         else:
-            hwnd = win32gui.FindWindow(None, window_title)
+            is_window, _ = self.check_window(window_title=window_title)
             window_name = window_title
         # wait while it is visible
-        while win32gui.IsWindowVisible(hwnd):
+        while is_window:
             print_with_time(f'{window_name} 진행중')
             time.sleep(5)
 
     def check_launch_result(self):
         'check the result'
         # check Zoom classroom
-        self.hwnd_zoom_classroom = win32gui.FindWindow(ZOOM_CLASSROOM_CLASS, None)
+        is_classroom, self.hwnd_zoom_classroom = self.check_window(ZOOM_CLASSROOM_CLASS)
 
-        def check_zoom_visible(hwnd):
-            'check if zoom classroom window is visible'
-            # if Zoom classroom visible
-            if win32gui.IsWindowVisible(hwnd):
-                print_with_time('줌 회의 실행/발견 성공')
-                return True
-            return False
-
-        if check_zoom_visible(self.hwnd_zoom_classroom):
+        if is_classroom:
+            print_with_time('줌 회의 실행/발견 성공')
             self.result_dict[ZOOM_CLASSROOM_CLASS]['content'] = True
             return True
         # if not
@@ -135,8 +120,10 @@ class LaunchZoom(PrepareSendEmail, UseSelenium):
                 print_all_windows() # debug
             self.launch_zoom()
             # check if now zoom window is visible
-            self.hwnd_zoom_classroom = win32gui.FindWindow(ZOOM_CLASSROOM_CLASS, None)
-            if check_zoom_visible(self.hwnd_zoom_classroom):
+            is_classroom, self.hwnd_zoom_classroom = self.check_window(ZOOM_CLASSROOM_CLASS)
+            if is_classroom:
+                print_with_time('줌 회의 실행/발견 성공')
+                self.result_dict[ZOOM_CLASSROOM_CLASS]['content'] = True
                 return True
 
         # no launch from all tries
@@ -168,14 +155,10 @@ class LaunchZoom(PrepareSendEmail, UseSelenium):
             print_with_time(f'입력 오류: {error}')
             return False
         # get hwnd
-        if window_class:
-            hwnd = win32gui.FindWindow(window_class, None)
-            window_name = window_class
-        else:
-            hwnd = win32gui.FindWindow(None, window_title)
-            window_name = window_title
+        is_window, hwnd = self.check_window(window_class, window_title)
+        window_name = window_class if window_class else window_title
         # window/popup visible
-        if win32gui.IsWindowVisible(hwnd):
+        if is_window:
             print_with_time(f'{window_name} 창 확인')
             # set focus on it
             send_alt_key_and_set_foreground(hwnd)

@@ -12,11 +12,9 @@ from selenium.webdriver.chrome.options import Options
 import win32con
 import win32gui
 
-# pylint: disable=wrong-import-position
 from fake_attendance.arg_parse import parsed_args
 from fake_attendance.helper import print_with_time
 from fake_attendance.settings import VERBOSITY__INFO
-# pylint: enable=wrong-import-position
 
 class BaseClass(ABC):
     'base class for abstraction'
@@ -77,6 +75,16 @@ class UseSelenium(BaseClass):
 
         # return webdriver.Chrome(service=auto_driver, options=options)
         return webdriver.Chrome(options=options)
+
+class ManipulateWindow:
+    'base class for checking visibility of and manipulating windows'
+
+    def check_window(self, window_class=None, window_title=None):
+        'check and return window'
+        hwnd = win32gui.FindWindow(window_class, window_title)
+        is_window = win32gui.IsWindowVisible(hwnd)
+
+        return bool(is_window), hwnd
 
     def maximize_window(self, hwnd):
         'maximize window'

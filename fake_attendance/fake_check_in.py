@@ -2,9 +2,6 @@
 Script to automatically send link information in QR image on a Zoom meeting every five minutes
 '''
 
-import os
-import sys
-
 from datetime import datetime, timedelta
 import time
 
@@ -15,12 +12,9 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 
-sys.path.append(os.getcwd())
-
-# pylint: disable=wrong-import-position
-from fake_attendance.abc import UseSelenium
+from fake_attendance.abc import UseSelenium, ManipulateWindow
 from fake_attendance.info import KAKAO_ID, KAKAO_PASSWORD
-from fake_attendance.helper import print_with_time
+from fake_attendance.helper import print_with_time, send_alt_key_and_set_foreground
 from fake_attendance.settings import (
     SCREEN_QR_READER_BLANK,
     SCREEN_QR_READER_POPUP_LINK,
@@ -35,10 +29,9 @@ from fake_attendance.settings import (
     CHECK_IN,
     SUBMIT)
 from fake_attendance.notify import PrepareSendEmail
-# pylint: enable=wrong-import-position
 
 # pylint: disable=too-many-instance-attributes
-class FakeCheckIn(PrepareSendEmail, UseSelenium):
+class FakeCheckIn(PrepareSendEmail, UseSelenium, ManipulateWindow):
     'A class for checking QR image and sending email with link'
     print_name = 'QR 체크인'
 
@@ -56,18 +49,11 @@ class FakeCheckIn(PrepareSendEmail, UseSelenium):
 
     def reset_attributes(self):
         'reset attributes for next run'
-        self.is_window, self.hwnd = self.check_window()
+        self.is_window, self.hwnd = self.check_window(ZOOM_CLASSROOM_CLASS)
         self.rect = self.maximize_window(self.hwnd) if self.is_window else [100,100,100,100]
         self.driver = None
         self.is_wait = False
         PrepareSendEmail.define_attributes(self)
-
-    def check_window(self):
-        'check and return window'
-        hwnd = win32gui.FindWindow(ZOOM_CLASSROOM_CLASS, None)
-        self.is_window = win32gui.IsWindowVisible(hwnd)
-
-        return bool(hwnd), hwnd
 
     def check_link_loop(self):
         'Get link from QR'
@@ -100,6 +86,8 @@ class FakeCheckIn(PrepareSendEmail, UseSelenium):
         'method to actually fire Screen QR Reader inside loop'
         # apply new window size
         win32gui.MoveWindow(self.hwnd, *rect_resized, True)
+        # bring it to foreground so Screen QR Reader recognizes the first 'Zoom' match
+        send_alt_key_and_set_foreground(self.hwnd)
         self.driver.get(SCREEN_QR_READER_POPUP_LINK) # Screen QR Reader
         time.sleep(2)
 
@@ -235,7 +223,7 @@ class FakeCheckIn(PrepareSendEmail, UseSelenium):
     def run(self):
         'run whole check-in process'
         # get Zoom window
-        self.is_window, self.hwnd = self.check_window()
+        self.is_window, self.hwnd = self.check_window(ZOOM_CLASSROOM_CLASS)
         # if it is visible
         if self.is_window:
             # get max rect
@@ -271,9 +259,6 @@ class FakeCheckIn(PrepareSendEmail, UseSelenium):
 
         # quit Selenium
         self.driver.quit()
-
-        # maximize Zoom window on exit
-        win32gui.MoveWindow(self.hwnd, *self.rect, True)
 
         # make sure same job does not run within 30 minutes upon completion
         if self.is_wait:
