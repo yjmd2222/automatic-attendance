@@ -158,13 +158,14 @@ class LaunchZoom(PrepareSendEmail, UseSelenium, ManipulateWindow):
         is_classroom, self.hwnd_zoom_classroom =\
             self.check_window(ZOOM_CLASSROOM_CLASS, ZOOM_CLASSROOM_NAME)
 
-        # pick os-dependent name
+        # pick os-dependent name and find key for self.result_dict
         classroom = self.pick_os_dep_window_name(ZOOM_CLASSROOM_CLASS, ZOOM_CLASSROOM_NAME)
+        key = LAUNCH_ZOOM_KEY_MAPPER[classroom]
 
         if is_classroom:
             # either is fine for now
             print_with_time('줌 회의 실행/발견 성공')
-            self.result_dict[classroom]['content'] = True
+            self.result_dict[key]['content'] = True
             return True
         # if not
         for _ in range(3):
