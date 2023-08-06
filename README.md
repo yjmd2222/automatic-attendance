@@ -20,11 +20,9 @@ Run below in a Python 3 environment, 3.11.3 recommended.
 
 `pip install -r requirements.txt`
 
-Install the Chrome extension [Screen QR Reader](https://chrome.google.com/webstore/detail/screen-qr-reader/ekoaehpknadfoaolagjfdefeopkhfhln).
-
 Fill out the template [info_template.py](fake_attendance/info_template.py) with your login, email information, and the zoom link _with_ the `#success`. Rename the file to `info.py`
 
-Note: If the module fails to download the Chrome extension source, you can try downloading it manually. Check that its name is `extension_0_1_2_0.crx`, and put it in the root of the repository. See [this](https://crx-downloader.com/how-it-works).
+Note: If the module fails to download the Chrome extension source, you can try downloading it manually. Check that its name is `extension_0_1_2_0.crx`, and put it in the root of the repository. See [this](https://crx-downloader.com/how-it-works) for direction. Screen QR Reader url: https://chrome.google.com/webstore/detail/screen-qr-reader/ekoaehpknadfoaolagjfdefeopkhfhln
 
 Also note: You may need to grant permission to the workspace environment access to System Events and Zoom. Go to `System Settings - Privacy & Security - Automation` and give it access to them.
 
@@ -45,9 +43,9 @@ For a single test to fire right away, run `python -m fake_attendance.fake_check_
 Currently supports `Ctrl + Alt + Shift + L` for launching Zoom, `Ctrl + Alt + Shift + C` for checking in with QR code, and `Ctrl + Alt + Shift + Q` for quitting Zoom.
 
 ## Quit
-To quit, press `Ctrl + C` in the terminal or `Ctrl + Alt + Shift + E` anywhere. The former is the default sequence for quitting a Python script, and the latter is a user-defined sequence: see [scheduler.py](https://github.com/yjmd2222/fake-attendance/blob/d38ceb32321eac70bbd7902cd87dd7bd88a61a6d/fake_attendance/scheduler.py#L124-L127) and [settings.py](https://github.com/yjmd2222/fake-attendance/blob/d38ceb32321eac70bbd7902cd87dd7bd88a61a6d/fake_attendance/settings.py#L111).
+To quit, press `Ctrl + C` in the terminal or `Ctrl + Alt + Shift + E` anywhere. The former is the default hotkey for quitting a Python script, and the latter is a user-defined hotkey: see [scheduler.py](https://github.com/yjmd2222/fake-attendance/blob/d38ceb32321eac70bbd7902cd87dd7bd88a61a6d/fake_attendance/scheduler.py#L124-L127) and [settings.py](https://github.com/yjmd2222/fake-attendance/blob/d38ceb32321eac70bbd7902cd87dd7bd88a61a6d/fake_attendance/settings.py#L111).
 
-The second sequence allows quitting even when not focused on the terminal, and it may not work in the middle of a job until the job is finished which I believe is due to the usage of `APScheduler`'s `BackgroundScheduler`. A contribution for a fix is welcomed.
+The second hotkey allows quitting even when not focused on the terminal, and it may not work in the middle of a job until the job is finished which I believe is due to the usage of `APScheduler`'s `BackgroundScheduler`. A contribution for a fix is welcomed.
 
 ## How it works and why
 [![Last updated](https://img.shields.io/badge/Last_updated-2023--06--21-blue)](#)

@@ -3,7 +3,6 @@ Quit Zoom
 '''
 
 import os
-import sys
 from sys import platform
 
 if platform == 'win32':
@@ -12,9 +11,6 @@ if platform == 'win32':
 else:
     import subprocess
 
-sys.path.append(os.getcwd())
-
-# pylint: disable=wrong-import-position
 from fake_attendance.abc import BaseClass
 from fake_attendance.helper import print_with_time
 from fake_attendance.notify import PrepareSendEmail

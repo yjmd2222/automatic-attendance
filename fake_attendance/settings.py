@@ -2,12 +2,8 @@
 Settings
 '''
 
-import os
-import sys
 from sys import platform
-sys.path.append(os.getcwd())
 
-# pylint: disable=wrong-import-position
 from fake_attendance.helper import (
     convert_to_datetime,
     get_file_path,
@@ -17,7 +13,6 @@ from fake_attendance.helper import (
 from fake_attendance._settings import _ZOOM_APPLICATION_NAME
 if platform == 'darwin':
     from fake_attendance.helper import check_appearance
-# pylint: enable=wrong-import-position
 
 # Screen QR Reader download
 GET_CRX_LINK = 'https://crx-downloader.com/'
@@ -188,10 +183,10 @@ if platform == 'win32':
     HOTKEYS_ADD = '<alt>'
 else:
     HOTKEYS_ADD = '<cmd>'
-BASE_HOTKEYS = '+'.join(['<ctrl>+<shift>',HOTKEYS_ADD])
+BASE_HOTKEY = '+'.join(['<ctrl>+<shift>',HOTKEYS_ADD])
 HOTKEYS_MAP = {}
 for name, key in zip(['줌 실행', 'QR 체크인', '줌 종료', '스케줄러 종료'],['l', 'c', 'q', 'e']):
-    HOTKEYS_MAP[name] = '+'.join([BASE_HOTKEYS, key])
+    HOTKEYS_MAP[name] = '+'.join([BASE_HOTKEY, key])
 
 # misc
 VERBOSITY__INFO = 3

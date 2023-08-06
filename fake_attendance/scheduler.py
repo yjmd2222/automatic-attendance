@@ -2,9 +2,6 @@
 Scheduler that runs FakeCheckIn and TurnOnCamera
 '''
 
-import os
-import sys
-
 from datetime import datetime, timedelta
 
 from apscheduler.events import EVENT_JOB_EXECUTED
@@ -15,9 +12,6 @@ from apscheduler.triggers.cron import CronTrigger
 
 from pynput import keyboard
 
-sys.path.append(os.getcwd())
-
-# pylint: disable=wrong-import-position
 from fake_attendance.abc import BaseClass
 from fake_attendance.arg_parse import parsed_args
 from fake_attendance.fake_check_in import FakeCheckIn
@@ -135,11 +129,13 @@ class MyScheduler(BaseClass):
             self.sched.reschedule_job(job_id, trigger=rescheduled_trigger)
 
     def add_run(self, job_id, time_set):
-        'extend trigger at given time'
+        'extend trigger at given time. Adds job if no job found'
         new_time_sets = self.get_current_timesets(job_id) + [time_set]
         rescheduled_trigger = self.build_trigger(new_time_sets)
+        # extend trigger
         try:
             self.sched.reschedule_job(job_id, trigger=rescheduled_trigger)
+        # if can't extend trigger because not scheduled, add job
         except JobLookupError:
             self.sched.add_job(
                 func = self.all_job_funcs[job_id],
@@ -152,9 +148,9 @@ class MyScheduler(BaseClass):
 
         def parse_time(raw_time_sets):
             'parse time sets from raw list'
-            # pylint: disable=wrong-import-position,import-outside-toplevel
+            # pylint: disable=import-outside-toplevel
             from fake_attendance.helper import convert_to_datetime
-            # pylint: enable=wrong-import-position,import-outside-toplevel
+            # pylint: enable=import-outside-toplevel
             parsed_time_sets = []
             is_success = None
             for raw in raw_time_sets:
@@ -199,9 +195,9 @@ class MyScheduler(BaseClass):
                 time_sets, is_success = parse_time(parsed_args.time)
             if parsed_args.extrapolate:
                 if is_success == 'true':
-                    # pylint: disable=wrong-import-position,import-outside-toplevel
+                    # pylint: disable=import-outside-toplevel
                     from fake_attendance.helper import extrapolate_time_sets, unfoil_time_sets
-                    # pylint: enable=wrong-import-position,import-outside-toplevel
+                    # pylint: enable=import-outside-toplevel
                     time_sets = unfoil_time_sets(
                         [extrapolate_time_sets(time_set) for time_set in time_sets]
                     )

@@ -3,7 +3,6 @@ Script to automatically send link information in QR image on a Zoom meeting ever
 '''
 
 import os
-import sys
 
 from sys import platform
 
@@ -20,10 +19,7 @@ if platform == 'win32':
 else:
     import subprocess
 
-sys.path.append(os.getcwd())
-
-# pylint: disable=wrong-import-position
-from fake_attendance.abc import UseSelenium
+from fake_attendance.abc import UseSelenium, ManipulateWindow
 from fake_attendance.info import KAKAO_ID, KAKAO_PASSWORD
 from fake_attendance.helper import print_with_time, set_foreground
 from fake_attendance.settings import (
@@ -42,10 +38,9 @@ from fake_attendance.settings import (
     CHECK_IN,
     SUBMIT)
 from fake_attendance.notify import PrepareSendEmail
-# pylint: enable=wrong-import-position
 
 # pylint: disable=too-many-instance-attributes
-class FakeCheckIn(PrepareSendEmail, UseSelenium):
+class FakeCheckIn(PrepareSendEmail, UseSelenium, ManipulateWindow):
     'A class for checking QR image and sending email with link'
     print_name = 'QR 체크인'
 
@@ -176,7 +171,7 @@ class FakeCheckIn(PrepareSendEmail, UseSelenium):
             if self.driver.current_url in (SCREEN_QR_READER_BLANK, SCREEN_QR_READER_POPUP_LINK):
                 return False
             return True # return True if url is valid
-        return False
+        return False # nothing found return False
 
     def create_selenium_options(self):
         'declare options for Selenium driver'

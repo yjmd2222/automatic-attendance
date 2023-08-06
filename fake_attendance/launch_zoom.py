@@ -2,9 +2,6 @@
 Launch Zoom
 '''
 
-import os
-import sys
-
 from sys import platform
 
 import time
@@ -15,10 +12,7 @@ from pynput.keyboard import Key, Controller
 if platform == 'darwin':
     import pyautogui
 
-sys.path.append(os.getcwd())
-
-# pylint: disable=wrong-import-position
-from fake_attendance.abc import UseSelenium
+from fake_attendance.abc import UseSelenium, ManipulateWindow
 from fake_attendance.info import ZOOM_LINK
 from fake_attendance.helper import (
     bring_chrome_to_front,
@@ -47,9 +41,8 @@ else:
     from fake_attendance.settings import (
         WINDOW_CHECK_IMAGE_MAPPER,
         OK_BUTTON_IMAGE_MAPPER)
-# pylint: enable=wrong-import-position
 
-class LaunchZoom(PrepareSendEmail, UseSelenium):
+class LaunchZoom(PrepareSendEmail, UseSelenium, ManipulateWindow):
     'A class for launching Zoom'
     print_name = '줌 실행'
 
@@ -165,8 +158,13 @@ class LaunchZoom(PrepareSendEmail, UseSelenium):
         is_classroom, self.hwnd_zoom_classroom =\
             self.check_window(ZOOM_CLASSROOM_CLASS, ZOOM_CLASSROOM_NAME)
 
+        # pick os-dependent name
+        classroom = self.pick_os_dep_window_name(ZOOM_CLASSROOM_CLASS, ZOOM_CLASSROOM_NAME)
+
         if is_classroom:
-            self.result_dict['줌 회의 입장']['content'] = True
+            # either is fine for now
+            print_with_time('줌 회의 실행/발견 성공')
+            self.result_dict[classroom]['content'] = True
             return True
         # if not
         for _ in range(3):
@@ -175,9 +173,8 @@ class LaunchZoom(PrepareSendEmail, UseSelenium):
             self.process_popup(ZOOM_UPDATE_POPUP_CLASS,
                                 ZOOM_UPDATE_POPUP_NAME,
                                 tab_num=TAB_COUNT_MAPPER[self.pick_os_dep_window_name(
-                                    ZOOM_UPDATE_POPUP_CLASS,
-                                    ZOOM_UPDATE_POPUP_NAME
-                                )],
+                                                            ZOOM_UPDATE_POPUP_CLASS,
+                                                            ZOOM_UPDATE_POPUP_NAME)],
                                 reverse=True,
                                 send_alt=True)
             # if agreed to update
@@ -195,6 +192,8 @@ class LaunchZoom(PrepareSendEmail, UseSelenium):
             is_classroom, self.hwnd_zoom_classroom =\
                 self.check_window(ZOOM_CLASSROOM_CLASS, ZOOM_CLASSROOM_NAME)
             if is_classroom:
+                print_with_time('줌 회의 실행/발견 성공')
+                self.result_dict[classroom]['content'] = True
                 return True
 
         # no launch from all tries

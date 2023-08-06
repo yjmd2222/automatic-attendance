@@ -17,7 +17,6 @@ if platform == 'win32':
 else:
     import subprocess
 
-# pylint: disable=wrong-import-position
 from fake_attendance.arg_parse import parsed_args
 from fake_attendance.helper import print_with_time
 from fake_attendance.settings import (
@@ -25,7 +24,6 @@ from fake_attendance.settings import (
     ZOOM_APPLICATION_NAME)
 if platform == 'darwin':
     from fake_attendance.helper import get_screen_resolution
-# pylint: enable=wrong-import-position
 
 class BaseClass(ABC):
     'base class for abstraction'
@@ -86,6 +84,9 @@ class UseSelenium(BaseClass):
 
         # return webdriver.Chrome(service=auto_driver, options=options)
         return webdriver.Chrome(options=options)
+
+class ManipulateWindow:
+    'base class for checking visibility of and manipulating windows'
 
     def _check_window_win32(self, window_class):
         'check and return window on win32'
