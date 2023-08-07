@@ -59,7 +59,7 @@ class UseSelenium(BaseClass):
         '''
         UseSelenium.__init__() that defines an empty Selenium self.driver\n
         and self.verbosity attributes.\n
-        Also inherits from BaseClass.__init__() that decorates self.run to print start and\n
+        Also inherits from BaseClass.__init__() that decorates self.run() to print start and\n
         end of it
         '''
         super().__init__()
