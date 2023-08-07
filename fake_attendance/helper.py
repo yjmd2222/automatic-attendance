@@ -9,6 +9,8 @@ from sys import platform
 from datetime import datetime, timedelta
 import time
 
+import pyscreeze
+import PIL
 import pyautogui
 
 from fake_attendance._settings import _ZOOM_APPLICATION_NAME as ZOOM_APPLICATION_NAME
@@ -35,7 +37,7 @@ def map_dict(keys, values, func=None):
     return dict_
 
 def get_last_image_match(image):
-    'For checking distinct elements. Nothing found if (0,0,0,0) returned'
+    'For checking distinct elements. Nothing found if (0.0, 0.0) returned'
     dimensions = [(0,0,0,0)]
     threshhold = 8
 
@@ -59,7 +61,7 @@ def convert_to_datetime(time_, format_='%H:%M'):
 
 def extrapolate_time_sets(time_:str|datetime, diff_minute=5, extend_num=2, format_='%H:%M'):
     '''
-    return time sets diff_min and 2*diff_min minutes before and after given time\n
+    return time sets diff_min and extend_num*diff_min minutes before and after given time\n
     converts 'time_' to datetime.datetime if type str
     '''
     if isinstance(time_, str):
@@ -115,7 +117,7 @@ def _set_foreground_darwin(window_name, app_name=ZOOM_APPLICATION_NAME):
 def set_foreground(hwnd:int|str):
     '''
     set window to foreground\n
-    hwnd is used on win32 and others on darwin
+    hwnd is window id on win32 and window title on darwin
     '''
     if platform == 'win32':
         _set_foreground_win32(hwnd)
@@ -123,7 +125,7 @@ def set_foreground(hwnd:int|str):
         _set_foreground_darwin(hwnd)
 
 def print_all_windows(title='Zoom'):
-    'wrapper'
+    '''wrapper for printing hwnds and respective class names with Zoom in title'''
     def win_enum_handler(hwnd, items):
         '''print hwnds and respective class names with 'Zoom' in title'''
         full_title = win32gui.GetWindowText(hwnd)
@@ -150,3 +152,11 @@ def check_appearance():
     with subprocess.Popen(cmd, stdout=subprocess.PIPE,
                           stderr=subprocess.PIPE, shell=True) as popen:
         return bool(popen.communicate()[0])
+
+# pylint: disable=invalid-name
+def fix_pyautogui():
+    'quick hack to fix error in pyautogui'
+
+    __PIL_TUPLE_VERSION = tuple(int(x) for x in PIL.__version__.split("."))
+    pyscreeze.PIL__version__ = __PIL_TUPLE_VERSION
+# pylint: enable=invalid-name
