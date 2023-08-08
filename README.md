@@ -2,13 +2,15 @@
 
 [![Total view count](https://img.shields.io/badge/dynamic/json?color=yellow&label=Total%20views&query=count&url=https://raw.githubusercontent.com/yjmd2222/fake-attendance/stats/views.json&logo=github)](#)[![Unique view count](https://img.shields.io/badge/dynamic/json?color=indigo&label=Unique&query=uniques&url=https://raw.githubusercontent.com/yjmd2222/fake-attendance/stats/views.json)](#)[![Today's clone count](https://img.shields.io/badge/dynamic/json?color=orange&label=Today%27s%20views&query=views[0][%27count%27]&url=https://raw.githubusercontent.com/yjmd2222/fake-attendance/stats/views.json)](#)
 
+[![Last updated](https://img.shields.io/badge/기본_기능_개발_기간-2023--06--02~2023--06--10-blue)](#)
+
 # 자동 출석 프로그램
 특정 교육 기관에서 매일 진행하는 출석 절차를 자동화하는 프로그램.
 
 **주의**: 교육용 목적으로만 사용하길 바랍니다.
 
 ## 작은 메시지
-2023-07-03로서 프로젝트 상태는 완성이라고 볼 수 있습니다. 물론 맥OS이 제가 주로 사용하는 운영체제가 아니기 때문에 Zoom 자체 업데이트에 대응할 기회가 별로 없었고, 업데이트 관련 화면 인식 관련사항으로 해당 이미지를 교체해야 합니다. 현재로서는 이 이미지가 모두 자리표시자/placeholder 이미지입니다. 코딩 실력 향상을 위해 추상화나 운영체제 지원 확장을 적용하는 단계로서 실질적인 기능과 관계 없이 효율성 관련 내용으로 프로그램을 업데이트 하고 있는데, 혹시 맥OS 사용 개선, 편리성, 또는 추가 기능이 있다면 Discussion에 남겨주시면 감사하겠습니다.
+2023-07-03로서 프로젝트는 매우 완성도 높은 상태라고 할 수 있습니다. 물론 맥OS이 제가 주로 사용하는 운영체제가 아니기 때문에 Zoom 자체 업데이트에 대응할 기회가 별로 없었고, 업데이트 관련 화면 인식 관련사항으로 해당 이미지를 교체해야 합니다. 현재로서는 이 이미지가 모두 자리표시자/placeholder 이미지입니다. 코딩 실력 향상을 위해 추상화나 운영체제 지원 확장을 적용하는 단계로서 실질적인 기능과 관계 없이 효율성 관련 내용으로 프로그램을 업데이트 하고 있는데, 혹시 맥OS 사용 개선, 편리성, 또는 추가 기능이 있다면 Discussion에 남겨주시면 감사하겠습니다.
 
 ## 사용 도구 및 스킬
 이 프로젝트를 진행하면서 다음의 도구 사용법과 스킬을 터득했습니다. 코드 내에 최대한 자세히 설명을 기재했지만, 최초 작성시 영어로 작성하여 현재로서 설명이 전부 영어입니다. 최신 개발 트렌드에 맞고 빠른 이해를 위해 ChatGPT를 사용해서 확인하시기 바랍니다.
