@@ -91,8 +91,9 @@ class PrepareSendEmail:
     def define_attributes(self):
         '''
         PrepareSendEmail.define_attributes() that defines\n
-        a notify attribute with an instance of Notify\n
-        and a result_dict attribute for multiple purposes
+        notify attribute with an instance of Notify,\n
+        result_dict attribute for multiple purposes,\n
+        and is_send attribute for deciding whether to or not to send email
         '''
         self.notify = Notify(self.print_name)
         self.result_dict: dict = RESULT_DICTS[self.print_name]

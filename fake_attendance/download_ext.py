@@ -15,11 +15,11 @@ from fake_attendance.abc import UseSelenium
 from fake_attendance.helper import (
     bring_chrome_to_front,
     get_file_path,
-    get_last_match,
+    get_last_image_match,
     print_with_time)
 from fake_attendance.scheduler import MyScheduler
 from fake_attendance.settings import (
-    CONTINUE_IMAGE,
+    CONTINUE_DOWNLOAD_IMAGE,
     GET_CRX_LINK,
     SCREEN_QR_READER_SOURCE,
     SCREEN_QR_READER_WEBSTORE_LINK)
@@ -30,7 +30,6 @@ class DownloadExtensionSource(UseSelenium):
 
     def __init__(self, scheduler:MyScheduler|None=None):
         'initialize'
-        self.image = CONTINUE_IMAGE
         self.scheduler = scheduler
         super().__init__()
 
@@ -71,8 +70,8 @@ class DownloadExtensionSource(UseSelenium):
         bring_chrome_to_front(self.driver)
 
         # Recent Chrome does not allow bypassing 'harmful download', so use pyautogui.
-        pos = get_last_match(self.image)
-        if pos != (0,0,0,0):
+        pos = get_last_image_match(CONTINUE_DOWNLOAD_IMAGE)
+        if pos != (0.0,0.0):
             print_with_time('다운로드 "계속" 버튼 확인')
             pyautogui.click(pos) # must be on the bottom
             time.sleep(5)
@@ -85,6 +84,7 @@ class DownloadExtensionSource(UseSelenium):
         if self.check_source_exists():
             print_with_time('이미 디렉터리 안에 확장자 소스 파일 있음')
             return
+        print_with_time('디렉터리 안에 확장자 소스 파일 없음. 다운로드 진행')
 
         # init selenium
         self.driver = self.initialize_selenium()
@@ -120,4 +120,9 @@ class DownloadExtensionSource(UseSelenium):
         return
 
 if __name__ == '__main__':
+    # pylint: disable=ungrouped-imports
+    from fake_attendance.helper import fix_pyautogui
+    fix_pyautogui()
+    # pylint: enable=ungrouped-imports
+
     DownloadExtensionSource().run()

@@ -2,10 +2,12 @@
 Script to automatically send link information in QR image on a Zoom meeting every five minutes
 '''
 
+import os
+
+from sys import platform
+
 from datetime import datetime, timedelta
 import time
-
-import win32gui
 
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.common.by import By
@@ -14,12 +16,14 @@ from selenium.webdriver.support.ui import WebDriverWait
 
 from fake_attendance.abc import UseSelenium, ManipulateWindow
 from fake_attendance.info import KAKAO_ID, KAKAO_PASSWORD
-from fake_attendance.helper import print_with_time, send_alt_key_and_set_foreground
+from fake_attendance.helper import print_with_time, set_foreground
 from fake_attendance.settings import (
+    ZOOM_APPLICATION_NAME,
+    ZOOM_CLASSROOM_CLASS,
+    ZOOM_CLASSROOM_NAME,
     SCREEN_QR_READER_BLANK,
     SCREEN_QR_READER_POPUP_LINK,
     SCREEN_QR_READER_SOURCE,
-    ZOOM_CLASSROOM_CLASS,
     LOGIN_WITH_KAKAO_BUTTON,
     ID_INPUT_BOX,
     PASSWORD_INPUT_BOX,
@@ -29,6 +33,11 @@ from fake_attendance.settings import (
     CHECK_IN,
     SUBMIT)
 from fake_attendance.notify import PrepareSendEmail
+
+if platform == 'win32':
+    import win32gui
+else:
+    import subprocess
 
 # pylint: disable=too-many-instance-attributes
 class FakeCheckIn(PrepareSendEmail, UseSelenium, ManipulateWindow):
@@ -49,11 +58,70 @@ class FakeCheckIn(PrepareSendEmail, UseSelenium, ManipulateWindow):
 
     def reset_attributes(self):
         'reset attributes for next run'
-        self.is_window, self.hwnd = self.check_window(ZOOM_CLASSROOM_CLASS)
+        self.is_window, self.hwnd = self.check_window(ZOOM_CLASSROOM_CLASS, ZOOM_CLASSROOM_NAME)
         self.rect = self.maximize_window(self.hwnd) if self.is_window else [100,100,100,100]
         self.driver = None
         self.is_wait = False
         PrepareSendEmail.define_attributes(self)
+
+    def _resize_window_win32(self, rect, hwnd):
+        'resize window to given rect on win32'
+        win32gui.MoveWindow(hwnd, *rect, True)
+
+    def _resize_window_darwin(self, rect, window_title, app_name=ZOOM_APPLICATION_NAME):
+        'resize window to given rect on darwin'
+        applescript_code = f'''
+        tell application "System Events"
+            tell application process "{app_name}"
+                set zoom_conference to window 1 whose title is "{window_title}"
+                tell zoom_conference
+                    set position to {rect[:2]}
+                    set size to {rect[2:]}
+                    set rect to position & size
+                end tell
+            end tell
+        end tell
+        '''
+        with open(os.devnull, 'wb') as devnull:
+            subprocess.run(['osascript', '-e', applescript_code],
+                            stdout=devnull,
+                            check=True)
+
+    def resize_window(self, rect):
+        'resize window to given rect'
+        if platform == 'win32':
+            self._resize_window_win32(rect, self.hwnd)
+        else:
+            self._resize_window_darwin(rect, self.hwnd)
+
+    # def check_window(self):
+    #     'check and return window'
+    #     if platform == 'win32':
+    #         hwnd = win32gui.FindWindow(ZOOM_CLASSROOM_CLASS, None)
+    #     else:
+    #         ZOOM_APPLICATION_NAME = 'zoom.us'
+    #         ZOOM_CLASSROOM_NAME = 'Zoom 회의'
+    #         applescript_code = f'''
+    #         tell application "{ZOOM_APPLICATION_NAME}"
+    #             set target_title to "{ZOOM_CLASSROOM_NAME}"
+    #             set window_list to every window
+    #             repeat with a_window in window_list
+    #                 set window_title to name of a_window
+    #                 if window_title is equal to target_title then
+    #                     set window_id to id of a_window
+    #                     return window_id
+    #                 end if
+    #             end repeat
+    #         end tell
+    #         '''
+
+    #         result = subprocess.run(['osascript', '-e', applescript_code],
+    #                                 capture_output=True,
+    #                                 text=True,
+    #                                 check=True)
+    #         hwnd = result.stdout.strip()
+
+    #     return bool(hwnd), hwnd
 
     def check_link_loop(self):
         'Get link from QR'
@@ -85,9 +153,10 @@ class FakeCheckIn(PrepareSendEmail, UseSelenium, ManipulateWindow):
     def check_link(self, rect_resized):
         'method to actually fire Screen QR Reader inside loop'
         # apply new window size
-        win32gui.MoveWindow(self.hwnd, *rect_resized, True)
-        # bring it to foreground so Screen QR Reader recognizes the first 'Zoom' match
-        send_alt_key_and_set_foreground(self.hwnd)
+        self.resize_window(rect_resized)
+        # bring it to foreground so that Screen QR Reader recognizes the first 'Zoom' match
+        set_foreground(self.hwnd)
+
         self.driver.get(SCREEN_QR_READER_POPUP_LINK) # Screen QR Reader
         time.sleep(2)
 
@@ -102,7 +171,7 @@ class FakeCheckIn(PrepareSendEmail, UseSelenium, ManipulateWindow):
             if self.driver.current_url in (SCREEN_QR_READER_BLANK, SCREEN_QR_READER_POPUP_LINK):
                 return False
             return True # return True if url is valid
-        return False
+        return False # nothing found return False
 
     def create_selenium_options(self):
         'declare options for Selenium driver'
@@ -223,7 +292,7 @@ class FakeCheckIn(PrepareSendEmail, UseSelenium, ManipulateWindow):
     def run(self):
         'run whole check-in process'
         # get Zoom window
-        self.is_window, self.hwnd = self.check_window(ZOOM_CLASSROOM_CLASS)
+        self.is_window, self.hwnd = self.check_window(ZOOM_CLASSROOM_CLASS, ZOOM_CLASSROOM_NAME)
         # if it is visible
         if self.is_window:
             # get max rect
@@ -266,8 +335,8 @@ class FakeCheckIn(PrepareSendEmail, UseSelenium, ManipulateWindow):
             if self.sched_drop_runs_until:
                 self.sched_drop_runs_until(self.print_name, until)
             print_with_time(f'출석 확인. {datetime.strftime(until, "%H:%M")}까지 출석 체크 실행 안 함')
-            # checker bool to send email
-            self.is_send = True
+        # checker bool to send email
+        self.is_send = True
         return
     # pylint: enable=attribute-defined-outside-init
 # pylint: enable=too-many-instance-attributes

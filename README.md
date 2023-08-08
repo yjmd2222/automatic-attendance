@@ -6,20 +6,22 @@
 For educational purposes only
 
 # A message, mostly for myself
-It is complete (well, for windows 10/11 and none else because that's the only OS this script supports). What I have been doing since July 3 is not related to functionality; I was trying to improve code style and teach myself various techniques. But now it is becoming more 'coding to code' instead of 'adding necessary features.' I probably should not focus on this much because there are other things to learn.
+It is complete (macOS needs corresponding images for several popups). What I have been doing since July 3 is not related to functionality; I was trying to improve code style and teach myself various techniques. But now it is becoming more 'coding to code' instead of 'adding necessary features.' I probably should not focus on this much because there are other things to learn.
 
 If anyone comes across an idea for a new, necessary feature, please let me know.
 
 ## Requirements
-Windows 10 or higher. If you want to use it as is, Windows 11 with default settings in Korean.
+Windows 10 or higher or macOS Ventura. If you want to use it as is, Windows 11 with default settings in Korean. Otherwise, you might have to capture your own images for PyAutoGUI. See [images](images).
 
 Run below in a Python 3 environment, 3.11.3 recommended.
 
 `pip install -r requirements.txt`
 
-Fill out the template [info_template.py](fake_attendance/info_template.py) with your login, email information, and the zoom link without the `#success`. Rename the file to `info.py`
+Fill out the template [info_template.py](fake_attendance/info_template.py) with your login, email information, and the zoom link _with_ the `#success`. Rename the file to `info.py`
 
 Note: If the module fails to download the Chrome extension source, you can try downloading it manually. Check that its name is `extension_0_1_2_0.crx`, and put it in the root of the repository. See [this](https://crx-downloader.com/how-it-works) for direction. Screen QR Reader url: https://chrome.google.com/webstore/detail/screen-qr-reader/ekoaehpknadfoaolagjfdefeopkhfhln
+
+Also note for mac users: You may need to grant permission to the terminal access to System Events and Zoom. Go to `System Settings - Privacy & Security - Automation` and give it access to them.
 
 ## Run
 Run `python -m fake_attendance` for download, Zoom launch, and check-in. Read [How it works and why](#how-it-works-and-why) for explanation.
@@ -35,12 +37,12 @@ Type `python -m fake_attendance -h` for more information. Note that arguments ar
 
 For a single test to fire right away, run `python -m fake_attendance.fake_check_in`.
 
-Currently supports `Ctrl + Alt + Shift + L` for launching Zoom, `Ctrl + Alt + Shift + C` for checking in with QR code, and `Ctrl + Alt + Shift + Q` for quitting Zoom.
+Currently supports `Ctrl + Alt(command) + Shift + L` for launching Zoom, `Ctrl + Alt(command) + Shift + C` for checking in with QR code, and `Ctrl + Alt(command) + Shift + Q` for quitting Zoom. These commands work anywhere (inside and outside of the terminal).
 
 ## Quit
-To quit, press `Ctrl + C` in the terminal or `Ctrl + Alt + Shift + E` anywhere. The former is the default hotkey for quitting a Python script, and the latter is a user-defined hotkey: see [scheduler.py](https://github.com/yjmd2222/fake-attendance/blob/d38ceb32321eac70bbd7902cd87dd7bd88a61a6d/fake_attendance/scheduler.py#L124-L127) and [settings.py](https://github.com/yjmd2222/fake-attendance/blob/d38ceb32321eac70bbd7902cd87dd7bd88a61a6d/fake_attendance/settings.py#L111).
+To quit, press `Ctrl + C` in the terminal or `Ctrl + Alt(command) + Shift + E` anywhere. The former is the default hotkey for quitting a Python script, and the latter is a user-defined hotkey: see [scheduler.py](https://github.com/yjmd2222/fake-attendance/blob/d38ceb32321eac70bbd7902cd87dd7bd88a61a6d/fake_attendance/scheduler.py#L124-L127) and [settings.py](https://github.com/yjmd2222/fake-attendance/blob/d38ceb32321eac70bbd7902cd87dd7bd88a61a6d/fake_attendance/settings.py#L111).
 
-The second sequence allows quitting even when not focused on the terminal, and it may not work in the middle of a job until the job is finished which I believe is due to the usage of `APScheduler`'s `BackgroundScheduler`. A contribution for a fix is welcomed.
+The second hotkey allows quitting even when not focused on the terminal, and it may not work in the middle of a job until the job is finished which I believe is due to the usage of `APScheduler`'s `BackgroundScheduler`.
 
 ## How it works and why
 [![Last updated](https://img.shields.io/badge/Last_updated-2023--06--21-blue)](#)
