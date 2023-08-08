@@ -2,19 +2,28 @@
 abstraction because why not
 '''
 
+from sys import platform
+
 from abc import ABC, abstractmethod
 
 from selenium import webdriver
+from selenium.common.exceptions import NoSuchWindowException
 from selenium.webdriver.chrome.options import Options
 # from selenium.webdriver.chrome.service import Service
 # from webdriver_manager.chrome import ChromeDriverManager
 
-import win32con
-import win32gui
-
 from fake_attendance.arg_parse import parsed_args
 from fake_attendance.helper import print_with_time
-from fake_attendance.settings import VERBOSITY__INFO
+from fake_attendance.settings import (
+    VERBOSITY__INFO,
+    ZOOM_APPLICATION_NAME)
+if platform == 'darwin':
+    from fake_attendance.helper import get_screen_resolution
+
+    import subprocess
+else:
+    import win32con
+    import win32gui
 
 class BaseClass(ABC):
     'base class for abstraction'
@@ -50,12 +59,23 @@ class UseSelenium(BaseClass):
         '''
         UseSelenium.__init__() that defines an empty Selenium self.driver\n
         and self.verbosity attributes.\n
-        Also inherits from BaseClass.__init__() that decorates self.run to print start and\n
+        Also inherits from BaseClass.__init__() that decorates self.run() to print start and\n
         end of it
         '''
         super().__init__()
         self.driver = None
         self.verbosity = parsed_args.verbosity
+        self.run = self.decorator_selenium_exception(self.run)
+
+    def decorator_selenium_exception(self, func):
+        'decorator for catching selenium\'s NoSuchWindowException'
+        def wrapper(*args, **kwargs):
+            'wrapper'
+            try:
+                func(*args, **kwargs)
+            except NoSuchWindowException:
+                print_with_time('크롬 창 수동 종료 확인. 현재 실행중인 스크립트 취소')
+        return wrapper
 
     def create_selenium_options(self):
         '''
@@ -79,18 +99,128 @@ class UseSelenium(BaseClass):
 class ManipulateWindow:
     'base class for checking visibility of and manipulating windows'
 
-    def check_window(self, window_class=None, window_title=None):
-        'check and return window'
-        hwnd = win32gui.FindWindow(window_class, window_title)
-        is_window = win32gui.IsWindowVisible(hwnd)
+    def _check_window_win32(self, window_class):
+        'check and return window on win32'
+        hwnd = win32gui.FindWindow(window_class, None)
+        is_window = bool(win32gui.IsWindowVisible(hwnd))
 
-        return bool(is_window), hwnd
+        return is_window, hwnd
 
-    def maximize_window(self, hwnd):
-        'maximize window'
+    def _check_window_darwin(self, window_title, app_name=ZOOM_APPLICATION_NAME):
+        'check and return window on darwin'
+        applescript_code = f'''
+        tell application "System Events"
+            if exists application process "{app_name}" then
+                tell application process "{app_name}"
+                    if exists (window 1 whose title is "{window_title}") then
+                        return 1
+                    else
+                        return 0
+                    end if
+                end tell
+            else
+                return 0
+            end if
+        end tell
+        '''
+
+        result = subprocess.run(['osascript', '-e', applescript_code],
+                                capture_output=True,
+                                text=True,
+                                check=True)
+        is_window = bool(int(result.stdout.strip()))
+
+        return is_window, window_title
+
+    def check_window(self, window_class:str, window_title:str):
+        '''
+        check Zoom conference window presence\n
+        returns is_window, hwnd on win32\n
+        and returns is_window, window_title on darwin.\n
+        currently only works with Zoom conference window\n
+        because Zoom does not properly support AppleScript
+        '''
+        if platform == 'win32':
+            is_window, hwnd = self._check_window_win32(window_class)
+        else:
+            is_window, hwnd = self._check_window_darwin(window_title)
+        return is_window, hwnd
+
+    def _maximize_window_win32(self, hwnd):
+        '''
+        maximize window on win32
+        '''
         # force normal size from possible out-of-size maximized window
         win32gui.ShowWindow(hwnd, win32con.SW_NORMAL)
         # maximize window
         win32gui.ShowWindow(hwnd, win32con.SW_MAXIMIZE)
 
-        return list(win32gui.GetWindowRect(hwnd))
+        rect = list(win32gui.GetWindowRect(hwnd))
+
+        return rect
+
+    def _maximize_window_darwin(self, window_name, app_name=ZOOM_APPLICATION_NAME):
+        '''
+        maximize window on darwin
+        '''
+        pos_x, pos_y = get_screen_resolution()
+        applescript_code = f'''
+        tell application "System Events"
+            tell application process "{app_name}"
+                tell (window 1 whose title is "{window_name}")
+                    set position to (0, 0)
+                    set size to {pos_x, pos_y}
+                    set rect to position & size
+                end tell
+                set frontmost to true
+                return rect
+            end tell
+        end tell
+        '''
+
+        result = subprocess.run(['osascript', '-e', applescript_code],
+                                capture_output=True,
+                                text=True,
+                                check=True)
+        rect = result.stdout.strip().split(', ')
+        rect = [int(num) for num in rect]
+
+        return rect
+
+    def maximize_window(self, hwnd:int|str):
+        '''
+        maximize window and returns rect\n
+        hwnd is window_title on darwin
+        '''
+        if platform == 'win32':
+            rect =  self._maximize_window_win32(hwnd)
+        else:
+            rect  = self._maximize_window_darwin(hwnd)
+        return rect
+
+    # def maximize_window_darwin(self, hwnd, app_name=None):
+    #     'maximize window on Darwin'
+    #     applescript_code = f'''
+    #     use framework "AppKit"
+    #     use framework "Foundation"
+    #     use scripting additions
+
+    #     tell application "{app_name}"
+    #         set currentWindow to window id {hwnd}
+    #         set bounds of currentWindow to my getDisplayBounds()
+    #         activate
+    #     end tell
+
+    #     on getDisplayBounds()
+    #         set theScreen to current application's NSScreen's mainScreen()
+    #         set ((aF, bF), (cF, dF)) to theScreen's frame()
+    #         set ((aV, bV), (cV, dV)) to theScreen's visibleFrame()
+    #         return (aV as integer, (dF - bV - dV) as integer, \
+    #             (aV + cV) as integer, (dF - bV) as integer)
+    #     end getDisplayBounds
+    #     '''
+
+    #     result = subprocess.run(['osascript', '-e', applescript_code])
+    #     rect = result.stdout.strip()
+
+    #     return rect

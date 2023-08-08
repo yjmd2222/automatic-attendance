@@ -3,7 +3,6 @@ Scheduler that runs FakeCheckIn and TurnOnCamera
 '''
 
 from datetime import datetime, timedelta
-import time
 
 from apscheduler.events import EVENT_JOB_EXECUTED
 from apscheduler.jobstores.base import JobLookupError
@@ -11,12 +10,14 @@ from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.combining import OrTrigger
 from apscheduler.triggers.cron import CronTrigger
 
-import keyboard
+from pynput import keyboard
 
 from fake_attendance.abc import BaseClass
 from fake_attendance.arg_parse import parsed_args
 from fake_attendance.fake_check_in import FakeCheckIn
-from fake_attendance.helper import print_with_time
+from fake_attendance.helper import (
+    print_with_time,
+    map_dict)
 from fake_attendance.launch_zoom import LaunchZoom
 from fake_attendance.quit_zoom import QuitZoom
 from fake_attendance.settings import (
@@ -24,7 +25,7 @@ from fake_attendance.settings import (
     ZOOM_ON_TIMES,
     ZOOM_QUIT_TIMES,
     SCHED_QUIT_TIMES,
-    SEQUENCE_MAP)
+    HOTKEYS_MAP)
 
 # pylint: disable=too-many-instance-attributes
 class MyScheduler(BaseClass):
@@ -43,29 +44,25 @@ class MyScheduler(BaseClass):
             self.launch_zoom.print_name,
             self.quit_zoom.print_name,
             self.quit_scheduler_job_id]
-        self.all_time_sets = self.map_dict(
+        self.all_time_sets = map_dict(
             self.job_ids,
             (self.get_timesets_from_terminal(),
              ZOOM_ON_TIMES,
              ZOOM_QUIT_TIMES,
              SCHED_QUIT_TIMES))
-        self.all_job_funcs = self.map_dict(
+        self.all_job_funcs = map_dict(
             self.job_ids,
             (self.fake_check_in.run,
              self.launch_zoom.run,
              self.quit_zoom.run,
              self.quit))
-        self.all_triggers = self.map_dict(
+        self.all_triggers = map_dict(
             self.job_ids,
             (self.build_trigger(self.all_time_sets[job_id]) for job_id in self.job_ids))
         self.next_times = {}
         self.until = None
         self.is_quit = False
         super().__init__()
-
-    def map_dict(self, keys, values):
-        'build dict with given iterables'
-        return {zipped[0]: zipped[1] for zipped in zip(keys, values)}
 
     def build_trigger(self, time_sets):
         'build trigger with given time_sets'
@@ -137,6 +134,7 @@ class MyScheduler(BaseClass):
         # extend trigger
         try:
             self.sched.reschedule_job(job_id, trigger=rescheduled_trigger)
+        # if can't extend trigger because not scheduled, add job
         except JobLookupError:
             self.sched.add_job(
                 func = self.all_job_funcs[job_id],
@@ -213,38 +211,59 @@ class MyScheduler(BaseClass):
         return time_sets
 
     def quit(self, message='스케줄러 종료 요청'):
-        'quit scheduler'
+        'sets flag self.is_quit to True'
         print_with_time(message)
         self.is_quit = True
-        time.sleep(1)
+        self.sched.remove_all_jobs()
+        self.sched.remove_listener(self.print_next_time)
+
+    def keyboard_command_listener(self):
+        'setting up listener for keyboard commands'
+        # dictionary for storing command: on_activate_wrapper
+        on_activate_dict = {}
+        def on_activate(job_id):
+            'inner on_activate function that is fired on command'
+            print_with_time(f'강제 {job_id} 커맨드 입력 확인')
+            self.add_run(job_id, datetime.now() + timedelta(seconds=1))
+
+        # adding the wrapper to dictionary
+        for job_id in self.job_ids:
+            # avoid cell-var-from-loop by using x in loop instead of last job_id
+            on_activate_dict[HOTKEYS_MAP[job_id]] = lambda x=job_id: on_activate(x)
+        listener = keyboard.GlobalHotKeys(on_activate_dict)
+        listener.start()
 
     def wait_for_event(self):
         'runs APScheduler in background and waits for commands until quit command is passed'
-        while True:
-            # quit if no job left
-            if all((not next_run for next_run in self.next_times.values())):
-                self.quit('남은 작업 없음')
-            # fire job on command
-            for job_id in self.job_ids:
-                # if sequence for job is pressed
-                if keyboard.is_pressed(SEQUENCE_MAP[job_id]):
-                    print_with_time(f'강제 {job_id} 커맨드 입력 확인')
-                    self.add_run(job_id, datetime.now() + timedelta(seconds=1))
-                    time.sleep(1)
-            # quit
-            if self.is_quit:
-                self.sched.remove_all_jobs()
-                self.sched.remove_listener(self.print_next_time)
-                self.sched.shutdown()
-                break
+        # wait for commands
+        try:
+            while True:
+                # quit if no job left
+                if all((not next_run for next_run in self.next_times.values())):
+                    self.quit('남은 작업 없음')
+                # quit
+                if self.is_quit:
+                    break
+        # quit with ctrl + c
+        except KeyboardInterrupt:
+            print_with_time('Ctrl + C 입력 확인')
+            self.quit()
+        # shutdown scheduler
+        self.sched.shutdown()
 
     def run(self):
         'run scheduler'
         self.add_jobs() # add all jobs
         self.sched.start() # start the scheduler
         self.print_next_time() # print time first job fires
-        self.wait_for_event() # quit with keyboard, force qr check, or at self.quit job time
+        self.keyboard_command_listener() # listens to launch, check-in, quit, exit commands
+        self.wait_for_event() # while loop that runs until quit
 # pylint: enable=too-many-instance-attributes
 
 if __name__ == '__main__':
+    # pylint: disable=ungrouped-imports
+    from fake_attendance.helper import fix_pyautogui
+    fix_pyautogui()
+    # pylint: enable=ungrouped-imports
+
     MyScheduler().run()
