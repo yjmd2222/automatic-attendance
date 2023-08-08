@@ -46,17 +46,24 @@ Python 3 환경에서 다음 명령어를 통해 필수 패키지를 설치합�
 
 [info_template.py](fake_attendance/info_template.py)에 있는 개인정보 변수에 본인의 카카오 로그인, 이메일 로그인, 그리고 Zoom URL 주소를 입력합니다. 이 때 Zoom 주소는 끝에 `#success`가 명시되어 있는지 확인합니다. 파일 이름을 `info.py`로 변경합니다. Python에서 이메일 발송하는 방법은 다음 블로그를 확인해주세요: 코딩유치원 [블로그](https://coding-kindergarten.tistory.com/204).
 
-참고: 아래 [프로그램 실행](#프로그램-실행)에서 만약 본 모듈이 사용하는 [Screen QR Reader](https://chrome.google.com/webstore/detail/screen-qr-reader/ekoaehpknadfoaolagjfdefeopkhfhln)의 소스파일이 자동적으로 다운로드 되지 않는다면 직접 다운로드 받으셔야 합니다. 다음의 내용에서 수동 다운로드 방법을 확인해주세요.
+참고: 아래 [프로그램 사용 방법](#프로그램-사용-방법)에서 만약 본 모듈이 사용하는 [Screen QR Reader](https://chrome.google.com/webstore/detail/screen-qr-reader/ekoaehpknadfoaolagjfdefeopkhfhln)의 소스파일이 자동적으로 다운로드 되지 않는다면 직접 다운로드 받으셔야 합니다. 다음의 내용에서 수동 다운로드 방법을 확인해주세요.
 - .crx 다운로드 방법: https://crx-downloader.com/how-it-works
 - 다운로드시 입력할 Screen QR Reader URL 주소: https://chrome.google.com/webstore/detail/screen-qr-reader/ekoaehpknadfoaolagjfdefeopkhfhln
 
 추가 참고사항: 맥 사용자는 Zoom 창 제어를 위해 모듈을 실행하는 환경(터미널, 개발환경)에 대해 Zoom과 System Events에 대해 권한 부여가 필요할 수도 있습니다. `시스템 설정` - `개인정보 보호 및 보안` - `자동화`에서 권한을 확인해보세요.
 
-## 프로그램 실행
-다음 명령으로 모든 기능을 수행합니다: `python -m fake_attendance` 후술할 [](#)에서 추가 설명 확인이 가능합니다.
+## 프로그램 사용 방법
+다음 명령으로 모든 기능을 수행합니다: `python -m fake_attendance` 후술할 [기능 안내 및 프로젝트 기획 배경](#기능-안내-및-프로젝트-기획-배경)에서 추가 설명 확인이 가능합니다.
 
 출석 인증 스케줄을 변경하려면 다음 중 하나의 인수(argument)를 추가할 수 있습니다:
-- `-p`: optional argument, `'regular'`, `'sprint challenge'`, `'project day 1'`, `'project days 2-5'`, `'section review day 1'`, `'section review day 2'`, `'project section'` 중 하나를 사용하세요. (실제 스케줄은 [settings.py](fake_attendance/settings.py)를 확인하세요.) 예시: `python -m fake_attendance -p 'project section'`
+- `-p`: optional argument, 아래 중 하나를 사용하세요. (실제 스케줄은 [settings.py](fake_attendance/settings.py)를 확인하세요.) 예시: `python -m fake_attendance -p 'project section'`
+    - `'regular'`: 학습기간 학습일
+    - `'sprint challenge'`: 학습기간 시험일
+    - `'project day 1'`: 학습기간 프로젝트 1일차
+    - `'project days 2-5'`: 학습기간 프로젝트 2-5일차
+    - `'section review day 1'`: 학습기간 섹션 리뷰 1일차
+    - `'section review day 2'`: 학습기간 섹션 리뷰 2일차
+    - `'project section'`: 프로젝트 기간
 - `-t`: optional argument, [test_times.txt](test_times.txt)와 같이 24시간 형식의 시간 설정이 포함된 텍스트 파일을 사용하세요. 예시: `python -m fake_attendance -t test_times.txt`
 - position argument: `10:00 15:00`과 같이 실제 인증 시간을 입력하세요. 예시: `python -m fake_attendance 10:30 14:50`
 
@@ -64,20 +71,22 @@ Python 3 환경에서 다음 명령어를 통해 필수 패키지를 설치합�
 
 입력 인수에 대한 자세한 설명을 보려면 `python -m fake_attendance -h`를 입력하세요. 인수는 위에 나열된 순서대로 인식되며 올바르게 전달된 경우 다른 인수는 무시됩니다.
 
-프로그램 실행 후 Zoom 시작에는 `Ctrl + Alt(command) + Shift + L`, QR 코드 출석에는 `Ctrl + Alt(command) + Shift + C`, Zoom 종료에는 `Ctrl + Alt(command) + Shift + Q`의 커맨드를 입력할 수 있습니다. 이 커맨드는 다른 작업 중에도(실행 터미널 밖에서도) 작동합니다.
-
-## 프로그램 종료
-프로그램을 종료하려면 터미널에서 `Ctrl + C`를 입력하거나 `Ctrl + Alt(command) + Shift + E`를 누르세요. 전자는 Python 스크립트를 종료하는 기본 단축키이며, 후자는 사용자 정의 단축키입니다.
+프로그램 실행 중 강제 작동 기능을 위해 키보드로 다음을 입력할 수 있습니다. 처음 네 개의 커맨드는 다른 작업 중에도(실행 터미널 밖에서도) 작동하고, 마지막 커맨드는 터미널 안에서만 작동합니다.
+- `Ctrl + Alt(command) + Shift + L`: Zoom 실행
+- `Ctrl + Alt(command) + Shift + C`: QR 코드 출석
+- `Ctrl + Alt(command) + Shift + Q`: 줌 종료
+- `Ctrl + Alt(command) + Shift + E`: 프로그램 종료
+- `Ctrl + C`: 프로그램 종료
 
 ## 기능 안내 및 프로젝트 기획 배경
 [![Last updated](https://img.shields.io/badge/Last_updated-2023--08--08-blue)](#)
 
-이 모듈은 출석을 자동화합니다: Zoom 입장 및 퇴장 시간에 맞춰서 Zoom을 실행 및 종료하고, 출석 QR 코드를 스캔하여 출석을 완료합니다. 출석 확인은 출석 시간에 맞추어 실행됩니다. 실제 타이밍은 [settings.py](fake_attendance/settings.py)를 확인하세요.
+이 모듈은 출석을 자동화합니다: Zoom 입장 및 퇴장 시간에 맞춰서 Zoom을 실행 및 종료하고, 출석 QR 코드(앱 입실과 퇴실이 아닌 교육기관 중간 출석 확인입니다.)를 스캔하여 출석을 완료합니다. 출석 확인은 출석 시간에 맞추어 실행됩니다. 실제 타이밍은 [settings.py](fake_attendance/settings.py)를 확인하세요.
 
 그래서 제가 왜 이런 것을 만들었을까요? 제 온라인 수업의 운영 정책으로 출석 확인을 위해 오전 9시부터 오후 6시까지(점심 시간인 12시부터 1시는 제외) 항상 카메라를 켜고 책상에 앉아 있어야 했습니다. 또한 출석 QR 코드를 출석 시간에 Zoom 화면에 띄워 수강생으로 출석을 입력하도록 했습니다. 똑같은 일정에 따라 매번 동일한 절차를 밟아야 하는 것은 번거로울 수 있습니다. 이 문제를 개선하고자 이 프로젝트를 시작하게 되었습니다. 도중 운영 정책 변경으로 카메라를 켜지 않는 것을 허용하게 되었는데, 삭제된 카메라 켜는 부분은 [archive/turn_on_video.py](archive/turn_on_video.py)에서 확인 가능하며, 다른 부분에서 교체되어 사용하지 않는 기능과 파일 또한 [archive](archive)에서 확인 가능합니다.
 
 ## 자기성찰
-교육과정 중 Selenium, 자동화, 그리고 API에 대해 배운 부분이 있습니다. 이 프로그램은 배운 내용을 일상에 적용한 작은 프로젝트입니다. 또한 시작한 이상 적극적으로 프로그램을 개선하면서 효율적인 코드 관리 및 실행을 위해 객체지향 프로그래밍 방법도 적용하고, 수동 작동을 위해 키보드 커맨드 입력도 연구했으며, 윈도우에서만이 아니라 다른 운영체제를 사용하는 수강생에게 프로그램 제공하고 멀티 OS(OS-agnostic) 프로그램/모듈 배포 관련사항을 공부하기 위해 맥OS 확장도 적용했습니다. 다른 시각에서 바라보자면, 데이터 직군 교육생으로서 데이터 관련사항으로는 데이터 자동 수집/스크레이핑을 위해 Selenium을 사용하고, 그 수집을 주기적으로 실행할 수 있는 APScheduler를 적극적으로 배울 수 있었으며, 데이터 직군과 큰 연관은 없더라도 코드 작성 실력을 쌓고 일상에서 스스로에게 필요한 부분을 인지하고 작성했다는 부분을 돌아보며, 많은 것을 스스로, 그리고 적극적으로 배웠다고 생각합니다. 이 글을 작성하는 제 자신과 읽고 있는 분들도 더욱 자신감을 갖고 많은 것에 적극적으로 도전하시길 바랍니다.
+교육과정 중 Selenium, 자동화, 그리고 API에 대해 배운 부분이 있습니다. 이 프로그램은 배운 내용을 일상에 적용한 작은 프로젝트입니다. 또한 시작한 이상 적극적으로 프로그램을 개선하면서 효율적인 코드 관리 및 실행을 위해 객체지향 프로그래밍 방법도 적용하고, 강제 작동 기능 추가를 위해 키보드 커맨드 입력도 연구했으며, 윈도우에서만이 아니라 다른 운영체제를 사용하는 수강생에게 프로그램 제공하고 멀티 OS(OS-agnostic) 프로그램/모듈 배포 관련사항을 공부하기 위해 맥OS 확장도 적용했습니다. 다른 시각에서 바라보자면, 데이터 직군 교육생으로서 데이터 관련사항으로는 데이터 자동 접속과 수집/스크레이핑 기능을 제공하는 Selenium을 공부하고, 그 수집을 주기적으로 실행할 수 있는 APScheduler를 적극적으로 배울 수 있었으며, 데이터 직군과 큰 연관은 없더라도 코드 작성 실력을 쌓고 일상에서 스스로에게 필요한 부분을 인지하고 작성했다는 부분을 돌아보며, 많은 것을 스스로, 그리고 적극적으로 배웠다고 생각합니다. 이 글을 작성하는 제 자신과 읽고 있는 분들도 더욱 자신감을 갖고 많은 것에 적극적으로 도전하시길 바랍니다.
 
 ## Credits
 - 해당 교육기관: 출석 인증 절차 도입으로 본 프로젝트 아이디어 제공
