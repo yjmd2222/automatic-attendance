@@ -7,28 +7,29 @@
 # 자동 출석 프로그램
 특정 개발자 교육 기관에서 매일 진행하는 출석 절차를 자동화하는 프로그램.
 
-**주의**: 교육용 목적으로만 사용하고, 자리를 비운 상태에서 대리출석은 하지 않길 바랍니다.
+**주의**: 교육용 목적으로만 사용하고, 학습과정에 참여하지 않고 자리를 비운 상태에서 대리출석은 하지 않길 바랍니다.
 
 ## 작은 메시지
-2023-07-03로서 프로젝트는 매우 완성도 높은 상태라고 할 수 있습니다. 물론 맥OS이 제가 주로 사용하는 운영체제가 아니기 때문에 Zoom 자체 업데이트에 대응할 기회가 별로 없었고, 업데이트 관련 화면 인식 관련사항으로 해당 이미지를 교체해야 합니다. 현재로서는 이 이미지가 모두 자리표시자/placeholder 이미지입니다. 코딩 실력 향상을 위해 추상화나 운영체제 지원 확장을 적용하는 단계로서 실질적인 기능과 관계 없이 효율성 관련 내용으로 프로그램을 업데이트 하고 있는데, 혹시 맥OS 사용 개선, 편리성, 또는 추가 기능이 있다면 Discussion에 남겨주시면 감사하겠습니다.
+2023-07-03로서 프로젝트는 매우 완성도 높은 상태라고 할 수 있습니다. 물론 맥OS이 제가 주로 사용하는 운영체제가 아니기 때문에 Zoom 자체 업데이트에 대응할 기회가 별로 없었고, 업데이트 관련 화면 인식 관련사항으로 해당 이미지를 교체해야 합니다. 현재로서는 이 이미지들이 모두 자리표시자/placeholder 이미지입니다. 코딩 실력 향상을 위해 추상화나 운영체제 지원 확장을 적용하는 단계로서 실질적인 기능과 관계 없이 효율성 관련 내용으로 프로그램을 업데이트 하고 있는데, 혹시 맥OS 사용 개선, 편리성, 또는 추가 기능이 있다면 Discussions에 남겨주시면 감사하겠습니다. 혹시 기능적 결함을 발견하거나 이미지 관련해서 업데이트 할 부분에 적극적으로 설명이 가능하신 분은 새로운 Issue를 남겨주시기 바랍니다.
 
 ## 사용 도구 및 스킬
 이 프로젝트를 진행하면서 다음의 도구 사용법과 스킬을 터득했습니다. 코드 내에 최대한 자세히 설명을 기재했지만, 최초 작성시 영어로 작성하여 현재로서 설명이 전부 영어입니다. 최신 개발 트렌드에 맞고 빠른 이해를 위해 ChatGPT를 사용해서 확인하시기 바랍니다.
 
 | 항목 | 적용점|
 | - | - |
-| 셀레니움 | 웹 상에서 출석 절차 진행 |
+| Selenium | 웹 상에서 출석 절차 진행 |
 | APScheduler | 해당 시간에 Zoom 실행, 종료, QR 출석, 스스로 종료 |
 | smtplib | 프로그램 진행 상황 이메일로 보고 |
 | argparse | 스케줄 선택 |
 | Win32 API/pywinauto | 윈도우 운영체제 Zoom 창 관리 |
 | AppleScript/subprocess | 맥OS Zoom 창 관리 |
-| PyAutoGUI | 셀레니움 및 AppleScript 접근 불가 항목 화면 인식으로 관리 |
+| PyAutoGUI | Selenium 및 AppleScript 접근 불가 항목 화면 인식으로 관리 |
 | pynput | 키보드 입력 자동화 및 사용자 명령어 관리 |
-| Github Actions/YML | 코드 오류와 표준 확인 및 방문 횟수 확인 |
-| Git 브랜치 | 코드 버전 관리 및 Github Actions 연계로 방문 횟수 확인 |
-| 객체지향 프로그래밍 | 기능 세분화 및 다중상속 |
+| 객체지향 프로그래밍 | 기능 세분화, 다중상속, 그리고 데코레이터(decorator)로 코드 디자인 개선 |
 | 오류 핸들링 | 현재까지 확인한 모든 오류 예외 처리로 대응 |
+| 병렬화 | APScheduler와 pynput로 기능 병렬 실행 및 실행 중 키보드 인식기능 연구 |
+| Github Actions/YML | 코드 오류와 표준 확인 및 이 프로젝트 방문 횟수 확인 |
+| Git 브랜치 | 코드 버전 관리 및 Github Actions 연계로 상단에 배지로 방문 횟수 표기 |
 
 ## 사전 요구사항
 | 항목 | 기본 조건 |
@@ -43,9 +44,9 @@ Python 3 환경에서 다음 명령어를 통해 필수 패키지를 설치합�
 
 `pip install -r requirements.txt`
 
-[info_template.py](fake_attendance/info_template.py)에 있는 개인정보 변수에 본인의 카카오 로그인, 이메일 로그인, 그리고 줌 링크를 입력합니다. 이 때 줌 링크는 끝에 `#success`가 명시되어 있는지 확인합니다. 파일 이름을 `info.py`로 변경합니다. Python에서 이메일 발송하는 방법은 다음 블로그를 확인해주세요: 코딩유치원 [블로그](https://coding-kindergarten.tistory.com/204).
+[info_template.py](fake_attendance/info_template.py)에 있는 개인정보 변수에 본인의 카카오 로그인, 이메일 로그인, 그리고 Zoom URL 주소를 입력합니다. 이 때 Zoom 주소는 끝에 `#success`가 명시되어 있는지 확인합니다. 파일 이름을 `info.py`로 변경합니다. Python에서 이메일 발송하는 방법은 다음 블로그를 확인해주세요: 코딩유치원 [블로그](https://coding-kindergarten.tistory.com/204).
 
-참고: 아래 [프로그램 실행](#프로그램-실행)에서 만약 본 모듈이 사용하는 [Screen QR Reader](https://chrome.google.com/webstore/detail/screen-qr-reader/ekoaehpknadfoaolagjfdefeopkhfhln)의 소스파일이 자동적으로 다운로드 되지 않는다면 직접 다운로드 받으셔야 합니다. 다음의 내용에서 수동 다운로드 방법을 확인해주세요: [.crx 다운로드 방법](https://crx-downloader.com/how-it-works). Screen QR Reader url: https://chrome.google.com/webstore/detail/screen-qr-reader/ekoaehpknadfoaolagjfdefeopkhfhln
+참고: 아래 [프로그램 실행](#프로그램-실행)에서 만약 본 모듈이 사용하는 [Screen QR Reader](https://chrome.google.com/webstore/detail/screen-qr-reader/ekoaehpknadfoaolagjfdefeopkhfhln)의 소스파일이 자동적으로 다운로드 되지 않는다면 직접 다운로드 받으셔야 합니다. 다음의 내용에서 수동 다운로드 방법을 확인해주세요: [.crx 다운로드 방법](https://crx-downloader.com/how-it-works). Screen QR Reader URL 주소: https://chrome.google.com/webstore/detail/screen-qr-reader/ekoaehpknadfoaolagjfdefeopkhfhln
 
 추가 참고사항: 맥 사용자는 Zoom 창 제어를 위해 모듈을 실행하는 환경(터미널, 개발환경)에 대해 Zoom과 System Events에 대해 권한 부여가 필요할 수도 있습니다. `시스템 설정` - `개인정보 보호 및 보안` - `자동화`에서 권한을 확인해보세요.
 
@@ -73,12 +74,14 @@ Python 3 환경에서 다음 명령어를 통해 필수 패키지를 설치합�
 
 그래서 제가 왜 이런 것을 만들었을까요? 제 온라인 수업의 운영 정책으로 출석 확인을 위해 오전 9시부터 오후 6시까지(점심 시간인 12시부터 1시는 제외) 항상 카메라를 켜고 책상에 앉아 있어야 했습니다. 또한 출석 QR 코드를 출석 시간에 Zoom 화면에 띄워 수강생으로 출석을 입력하도록 했습니다. 똑같은 일정에 따라 매번 동일한 절차를 밟아야 하는 것은 번거로울 수 있습니다. 이 문제를 개선하고자 이 프로젝트를 시작하게 되었습니다.
 
-교육과정 중 셀레니움, 자동화, 그리고 API에 대해 배운 부분이 있습니다. 이 프로그램은 배운 내용을 일상에 적용한 작은 프로젝트입니다.
+도중 운영 정책 변경으로 카메라를 켜지 않는 것을 허용하게 되었는데, 해당 부분은 [archive/turn_on_video.py](archive/turn_on_video.py)에서 확인 가능하며, 교체되어 사용하지 않는 부분 또한 [archive](archive)에서 확인 가능합니다.
+
+교육과정 중 Selenium, 자동화, 그리고 API에 대해 배운 부분이 있습니다. 이 프로그램은 배운 내용을 일상에 적용한 작은 프로젝트입니다. 또한 시작한 이상 적극적으로 프로그램을 개선하면서 효율적인 코드 관리 및 실행을 위해 객체지향 프로그래밍 방법도 적용하고, 수동 작동을 위해 키보드 커맨드 입력도 연구했으며, 윈도우에서만이 아니라 다른 운영체제를 사용하는 수강생에게 프로그램 제공하고 멀티 OS(OS-agnostic) 프로그램/모듈 배포 관련사항을 공부하기 위해 맥OS 확장도 적용했습니다. 다른 시각에서 바라보자면, 데이터 직군 교육생으로서 데이터 관련사항으로는 데이터 자동 수집/스크레이핑을 위해 Selenium을 사용하고, 그 수집을 주기적으로 실행할 수 있는 APScheduler를 적극적으로 배울 수 있었으며, 데이터 직군과 큰 연관은 없더라도 코드 작성 실력을 쌓고 일상에서 스스로에게 필요한 부분을 인지하고 작성했다는 부분을 돌아보며, 많은 것을 스스로, 그리고 적극적으로 배웠다고 생각합니다. 이 글을 작성하는 제 자신과 읽고 있는 분들도 더욱 자신감을 갖고 도전하고 화이팅하시길 바랍니다.
 
 ## Credits
-- 해당 교육기관: 출석 인증 절차로 본 프로젝트 아이디어 제공
+- 해당 교육기관: 출석 인증 절차 도입으로 본 프로젝트 아이디어 제공
 - tkobayashi0111: [Screen QR Reader](https://chrome.google.com/webstore/detail/screen-qr-reader/ekoaehpknadfoaolagjfdefeopkhfhln) 제공
-- yjmd2222: 프로젝트의 유일 구성원으로서 기획, 개발, 그리고 끝내 완성했습니다 :)
+- yjmd2222: 프로젝트의 유일 구성원으로서 기획, 개발, 그리고 끝내 완성 :)
 
 ## License
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
