@@ -7,7 +7,9 @@ from sys import platform
 from abc import ABC, abstractmethod
 
 from selenium import webdriver
-from selenium.common.exceptions import NoSuchWindowException
+from selenium.common.exceptions import (
+    NoSuchWindowException,
+    WebDriverException)
 from selenium.webdriver.chrome.options import Options
 # from selenium.webdriver.chrome.service import Service
 # from webdriver_manager.chrome import ChromeDriverManager
@@ -73,7 +75,7 @@ class UseSelenium(BaseClass):
             'wrapper'
             try:
                 func(*args, **kwargs)
-            except NoSuchWindowException:
+            except (NoSuchWindowException, WebDriverException):
                 print_with_time('크롬 창 수동 종료 확인. 현재 실행중인 스크립트 취소')
         return wrapper
 
