@@ -121,11 +121,9 @@ class MyScheduler(BaseClass):
         self.until = until
         # new time_sets
         new_time_sets = self.get_current_timesets(job_id)
-        # if next run left
-        if new_time_sets:
-            # reschedule
-            rescheduled_trigger = self.build_trigger(new_time_sets)
-            self.sched.reschedule_job(job_id, trigger=rescheduled_trigger)
+        # reschedule
+        rescheduled_trigger = self.build_trigger(new_time_sets)
+        self.sched.reschedule_job(job_id, trigger=rescheduled_trigger)
 
     def add_run(self, job_id, time_set):
         'extend trigger at given time. Adds job if no job found'
