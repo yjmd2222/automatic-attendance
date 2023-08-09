@@ -9,16 +9,16 @@ import time
 from selenium.webdriver.common.by import By
 from pynput.keyboard import Key, Controller
 
-from fake_attendance.abc import UseSelenium, ManipulateWindow
-from fake_attendance.info import ZOOM_LINK
-from fake_attendance.helper import (
+from auto_attendance.abc import UseSelenium, ManipulateWindow
+from auto_attendance.info import ZOOM_LINK
+from auto_attendance.helper import (
     bring_chrome_to_front,
     get_last_image_match,
     print_with_time,
     set_foreground)
-from fake_attendance.quit_zoom import QuitZoom
-from fake_attendance.notify import PrepareSendEmail
-from fake_attendance.settings import (
+from auto_attendance.quit_zoom import QuitZoom
+from auto_attendance.notify import PrepareSendEmail
+from auto_attendance.settings import (
     ZOOM_AGREE_RECORDING_POPUP_CLASS,
     ZOOM_AGREE_RECORDING_POPUP_NAME, # they
     ZOOM_UPDATE_POPUP_CLASS,
@@ -32,10 +32,10 @@ from fake_attendance.settings import (
     LAUNCH_ZOOM_KEY_MAPPER,
     TAB_COUNT_MAPPER)
 if platform == 'win32':
-    from fake_attendance.helper import (
+    from auto_attendance.helper import (
         print_all_windows)
 else:
-    from fake_attendance.settings import (
+    from auto_attendance.settings import (
         WINDOW_CHECK_IMAGE_MAPPER,
         OK_BUTTON_IMAGE_MAPPER)
 
@@ -357,7 +357,7 @@ class LaunchZoom(PrepareSendEmail, UseSelenium, ManipulateWindow):
 
 if __name__ == '__main__':
     # pylint: disable=ungrouped-imports
-    from fake_attendance.helper import fix_pyautogui
+    from auto_attendance.helper import fix_pyautogui
     fix_pyautogui()
     # pylint: enable=ungrouped-imports
 

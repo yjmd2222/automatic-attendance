@@ -17,30 +17,30 @@ Run below in a Python 3 environment, 3.11.3 recommended.
 
 `pip install -r requirements.txt`
 
-Fill out the template [info_template.py](fake_attendance/info_template.py) with your login, email information, and the zoom link _with_ the `#success`. Rename the file to `info.py`
+Fill out the template [info_template.py](auto_attendance/info_template.py) with your login, email information, and the zoom link _with_ the `#success`. Rename the file to `info.py`
 
 Note: If the module fails to download the Chrome extension source, you can try downloading it manually. Check that its name is `extension_0_1_2_0.crx`, and put it in the root of the repository. See [this](https://crx-downloader.com/how-it-works) for direction. Screen QR Reader url: https://chrome.google.com/webstore/detail/screen-qr-reader/ekoaehpknadfoaolagjfdefeopkhfhln
 
 Also note for mac users: You may need to grant permission to the terminal access to System Events and Zoom. Go to `System Settings - Privacy & Security - Automation` and give it access to them.
 
 ## Run
-Run `python -m fake_attendance` for download, Zoom launch, and check-in. Read [How it works and why](#how-it-works-and-why) for explanation.
+Run `python -m auto_attendance` for download, Zoom launch, and check-in. Read [How it works and why](#how-it-works-and-why) for explanation.
 
 To change the QR checking schedule, you can add an argument as either:
-- `-p` optional argument; one of `'regular'`, `'sprint challenge'`, `'project day 1'`, `'project days 2-5'`, `'section review day 1'`, `'section review day 2'`, and `'project section'` (See [settings.py](fake_attendance/settings.py) for actual timings.)
+- `-p` optional argument; one of `'regular'`, `'sprint challenge'`, `'project day 1'`, `'project days 2-5'`, `'section review day 1'`, `'section review day 2'`, and `'project section'` (See [settings.py](auto_attendance/settings.py) for actual timings.)
 - `-t` optional argument; a text file that contains a 24-hour format time sets, such as [test_times.txt](test_times.txt)
 - or positional argument; a series of time sets, such as `10:00 15:00` (This case would be multiple arguments).
 
 Leaving it blank is the same as `'regular'` argument.
 
-Type `python -m fake_attendance -h` for more information. Note that arguments are parsed in the listed order above, ignoring others when passed correctly.
+Type `python -m auto_attendance -h` for more information. Note that arguments are parsed in the listed order above, ignoring others when passed correctly.
 
-For a single test to fire right away, run `python -m fake_attendance.fake_check_in`.
+For a single test to fire right away, run `python -m auto_attendance.fake_check_in`.
 
 Currently supports `Ctrl + Alt(command) + Shift + L` for launching Zoom, `Ctrl + Alt(command) + Shift + C` for checking in with QR code, and `Ctrl + Alt(command) + Shift + Q` for quitting Zoom. These commands work anywhere (inside and outside of the terminal).
 
 ## Quit
-To quit, press `Ctrl + C` in the terminal or `Ctrl + Alt(command) + Shift + E` anywhere. The former is the default hotkey for quitting a Python script, and the latter is a user-defined hotkey: see [scheduler.py](https://github.com/yjmd2222/fake-attendance/blob/d38ceb32321eac70bbd7902cd87dd7bd88a61a6d/fake_attendance/scheduler.py#L124-L127) and [settings.py](https://github.com/yjmd2222/fake-attendance/blob/d38ceb32321eac70bbd7902cd87dd7bd88a61a6d/fake_attendance/settings.py#L111).
+To quit, press `Ctrl + C` in the terminal or `Ctrl + Alt(command) + Shift + E` anywhere. The former is the default hotkey for quitting a Python script, and the latter is a user-defined hotkey: see [scheduler.py](https://github.com/yjmd2222/fake-attendance/blob/d38ceb32321eac70bbd7902cd87dd7bd88a61a6d/auto_attendance/scheduler.py#L124-L127) and [settings.py](https://github.com/yjmd2222/fake-attendance/blob/d38ceb32321eac70bbd7902cd87dd7bd88a61a6d/auto_attendance/settings.py#L111).
 
 The second hotkey allows quitting even when not focused on the terminal, and it may not work in the middle of a job until the job is finished which I believe is due to the usage of `APScheduler`'s `BackgroundScheduler`.
 
@@ -48,11 +48,11 @@ The second hotkey allows quitting even when not focused on the terminal, and it 
 [![Last updated](https://img.shields.io/badge/Last_updated-2023--06--21-blue)](#)
 
 This module automates all check-ins for you-know-what: launch and quit Zoom at corresponding times and read the QR code in Zoom to complete the check-in form.
-This check is done throughout the day. See [settings.py](fake_attendance/settings.py) for the actual timings.
+This check is done throughout the day. See [settings.py](auto_attendance/settings.py) for the actual timings.
 
 So why this? My online class used to require I sit at the desk on Zoom from 9 AM to 6 PM (lunch time from 12 to 1 is excluded) with camera on the entire time.
 This is ridiculous, and everyone must be thinking of putting on a fake recording of themself in the background. But the admins are going to send a QR image for us to check in every hour or two
-which is on another level of shit. So I made a little script that scans the QR image on the Zoom meeting. They said they would give 10 minutes to check in,
+which is on another level of madness. So I made a little script that scans the QR image on the Zoom meeting. They said they would give 10 minutes to check in,
 so the script checks multiple times around the check-in time.
 
 But then they changed the rules to allow turning off the Zoom camera, so this part is removed. You can look at the archived code in [turn_on_video.py](archive/turn_on_video.py)

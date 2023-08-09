@@ -7,18 +7,20 @@ from sys import platform
 from abc import ABC, abstractmethod
 
 from selenium import webdriver
-from selenium.common.exceptions import NoSuchWindowException
+from selenium.common.exceptions import (
+    NoSuchWindowException,
+    WebDriverException)
 from selenium.webdriver.chrome.options import Options
 # from selenium.webdriver.chrome.service import Service
 # from webdriver_manager.chrome import ChromeDriverManager
 
-from fake_attendance.arg_parse import parsed_args
-from fake_attendance.helper import print_with_time
-from fake_attendance.settings import (
+from auto_attendance.arg_parse import parsed_args
+from auto_attendance.helper import print_with_time
+from auto_attendance.settings import (
     VERBOSITY__INFO,
     ZOOM_APPLICATION_NAME)
 if platform == 'darwin':
-    from fake_attendance.helper import get_screen_resolution
+    from auto_attendance.helper import get_screen_resolution
 
     import subprocess
 else:
@@ -73,7 +75,7 @@ class UseSelenium(BaseClass):
             'wrapper'
             try:
                 func(*args, **kwargs)
-            except NoSuchWindowException:
+            except (NoSuchWindowException, WebDriverException):
                 print_with_time('크롬 창 수동 종료 확인. 현재 실행중인 스크립트 취소')
         return wrapper
 
