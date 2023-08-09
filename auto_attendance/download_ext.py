@@ -111,7 +111,7 @@ class DownloadExtensionSource(UseSelenium):
                 print_with_time(f'다운로드 파일 이름 일치 안 함: {downloaded_file}. 주의 필요')
                 if self.scheduler:
                     # update source path
-                    self.scheduler.fake_check_in.extension_source = get_file_path(downloaded_file)
+                    self.scheduler.auto_check_in.extension_source = get_file_path(downloaded_file)
             # if not
             else:
                 print_with_time('다운로드된 확장자 소스 파일 없음. 모듈 종료')

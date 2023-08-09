@@ -52,7 +52,7 @@ This check is done throughout the day. See [settings.py](auto_attendance/setting
 
 So why this? My online class used to require I sit at the desk on Zoom from 9 AM to 6 PM (lunch time from 12 to 1 is excluded) with camera on the entire time.
 This is ridiculous, and everyone must be thinking of putting on a fake recording of themself in the background. But the admins are going to send a QR image for us to check in every hour or two
-which is on another level of shit. So I made a little script that scans the QR image on the Zoom meeting. They said they would give 10 minutes to check in,
+which is on another level of madness. So I made a little script that scans the QR image on the Zoom meeting. They said they would give 10 minutes to check in,
 so the script checks multiple times around the check-in time.
 
 But then they changed the rules to allow turning off the Zoom camera, so this part is removed. You can look at the archived code in [turn_on_video.py](archive/turn_on_video.py)

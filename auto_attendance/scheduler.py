@@ -14,7 +14,7 @@ from pynput import keyboard
 
 from auto_attendance.abc import BaseClass
 from auto_attendance.arg_parse import parsed_args
-from auto_attendance.fake_check_in import FakeCheckIn
+from auto_attendance.auto_check_in import AutoCheckIn
 from auto_attendance.helper import (
     print_with_time,
     map_dict)
@@ -35,12 +35,12 @@ class MyScheduler(BaseClass):
     def __init__(self):
         'initialize'
         self.sched = BackgroundScheduler()
-        self.fake_check_in = FakeCheckIn(self.drop_runs_until)
+        self.auto_check_in = AutoCheckIn(self.drop_runs_until)
         self.launch_zoom = LaunchZoom()
         self.quit_zoom = QuitZoom()
         self.quit_scheduler_job_id = '스케줄러 종료'
         self.job_ids = [
-            self.fake_check_in.print_name,
+            self.auto_check_in.print_name,
             self.launch_zoom.print_name,
             self.quit_zoom.print_name,
             self.quit_scheduler_job_id]
@@ -52,7 +52,7 @@ class MyScheduler(BaseClass):
              SCHED_QUIT_TIMES))
         self.all_job_funcs = map_dict(
             self.job_ids,
-            (self.fake_check_in.run,
+            (self.auto_check_in.run,
              self.launch_zoom.run,
              self.quit_zoom.run,
              self.quit))

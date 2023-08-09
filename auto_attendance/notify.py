@@ -44,7 +44,7 @@ class Notify(BaseClass):
         body = f'''
         {result}
 
-        credit: yjmd2222's fake-attendance project https://github.com/yjmd2222/fake-attendance
+        credit: yjmd2222's automatic-attendance project https://github.com/yjmd2222/automatic-attendance
         '''
         return dedent(body).strip()
 
@@ -68,7 +68,7 @@ class Notify(BaseClass):
             return
 
         msg = MIMEText(body)
-        msg['Subject'] = f'!!fake-attendance {self.job_id}\
+        msg['Subject'] = f'!!auto-attendance {self.job_id}\
             {datetime.now().strftime(r"%Y-%m-%d %H:%M")}!!'
 
         smtp.sendmail(EMAIL_ADDRESS, EMAIL_ADDRESS, msg.as_string())
