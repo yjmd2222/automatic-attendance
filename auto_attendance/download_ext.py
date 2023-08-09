@@ -11,14 +11,14 @@ from selenium.webdriver.common.by import By
 
 import pyautogui
 
-from fake_attendance.abc import UseSelenium
-from fake_attendance.helper import (
+from auto_attendance.abc import UseSelenium
+from auto_attendance.helper import (
     bring_chrome_to_front,
     get_file_path,
     get_last_image_match,
     print_with_time)
-from fake_attendance.scheduler import MyScheduler
-from fake_attendance.settings import (
+from auto_attendance.scheduler import MyScheduler
+from auto_attendance.settings import (
     CONTINUE_DOWNLOAD_IMAGE,
     GET_CRX_LINK,
     SCREEN_QR_READER_SOURCE,
@@ -111,7 +111,7 @@ class DownloadExtensionSource(UseSelenium):
                 print_with_time(f'다운로드 파일 이름 일치 안 함: {downloaded_file}. 주의 필요')
                 if self.scheduler:
                     # update source path
-                    self.scheduler.fake_check_in.extension_source = get_file_path(downloaded_file)
+                    self.scheduler.auto_check_in.extension_source = get_file_path(downloaded_file)
             # if not
             else:
                 print_with_time('다운로드된 확장자 소스 파일 없음. 모듈 종료')
@@ -121,7 +121,7 @@ class DownloadExtensionSource(UseSelenium):
 
 if __name__ == '__main__':
     # pylint: disable=ungrouped-imports
-    from fake_attendance.helper import fix_pyautogui
+    from auto_attendance.helper import fix_pyautogui
     fix_pyautogui()
     # pylint: enable=ungrouped-imports
 

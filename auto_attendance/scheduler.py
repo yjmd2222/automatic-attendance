@@ -12,15 +12,15 @@ from apscheduler.triggers.cron import CronTrigger
 
 from pynput import keyboard
 
-from fake_attendance.abc import BaseClass
-from fake_attendance.arg_parse import parsed_args
-from fake_attendance.fake_check_in import FakeCheckIn
-from fake_attendance.helper import (
+from auto_attendance.abc import BaseClass
+from auto_attendance.arg_parse import parsed_args
+from auto_attendance.auto_check_in import AutoCheckIn
+from auto_attendance.helper import (
     print_with_time,
     map_dict)
-from fake_attendance.launch_zoom import LaunchZoom
-from fake_attendance.quit_zoom import QuitZoom
-from fake_attendance.settings import (
+from auto_attendance.launch_zoom import LaunchZoom
+from auto_attendance.quit_zoom import QuitZoom
+from auto_attendance.settings import (
     ARGUMENT_MAP,
     ZOOM_ON_TIMES,
     ZOOM_QUIT_TIMES,
@@ -35,12 +35,12 @@ class MyScheduler(BaseClass):
     def __init__(self):
         'initialize'
         self.sched = BackgroundScheduler()
-        self.fake_check_in = FakeCheckIn(self.drop_runs_until)
+        self.auto_check_in = AutoCheckIn(self.drop_runs_until)
         self.launch_zoom = LaunchZoom()
         self.quit_zoom = QuitZoom()
         self.quit_scheduler_job_id = '스케줄러 종료'
         self.job_ids = [
-            self.fake_check_in.print_name,
+            self.auto_check_in.print_name,
             self.launch_zoom.print_name,
             self.quit_zoom.print_name,
             self.quit_scheduler_job_id]
@@ -52,7 +52,7 @@ class MyScheduler(BaseClass):
              SCHED_QUIT_TIMES))
         self.all_job_funcs = map_dict(
             self.job_ids,
-            (self.fake_check_in.run,
+            (self.auto_check_in.run,
              self.launch_zoom.run,
              self.quit_zoom.run,
              self.quit))
@@ -146,7 +146,7 @@ class MyScheduler(BaseClass):
         def parse_time(raw_time_sets):
             'parse time sets from raw list'
             # pylint: disable=import-outside-toplevel
-            from fake_attendance.helper import convert_to_datetime
+            from auto_attendance.helper import convert_to_datetime
             # pylint: enable=import-outside-toplevel
             parsed_time_sets = []
             is_success = None
@@ -193,7 +193,7 @@ class MyScheduler(BaseClass):
             if parsed_args.extrapolate:
                 if is_success == 'true':
                     # pylint: disable=import-outside-toplevel
-                    from fake_attendance.helper import extrapolate_time_sets, unfoil_time_sets
+                    from auto_attendance.helper import extrapolate_time_sets, unfoil_time_sets
                     # pylint: enable=import-outside-toplevel
                     time_sets = unfoil_time_sets(
                         [extrapolate_time_sets(time_set) for time_set in time_sets]
@@ -260,7 +260,7 @@ class MyScheduler(BaseClass):
 
 if __name__ == '__main__':
     # pylint: disable=ungrouped-imports
-    from fake_attendance.helper import fix_pyautogui
+    from auto_attendance.helper import fix_pyautogui
     fix_pyautogui()
     # pylint: enable=ungrouped-imports
 

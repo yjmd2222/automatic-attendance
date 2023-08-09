@@ -14,10 +14,10 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 
-from fake_attendance.abc import UseSelenium, ManipulateWindow
-from fake_attendance.info import KAKAO_ID, KAKAO_PASSWORD
-from fake_attendance.helper import print_with_time, set_foreground
-from fake_attendance.settings import (
+from auto_attendance.abc import UseSelenium, ManipulateWindow
+from auto_attendance.info import KAKAO_ID, KAKAO_PASSWORD
+from auto_attendance.helper import print_with_time, set_foreground
+from auto_attendance.settings import (
     ZOOM_APPLICATION_NAME,
     ZOOM_CLASSROOM_CLASS,
     ZOOM_CLASSROOM_NAME,
@@ -32,7 +32,7 @@ from fake_attendance.settings import (
     AGREE,
     CHECK_IN,
     SUBMIT)
-from fake_attendance.notify import PrepareSendEmail
+from auto_attendance.notify import PrepareSendEmail
 
 if platform == 'win32':
     import win32gui
@@ -40,7 +40,7 @@ else:
     import subprocess
 
 # pylint: disable=too-many-instance-attributes
-class FakeCheckIn(PrepareSendEmail, UseSelenium, ManipulateWindow):
+class AutoCheckIn(PrepareSendEmail, UseSelenium, ManipulateWindow):
     'A class for checking QR image and sending email with link'
     print_name = 'QR 체크인'
 
@@ -167,7 +167,7 @@ class FakeCheckIn(PrepareSendEmail, UseSelenium, ManipulateWindow):
         # Screen QR Reader may open 'about:blank' when there is not a valid QR image.
         if len(window_handles) > 1: # if there are two tabs
             self.driver.switch_to.window(window_handles[-1]) # force Selenium to be on the new tab
-            # check if the url is fake then return False
+            # check if the url is blank then return False
             if self.driver.current_url in (SCREEN_QR_READER_BLANK, SCREEN_QR_READER_POPUP_LINK):
                 return False
             return True # return True if url is valid
@@ -342,4 +342,4 @@ class FakeCheckIn(PrepareSendEmail, UseSelenium, ManipulateWindow):
 # pylint: enable=too-many-instance-attributes
 
 if __name__ == '__main__':
-    FakeCheckIn().run()
+    AutoCheckIn().run()

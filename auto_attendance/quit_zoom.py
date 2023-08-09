@@ -5,13 +5,13 @@ Quit Zoom
 import os
 from sys import platform
 
-from fake_attendance.abc import BaseClass
-from fake_attendance.helper import print_with_time
-from fake_attendance.notify import PrepareSendEmail
+from auto_attendance.abc import BaseClass
+from auto_attendance.helper import print_with_time
+from auto_attendance.notify import PrepareSendEmail
 if platform == 'win32':
-    from fake_attendance.settings import ZOOM_CLASSROOM_CLASS
+    from auto_attendance.settings import ZOOM_CLASSROOM_CLASS
 else:
-    from fake_attendance.settings import ZOOM_APPLICATION_NAME
+    from auto_attendance.settings import ZOOM_APPLICATION_NAME
 
 if platform == 'win32':
     import pywinauto

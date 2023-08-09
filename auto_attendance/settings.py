@@ -4,15 +4,15 @@ Settings
 
 from sys import platform
 
-from fake_attendance.helper import (
+from auto_attendance.helper import (
     convert_to_datetime,
     get_file_path,
     extrapolate_time_sets,
     unfoil_time_sets,
     map_dict)
-from fake_attendance._settings import _ZOOM_APPLICATION_NAME
+from auto_attendance._settings import _ZOOM_APPLICATION_NAME
 if platform == 'darwin':
-    from fake_attendance.helper import check_appearance
+    from auto_attendance.helper import check_appearance
 
 # Screen QR Reader download
 GET_CRX_LINK = 'https://crx-downloader.com/'

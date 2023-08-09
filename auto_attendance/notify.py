@@ -12,13 +12,13 @@ from socket import gaierror
 
 from textwrap import dedent
 
-from fake_attendance.abc import BaseClass
-from fake_attendance.helper import print_with_time
-from fake_attendance.info import (
+from auto_attendance.abc import BaseClass
+from auto_attendance.helper import print_with_time
+from auto_attendance.info import (
     EMAIL_ADDRESS,
     EMAIL_PASSWORD,
     SMTP_HOST, SMTP_PORT)
-from fake_attendance.settings import RESULT_DICTS
+from auto_attendance.settings import RESULT_DICTS
 
 class Notify(BaseClass):
     'A class for sending email on successful QR recognization'
@@ -44,7 +44,7 @@ class Notify(BaseClass):
         body = f'''
         {result}
 
-        credit: yjmd2222's fake-attendance project https://github.com/yjmd2222/fake-attendance
+        credit: yjmd2222's automatic-attendance project https://github.com/yjmd2222/automatic-attendance
         '''
         return dedent(body).strip()
 
@@ -68,7 +68,7 @@ class Notify(BaseClass):
             return
 
         msg = MIMEText(body)
-        msg['Subject'] = f'!!fake-attendance {self.job_id}\
+        msg['Subject'] = f'!!auto-attendance {self.job_id}\
             {datetime.now().strftime(r"%Y-%m-%d %H:%M")}!!'
 
         smtp.sendmail(EMAIL_ADDRESS, EMAIL_ADDRESS, msg.as_string())

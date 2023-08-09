@@ -13,7 +13,7 @@ import pyscreeze
 import PIL
 import pyautogui
 
-from fake_attendance._settings import _ZOOM_APPLICATION_NAME as ZOOM_APPLICATION_NAME
+from auto_attendance._settings import _ZOOM_APPLICATION_NAME as ZOOM_APPLICATION_NAME
 if platform == 'win32':
     from win32com.client import Dispatch
     import win32gui
