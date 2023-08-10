@@ -114,6 +114,17 @@ class MyScheduler(BaseClass):
         if self.until:
             time_sets = [time_set for time_set in time_sets if time_set > self.until]
         return time_sets
+    
+    def reschedule(self, job_id, new_time_sets):
+        'reschedule wrapper. Catches JobLookupError'
+        rescheduled_trigger = self.build_trigger(new_time_sets)
+        try:
+            self.sched.reschedule_job(job_id, trigger=rescheduled_trigger)
+        except JobLookupError:
+            self.sched.add_job(
+                func = self.all_job_funcs[job_id],
+                trigger = rescheduled_trigger,
+                id = job_id)
 
     def drop_runs_until(self, job_id, until):
         'reschedule so that job with matching job_id will not run until give datetime \'until\''
@@ -122,22 +133,13 @@ class MyScheduler(BaseClass):
         # new time_sets
         new_time_sets = self.get_current_timesets(job_id)
         # reschedule
-        rescheduled_trigger = self.build_trigger(new_time_sets)
-        self.sched.reschedule_job(job_id, trigger=rescheduled_trigger)
+        self.reschedule(job_id, new_time_sets)
 
     def add_run(self, job_id, time_set):
-        'extend trigger at given time. Adds job if no job found'
+        'extend trigger at given time'
         new_time_sets = self.get_current_timesets(job_id) + [time_set]
-        rescheduled_trigger = self.build_trigger(new_time_sets)
-        # extend trigger
-        try:
-            self.sched.reschedule_job(job_id, trigger=rescheduled_trigger)
-        # if can't extend trigger because not scheduled, add job
-        except JobLookupError:
-            self.sched.add_job(
-                func = self.all_job_funcs[job_id],
-                trigger = rescheduled_trigger,
-                id = job_id)
+        # reschedule
+        self.reschedule(job_id, new_time_sets)
 
     def get_timesets_from_terminal(self):
         'receive argument from command line for which time sets to add to schedule'
