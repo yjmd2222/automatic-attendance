@@ -114,7 +114,7 @@ class MyScheduler(BaseClass):
         if self.until:
             time_sets = [time_set for time_set in time_sets if time_set > self.until]
         return time_sets
-    
+
     def reschedule(self, job_id, new_time_sets):
         'reschedule wrapper. Catches JobLookupError'
         rescheduled_trigger = self.build_trigger(new_time_sets)
