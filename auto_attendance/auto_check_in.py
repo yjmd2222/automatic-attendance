@@ -55,6 +55,7 @@ class AutoCheckIn(PrepareSendEmail, UseSelenium, ManipulateWindow):
         PrepareSendEmail.define_attributes(self)
         PrepareSendEmail.decorate_run(self)
         UseSelenium.__init__(self)
+        ManipulateWindow.__init__(self)
 
     def reset_attributes(self):
         'reset attributes for next run'

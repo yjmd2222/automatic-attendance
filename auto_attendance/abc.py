@@ -26,6 +26,7 @@ if platform == 'darwin':
 else:
     import win32con
     import win32gui
+    from pywintypes import error
 
 class BaseClass(ABC):
     'base class for abstraction'
@@ -61,6 +62,7 @@ class UseSelenium(BaseClass):
         '''
         UseSelenium.__init__() that defines an empty Selenium self.driver\n
         and self.verbosity attributes.\n
+        Decorates self.run() to catch NoSuchWindowException and WebDriverException in Selenium\n
         Also inherits from BaseClass.__init__() that decorates self.run() to print start and\n
         end of it
         '''
@@ -100,6 +102,26 @@ class UseSelenium(BaseClass):
 
 class ManipulateWindow:
     'base class for checking visibility of and manipulating windows'
+
+    @abstractmethod
+    def __init__(self):
+        '''
+        ManipulateWindow.__init__() decorates self.run() to catwh window handling exceptions
+        '''
+        self.run = self.window_handling_exception(self.run)
+
+    def window_handling_exception(self, func):
+        'decorator for catching exception in window handling.  Currently win32 only'
+        def wrapper(*args, **kwargs):
+            'wrapper'
+            if platform == 'win32':
+                try:
+                    func(*args, **kwargs)
+                except error:
+                    print('창을 조정할 수 없음. 현재 실행중인 스크립트 종료')
+            else:
+                func(*args, **kwargs)
+        return wrapper
 
     def _check_window_win32(self, window_class):
         'check and return window on win32'
