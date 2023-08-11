@@ -201,17 +201,19 @@ class AutoCheckIn(PrepareSendEmail, UseSelenium, ManipulateWindow):
             try:
                 # check if match pattern in src for iframes
                 if kwargs['how'] == 'get_iframe':
-                    is_valid_iframe = None
+                    # wait
                     WebDriverWait(self.driver, 10).until(
                         EC.presence_of_all_elements_located((by_which, kwargs['element'])))
+                    # get all iframe_urls
                     iframe_urls = [element.get_attribute('src') for element
                                    in self.driver.find_elements(by_which, kwargs['element'])]
+                    # check for valid iframe_url
                     for iframe_url in iframe_urls:
                         if iframe_url and 'codestates.typeform' in iframe_url:
-                            is_valid_iframe = True
                             self.driver.get(iframe_url)
                             break
-                    if not is_valid_iframe:
+                    # raise error if no valid iframe_url found
+                    else:
                         raise NoSuchElementException
                 else:
                     element = self.driver.find_element(by_which, kwargs['element'])
@@ -228,10 +230,17 @@ class AutoCheckIn(PrepareSendEmail, UseSelenium, ManipulateWindow):
                 return True
             except NoSuchElementException:
                 search_fail_message = f'{kwargs["element"]} 찾기 실패'
+                # try three times then break
                 if i == 3:
                     print_with_time(search_fail_message)
                     break
-                print_with_time(f'{search_fail_message}. {sleep}초 후 재시도')
+                # iframe may not load at all, so refresh
+                if kwargs['how'] == 'get_iframe':
+                    print_with_time(f'{search_fail_message}. 찾는 요소: {kwargs["element"]}. 페이지 다시 로드')
+                    self.driver.refresh()
+                # other than iframe
+                else:
+                    print_with_time(f'{search_fail_message}. {sleep}초 후 재시도')
                 time.sleep(sleep)
             except KeyError as error:
                 print_with_time(f'kwarg의 키워드 알맞게 입력했는지 확인 필요. 조회 실패: {error}')
