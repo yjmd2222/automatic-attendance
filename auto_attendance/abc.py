@@ -108,9 +108,9 @@ class ManipulateWindow:
         '''
         ManipulateWindow.__init__() decorates self.run() to catwh window handling exceptions
         '''
-        self.run = self.window_handling_exception(self.run)
+        self.run = self.decorator_window_handling_exception(self.run)
 
-    def window_handling_exception(self, func):
+    def decorator_window_handling_exception(self, func):
         'decorator for catching exception in window handling.  Currently win32 only'
         def wrapper(*args, **kwargs):
             'wrapper'
