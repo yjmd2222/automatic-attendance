@@ -26,7 +26,9 @@ if platform == 'darwin':
 else:
     import win32con
     import win32gui
+    # pylint: disable=no-name-in-module
     from pywintypes import error
+    # pylint: enable=no-name-in-module
 
 class BaseClass(ABC):
     'base class for abstraction'
