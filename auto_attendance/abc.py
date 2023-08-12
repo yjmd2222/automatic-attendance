@@ -77,7 +77,7 @@ class BaseClass(ABC):
             except SystemExit:
                 print_with_time('현재 실행중인 스크립트 종료')
             except Exception as error:
-                print_with_time(f'{error.__module__} 모듈의 {type(error).__name__} exception 발생')
+                print_with_time(f'기타: {error.__module__} 모듈의 {type(error).__name__} exception 발생')
                 traceback.print_exc()
             # pylint: enable=broad-exception-caught
             return None
@@ -124,7 +124,7 @@ class UseSelenium(BaseClass):
                 if self.driver:
                     self.driver.quit()
             except Exception as error:
-                print_with_time(f'{error.__module__} 모듈의 {type(error).__name__} exception 발생')
+                print_with_time(f'기타: {error.__module__} 모듈의 {type(error).__name__} exception 발생')
                 traceback.print_exc()
                 if self.driver:
                     self.driver.quit()
