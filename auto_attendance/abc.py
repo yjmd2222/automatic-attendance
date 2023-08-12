@@ -2,7 +2,11 @@
 abstraction because why not
 '''
 
+import os
+
 from sys import platform
+
+import time
 
 from abc import ABC, abstractmethod
 
@@ -14,6 +18,8 @@ from selenium.webdriver.chrome.options import Options
 # from selenium.webdriver.chrome.service import Service
 # from webdriver_manager.chrome import ChromeDriverManager
 
+import traceback
+
 from auto_attendance.arg_parse import parsed_args
 from auto_attendance.helper import print_with_time
 from auto_attendance.settings import (
@@ -24,10 +30,11 @@ if platform == 'darwin':
 
     import subprocess
 else:
+    from win32com.client import Dispatch
     import win32con
     import win32gui
     # pylint: disable=no-name-in-module
-    from pywintypes import error
+    import pywintypes
     # pylint: enable=no-name-in-module
 
 class BaseClass(ABC):
@@ -38,6 +45,7 @@ class BaseClass(ABC):
         'BaseClass.__init__() that decorates self.run() to print start and end of it'
         # to be used with super().__init__() in subclass
         self.run = self.decorator_start_end(self.run)
+        self.run = self.decorator_system_exit(self.run)
 
     # pylint: disable=method-hidden
     @abstractmethod
@@ -55,6 +63,19 @@ class BaseClass(ABC):
             print_with_time(f'{self.print_name} 스크립트 종료')
         return wrapper
     # pylint: enable=no-member
+
+    def decorator_system_exit(self, func):
+        'decorator for catching SystemExit'
+        def wrapper(*args, **kwargs):
+            'wrapper'
+            try:
+                return func(*args, **kwargs)
+            except SystemExit:
+                print_with_time('현재 실행중인 스크립트 종료')
+            except Exception as error:
+                print_with_time(f'{error.__module__} 모듈의 {type(error).__name__} exception 발생')
+                traceback.print_exc()
+        return wrapper
 
 class UseSelenium(BaseClass):
     'base class for subclasses that use Selenium'
@@ -80,7 +101,26 @@ class UseSelenium(BaseClass):
             try:
                 func(*args, **kwargs)
             except (NoSuchWindowException, WebDriverException):
-                print_with_time('크롬 창 수동 종료 확인. 현재 실행중인 스크립트 취소')
+                print_with_time('크롬 창 수동 종료 확인')
+                # raise error to exit current script
+                raise SystemExit
+        return wrapper
+    
+    def decorator_system_exit(self, func):
+        'decorator for catching SystemExit'
+        def wrapper(*args, **kwargs):
+            'wrapper'
+            try:
+                return func(*args, **kwargs)
+            except SystemExit:
+                print_with_time('현재 실행중인 스크립트 종료')
+                if self.driver:
+                    self.driver.quit()
+            except Exception as error:
+                print_with_time(f'{error.__module__} 모듈의 {type(error).__name__} exception 발생')
+                traceback.print_exc()
+                if self.driver:
+                    self.driver.quit()
         return wrapper
 
     def create_selenium_options(self):
@@ -105,25 +145,97 @@ class UseSelenium(BaseClass):
 class ManipulateWindow:
     'base class for checking visibility of and manipulating windows'
 
-    @abstractmethod
-    def __init__(self):
-        '''
-        ManipulateWindow.__init__() decorates self.run() to catwh window handling exceptions
-        '''
-        self.run = self.decorator_window_handling_exception(self.run)
+    @staticmethod
+    def _choose_error():
+        'method for choosing error depending on OS'
+        if platform == 'win32':
+            error = pywintypes.error
+        else:
+            error = Exception
+        return error
 
-    def decorator_window_handling_exception(self, func):
-        'decorator for catching exception in window handling.  Currently win32 only'
+    @staticmethod
+    def decorator_window_handling_exception(func):
+        '''
+        decorator for catching exception in window handling\n
+        currently no errors found for darwin
+        '''
         def wrapper(*args, **kwargs):
             'wrapper'
-            if platform == 'win32':
+            error = ManipulateWindow._choose_error()
+            for i in range(3+1):
                 try:
-                    func(*args, **kwargs)
-                except error:
-                    print('창을 조정할 수 없음. 현재 실행중인 스크립트 종료')
-            else:
-                func(*args, **kwargs)
+                    return func(*args, **kwargs)
+                except error as err:
+                    print_with_time(f'{err.__module__} 모듈의 {type(err).__name__} exception 발생')
+                    traceback.print_exc()
+                    # message
+                    handle_fail_message = '창을 조정할 수 없음'
+                    # break after three tries
+                    if i == 3:
+                        print_with_time(handle_fail_message)
+                        break
+                    sleep = 5
+                    print_with_time(f'{handle_fail_message}. {sleep}초 후 재시도')
+                    time.sleep(sleep)
+            # raise error after three tries
+            raise SystemExit
         return wrapper
+
+    def _set_foreground_win32(self, hwnd):
+        '''
+        set window to foreground on win32
+        send alt key to shell before setting foreground with win32gui to workaround
+        error: (0, 'SetForegroundWindow', 'No error message is available')
+        '''
+        Dispatch('WScript.Shell').SendKeys('%')
+        win32gui.SetForegroundWindow(hwnd)
+
+    def _set_foreground_darwin(self, window_name, app_name=ZOOM_APPLICATION_NAME):
+        'set window to foreground on darwin'
+        applescript_code = f'''
+        tell application "System Events"
+            tell application process "{app_name}"
+                set frontmost to true
+                set window_to_foreground to window 1 whose title is "{window_name}"
+                tell window_to_foreground
+                    perform action "AXRaise" of window_to_foreground
+                end tell
+            end tell
+        end tell
+        '''
+        with open(os.devnull, 'wb') as devnull:
+            subprocess.run(['osascript', '-e', applescript_code],
+                            stdout=devnull,
+                            check=True)
+
+    def set_foreground(self, hwnd:int|str):
+        '''
+        set window to foreground\n
+        hwnd is window id on win32 and window title on darwin
+        '''
+        if platform == 'win32':
+            self._set_foreground_win32(hwnd)
+        else:
+            self._set_foreground_darwin(hwnd)
+
+    def print_all_windows(self, title='Zoom'):
+        '''
+        wrapper for printing hwnds and respective class names with Zoom in title\n
+        currently debugging only on win32
+        '''
+        if platform == 'win32':
+            def win_enum_handler(hwnd, items):
+                '''print hwnds and respective class names with 'Zoom' in title'''
+                full_title = win32gui.GetWindowText(hwnd)
+                if title in full_title:
+                    items.append(str(hwnd).ljust(10) + win32gui.GetClassName(hwnd).ljust(30) + full_title)
+
+            items = []
+            win32gui.EnumWindows(win_enum_handler, items)
+
+            for i in items:
+                print(i)
 
     def _check_window_win32(self, window_class):
         'check and return window on win32'
@@ -158,6 +270,7 @@ class ManipulateWindow:
 
         return is_window, window_title
 
+    @decorator_window_handling_exception
     def check_window(self, window_class:str, window_title:str):
         '''
         check Zoom conference window presence\n
@@ -213,6 +326,7 @@ class ManipulateWindow:
 
         return rect
 
+    @decorator_window_handling_exception
     def maximize_window(self, hwnd:int|str):
         '''
         maximize window and returns rect\n

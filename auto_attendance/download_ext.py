@@ -31,7 +31,7 @@ class DownloadExtensionSource(UseSelenium):
     def __init__(self, scheduler:MyScheduler|None=None):
         'initialize'
         self.scheduler = scheduler
-        super().__init__()
+        UseSelenium.__init__(self)
 
     def check_source_exists(self):
         'Check if source exists'

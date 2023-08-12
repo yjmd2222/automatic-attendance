@@ -16,7 +16,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 
 from auto_attendance.abc import UseSelenium, ManipulateWindow
 from auto_attendance.info import KAKAO_ID, KAKAO_PASSWORD
-from auto_attendance.helper import print_with_time, set_foreground
+from auto_attendance.helper import print_with_time
 from auto_attendance.settings import (
     ZOOM_APPLICATION_NAME,
     ZOOM_CLASSROOM_CLASS,
@@ -55,7 +55,6 @@ class AutoCheckIn(PrepareSendEmail, UseSelenium, ManipulateWindow):
         PrepareSendEmail.define_attributes(self)
         PrepareSendEmail.decorate_run(self)
         UseSelenium.__init__(self)
-        ManipulateWindow.__init__(self)
 
     def reset_attributes(self):
         'reset attributes for next run'
@@ -88,6 +87,7 @@ class AutoCheckIn(PrepareSendEmail, UseSelenium, ManipulateWindow):
                             stdout=devnull,
                             check=True)
 
+    @ManipulateWindow.decorator_window_handling_exception
     def resize_window(self, rect):
         'resize window to given rect'
         if platform == 'win32':
@@ -156,7 +156,7 @@ class AutoCheckIn(PrepareSendEmail, UseSelenium, ManipulateWindow):
         # apply new window size
         self.resize_window(rect_resized)
         # bring it to foreground so that Screen QR Reader recognizes the first 'Zoom' match
-        set_foreground(self.hwnd)
+        self.set_foreground(self.hwnd)
 
         self.driver.get(SCREEN_QR_READER_POPUP_LINK) # Screen QR Reader
         time.sleep(2)
@@ -230,7 +230,7 @@ class AutoCheckIn(PrepareSendEmail, UseSelenium, ManipulateWindow):
                 return True
             except NoSuchElementException:
                 search_fail_message = f'{kwargs["element"]} 찾기 실패'
-                # try three times then break
+                # break after three tries
                 if i == 3:
                     print_with_time(search_fail_message)
                     break
