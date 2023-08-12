@@ -10,6 +10,8 @@ import time
 
 from abc import ABC, abstractmethod
 
+import traceback
+
 from selenium import webdriver
 from selenium.common.exceptions import (
     NoSuchWindowException,
@@ -17,8 +19,6 @@ from selenium.common.exceptions import (
 from selenium.webdriver.chrome.options import Options
 # from selenium.webdriver.chrome.service import Service
 # from webdriver_manager.chrome import ChromeDriverManager
-
-import traceback
 
 from auto_attendance.arg_parse import parsed_args
 from auto_attendance.helper import print_with_time
@@ -34,7 +34,7 @@ else:
     import win32con
     import win32gui
     # pylint: disable=no-name-in-module
-    import pywintypes
+    from pywintypes import error as pywintypes_error
     # pylint: enable=no-name-in-module
 
 class BaseClass(ABC):
@@ -42,7 +42,10 @@ class BaseClass(ABC):
 
     @abstractmethod
     def __init__(self):
-        'BaseClass.__init__() that decorates self.run() to print start and end of it'
+        '''
+        BaseClass.__init__() that decorates self.run()\n
+        to print start and end of it and to catch any errors that happen during runtime
+        '''
         # to be used with super().__init__() in subclass
         self.run = self.decorator_start_end(self.run)
         self.run = self.decorator_system_exit(self.run)
@@ -68,6 +71,7 @@ class BaseClass(ABC):
         'decorator for catching SystemExit'
         def wrapper(*args, **kwargs):
             'wrapper'
+            # pylint: disable=broad-exception-caught
             try:
                 return func(*args, **kwargs)
             except SystemExit:
@@ -75,6 +79,8 @@ class BaseClass(ABC):
             except Exception as error:
                 print_with_time(f'{error.__module__} 모듈의 {type(error).__name__} exception 발생')
                 traceback.print_exc()
+            # pylint: enable=broad-exception-caught
+            return None
         return wrapper
 
 class UseSelenium(BaseClass):
@@ -86,13 +92,12 @@ class UseSelenium(BaseClass):
         UseSelenium.__init__() that defines an empty Selenium self.driver\n
         and self.verbosity attributes.\n
         Decorates self.run() to catch NoSuchWindowException and WebDriverException in Selenium\n
-        Also inherits from BaseClass.__init__() that decorates self.run() to print start and\n
-        end of it
+        Also inherits from BaseClass.__init__() that decorates self.run()\n
+        to print start and end of it and to catch any errors that happen during runtime
         '''
         super().__init__()
         self.driver = None
         self.verbosity = parsed_args.verbosity
-        self.run = self.decorator_selenium_exception(self.run)
 
     def decorator_selenium_exception(self, func):
         'decorator for catching selenium\'s NoSuchWindowException'
@@ -100,18 +105,20 @@ class UseSelenium(BaseClass):
             'wrapper'
             try:
                 func(*args, **kwargs)
-            except (NoSuchWindowException, WebDriverException):
+            except (NoSuchWindowException, WebDriverException) as error:
                 print_with_time('크롬 창 수동 종료 확인')
                 # raise error to exit current script
-                raise SystemExit
+                raise SystemExit from error
         return wrapper
-    
+
     def decorator_system_exit(self, func):
         'decorator for catching SystemExit'
         def wrapper(*args, **kwargs):
             'wrapper'
+            # pylint: disable=broad-exception-caught
             try:
-                return func(*args, **kwargs)
+                # wrap self.run() with self.decorator_selenium_exception() first
+                return self.decorator_selenium_exception(func)(*args, **kwargs)
             except SystemExit:
                 print_with_time('현재 실행중인 스크립트 종료')
                 if self.driver:
@@ -121,6 +128,8 @@ class UseSelenium(BaseClass):
                 traceback.print_exc()
                 if self.driver:
                     self.driver.quit()
+            # pylint: enable=broad-exception-caught
+            return None
         return wrapper
 
     def create_selenium_options(self):
@@ -149,7 +158,7 @@ class ManipulateWindow:
     def _choose_error():
         'method for choosing error depending on OS'
         if platform == 'win32':
-            error = pywintypes.error
+            error = pywintypes_error
         else:
             error = Exception
         return error
@@ -164,6 +173,7 @@ class ManipulateWindow:
             'wrapper'
             error = ManipulateWindow._choose_error()
             for i in range(3+1):
+                # pylint: disable=broad-exception-caught
                 try:
                     return func(*args, **kwargs)
                 except error as err:
@@ -178,6 +188,7 @@ class ManipulateWindow:
                     sleep = 5
                     print_with_time(f'{handle_fail_message}. {sleep}초 후 재시도')
                     time.sleep(sleep)
+                # pylint: enable=broad-exception-caught
             # raise error after three tries
             raise SystemExit
         return wrapper
@@ -209,6 +220,7 @@ class ManipulateWindow:
                             stdout=devnull,
                             check=True)
 
+    @decorator_window_handling_exception
     def set_foreground(self, hwnd:int|str):
         '''
         set window to foreground\n
@@ -229,7 +241,8 @@ class ManipulateWindow:
                 '''print hwnds and respective class names with 'Zoom' in title'''
                 full_title = win32gui.GetWindowText(hwnd)
                 if title in full_title:
-                    items.append(str(hwnd).ljust(10) + win32gui.GetClassName(hwnd).ljust(30) + full_title)
+                    items.append(
+                        str(hwnd).ljust(10) + win32gui.GetClassName(hwnd).ljust(30) + full_title)
 
             items = []
             win32gui.EnumWindows(win_enum_handler, items)

@@ -13,7 +13,6 @@ import pyscreeze
 import PIL
 import pyautogui
 
-from auto_attendance._settings import _ZOOM_APPLICATION_NAME as ZOOM_APPLICATION_NAME
 if platform == 'darwin':
     import subprocess
 
