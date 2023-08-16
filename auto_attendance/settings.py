@@ -87,6 +87,9 @@ ZOOM_UPDATE_POPUP_NAME = 'UNKNOWN0'
 ZOOM_UPDATE_DOWNLOAD_NAME = 'UNKNOWN1'
 ZOOM_UPDATE_ACTUAL_UPDATE_NAME = 'UNKNOWN2'
 ZOOM_CLASSROOM_NAME = 'Zoom 회의'
+# screenshot
+IMAGEVIEWER_NAME = 'qr_screenshot.png'
+IMAGEVIEWER_APPLICATION_NAME = 'Preview'
 
 # PyAutoGUI
 if platform == 'win32':
@@ -122,6 +125,7 @@ if platform == 'darwin':
         IMAGE_MAPPER_KEYS,
         OK_BUTTON_IMAGE_NAMES,
         lambda value: get_file_path(value, 'images'))
+QR_SCREENSHOT_IMAGE = 'qr_screenshot.png'
 
 # Check-in props
 LOGIN_WITH_KAKAO_BUTTON = 'login-form__button-title.css-caslt6'

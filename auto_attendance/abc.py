@@ -231,7 +231,7 @@ class ManipulateWindow:
         else:
             self._set_foreground_darwin(hwnd)
 
-    def print_all_windows(self, title='Zoom'):
+    def print_all_windows(self, title='Zoom', is_print=False):
         '''
         wrapper for printing hwnds and respective class names with Zoom in title\n
         currently debugging only on win32
@@ -247,8 +247,17 @@ class ManipulateWindow:
             items = []
             win32gui.EnumWindows(win_enum_handler, items)
 
-            for i in items:
-                print(i)
+            if is_print:
+                for i in items:
+                    print(i)
+
+            if len(items):
+                to_return = True, int(items[0].split()[0])
+            else:
+                to_return = False, 0
+        else:
+            to_return = False, 0
+        return to_return
 
     def _check_window_win32(self, window_class):
         'check and return window on win32'
@@ -257,7 +266,7 @@ class ManipulateWindow:
 
         return is_window, hwnd
 
-    def _check_window_darwin(self, window_title, app_name=ZOOM_APPLICATION_NAME):
+    def _check_window_darwin(self, window_title, app_name):
         'check and return window on darwin'
         applescript_code = f'''
         tell application "System Events"
@@ -284,9 +293,12 @@ class ManipulateWindow:
         return is_window, window_title
 
     @decorator_window_handling_exception
-    def check_window(self, window_class:str, window_title:str):
+    def check_window(self,
+                     window_class,
+                     window_title,
+                     app_name=ZOOM_APPLICATION_NAME):
         '''
-        check Zoom conference window presence\n
+        check window presence\n
         returns is_window, hwnd on win32\n
         and returns is_window, window_title on darwin.\n
         currently only works with Zoom conference window\n
@@ -295,7 +307,19 @@ class ManipulateWindow:
         if platform == 'win32':
             is_window, hwnd = self._check_window_win32(window_class)
         else:
-            is_window, hwnd = self._check_window_darwin(window_title)
+            is_window, hwnd = self._check_window_darwin(window_title, app_name)
+        return is_window, hwnd
+
+    @decorator_window_handling_exception
+    def check_window_title(self,
+                           window_title_win32,
+                           window_title_darwin,
+                           app_name=ZOOM_APPLICATION_NAME):
+        'check window presence with title'
+        if platform == 'win32':
+            is_window, hwnd = self.print_all_windows(window_title_win32)
+        else:
+            is_window, hwnd = self._check_window_darwin(window_title_darwin, app_name)
         return is_window, hwnd
 
     def _maximize_window_win32(self, hwnd):
