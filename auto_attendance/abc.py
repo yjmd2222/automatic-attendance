@@ -151,6 +151,13 @@ class UseSelenium(BaseClass):
         # return webdriver.Chrome(service=auto_driver, options=options)
         return webdriver.Chrome(options=options)
 
+    def bring_chrome_to_front(self):
+        'bring Selenium Chrome browser to front with a hack'
+        self.driver.minimize_window()
+        time.sleep(1)
+        self.driver.maximize_window()
+        time.sleep(0.5)
+
 class ManipulateWindow:
     'base class for checking visibility of and manipulating windows'
 

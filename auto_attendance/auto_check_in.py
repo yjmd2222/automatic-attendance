@@ -12,6 +12,7 @@ import time
 import pyautogui
 import cv2
 import numpy as np
+from pynput.keyboard import Key, Controller
 
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.common.by import By
@@ -55,6 +56,7 @@ class AutoCheckIn(PrepareSendEmail, UseSelenium, ManipulateWindow):
         self.sched_drop_runs_until = sched_drop_runs_until
         self.is_window = False
         self.hwnd = 0
+        self.keyboard = Controller()
         self.rect = [100,100,100,100]
         self.extension_source = SCREEN_QR_READER_SOURCE
         self.is_wait = False
@@ -179,11 +181,20 @@ class AutoCheckIn(PrepareSendEmail, UseSelenium, ManipulateWindow):
         time.sleep(1)
         _, hwnd = self.check_window_title(IMAGEVIEWER_NAME, IMAGEVIEWER_NAME)
         self.resize_window(rect_resized, hwnd, IMAGEVIEWER_APPLICATION_NAME)
-        # bring it to foreground so that Screen QR Reader recognizes the first 'Zoom' match
+        # bring it to foreground so that Screen QR Reader recognizes 'qr_screenshot.png' as first
         self.set_foreground(hwnd)
 
-        self.driver.get(SCREEN_QR_READER_POPUP_LINK) # Screen QR Reader
-        time.sleep(2)
+        # Screen QR Reader
+        self.driver.get(SCREEN_QR_READER_POPUP_LINK)
+        self.bring_chrome_to_front() # this will push 'qr_screenshot.png' to be second
+        time.sleep(1)
+        self.keyboard.tap(Key.tab)
+        time.sleep(0.1)
+        self.keyboard.tap(Key.tab)
+        time.sleep(0.1)
+        self.keyboard.tap(Key.right)
+        time.sleep(0.1)
+        self.keyboard.tap(Key.enter)
 
         # Selenium will automatically open the link in a new tab
         # if there is a QR image, so check tab count.
@@ -204,7 +215,7 @@ class AutoCheckIn(PrepareSendEmail, UseSelenium, ManipulateWindow):
         # Screen QR Reader source required
         options.add_extension(self.extension_source)
         # automatically select Zoom meeting
-        options.add_argument("--auto-select-desktop-capture-source='Entire Screen'")
+        # options.add_argument('--auto-select-desktop-capture-source=Zoom')
 
         return options
 

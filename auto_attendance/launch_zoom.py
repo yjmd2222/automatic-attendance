@@ -12,7 +12,6 @@ from pynput.keyboard import Key, Controller
 from auto_attendance.abc import UseSelenium, ManipulateWindow
 from auto_attendance.info import ZOOM_LINK
 from auto_attendance.helper import (
-    bring_chrome_to_front,
     get_last_image_match,
     print_with_time)
 from auto_attendance.quit_zoom import QuitZoom
@@ -92,7 +91,7 @@ class LaunchZoom(PrepareSendEmail, UseSelenium, ManipulateWindow):
 
         # hack to focus on top
         # because recent Chrome does not allow bypassing this popup
-        bring_chrome_to_front(self.driver)
+        self.bring_chrome_to_front()
 
         # click 회의 시작
         self.driver.find_element(By.XPATH, r'//*[text()="회의 시작"]').click()

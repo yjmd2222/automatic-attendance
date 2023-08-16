@@ -76,13 +76,6 @@ def print_with_time(*args, **kwargs):
     now = datetime.strftime(datetime.now(), '%H:%M:%S')
     print(now, *args, **kwargs)
 
-def bring_chrome_to_front(driver):
-    'bring Selenium Chrome browser to front with a hack'
-    driver.minimize_window()
-    time.sleep(1)
-    driver.maximize_window()
-    time.sleep(0.5)
-
 def get_screen_resolution():
     'get screen resolution'
     pos_x, pos_y = pyautogui.size()
