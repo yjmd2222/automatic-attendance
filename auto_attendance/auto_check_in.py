@@ -154,6 +154,7 @@ class AutoCheckIn(PrepareSendEmail, UseSelenium, ManipulateWindow):
             os.startfile(QR_SCREENSHOT_IMAGE)
         except AttributeError:
             subprocess.call(['open', QR_SCREENSHOT_IMAGE])
+        time.sleep(2)
 
         # check image window
         _, hwnd = self.check_window_title(IMAGEVIEWER_NAME, IMAGEVIEWER_NAME)
@@ -197,7 +198,6 @@ class AutoCheckIn(PrepareSendEmail, UseSelenium, ManipulateWindow):
     def check_link(self, hwnd, rect_resized):
         'method to actually fire Screen QR Reader inside loop'
         # apply new window size
-        time.sleep(1)
         self.resize_window(rect_resized, hwnd, IMAGEVIEWER_APPLICATION_NAME)
         # bring it to foreground so that Screen QR Reader recognizes 'qr_screenshot.png' as first
         self.set_foreground(hwnd)
