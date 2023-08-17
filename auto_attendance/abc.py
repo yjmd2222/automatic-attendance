@@ -200,22 +200,23 @@ class ManipulateWindow:
             raise SystemExit
         return wrapper
 
-    def _set_foreground_win32(self, hwnd):
+    def _set_foreground_win32(self, window_identifier):
         '''
         set window to foreground on win32
         send alt key to shell before setting foreground with win32gui to workaround
         error: (0, 'SetForegroundWindow', 'No error message is available')
         '''
         Dispatch('WScript.Shell').SendKeys('%')
-        win32gui.SetForegroundWindow(hwnd)
+        win32gui.SetForegroundWindow(window_identifier)
 
-    def _set_foreground_darwin(self, window_name, app_name=ZOOM_APPLICATION_NAME):
+    def _set_foreground_darwin(self, window_identifier):
         'set window to foreground on darwin'
+        window_title, app_name = window_identifier
         applescript_code = f'''
         tell application "System Events"
             tell application process "{app_name}"
                 set frontmost to true
-                set window_to_foreground to window 1 whose title is "{window_name}"
+                set window_to_foreground to window 1 whose title is "{window_title}"
                 tell window_to_foreground
                     perform action "AXRaise" of window_to_foreground
                 end tell
@@ -228,15 +229,15 @@ class ManipulateWindow:
                             check=True)
 
     @decorator_window_handling_exception
-    def set_foreground(self, hwnd:int|str):
+    def set_foreground(self, window_identifier:int|str):
         '''
         set window to foreground\n
         hwnd is window id on win32 and window title on darwin
         '''
         if platform == 'win32':
-            self._set_foreground_win32(hwnd)
+            self._set_foreground_win32(window_identifier)
         else:
-            self._set_foreground_darwin(hwnd)
+            self._set_foreground_darwin(window_identifier)
 
     def print_all_windows(self, title='Zoom', is_print=False):
         '''
@@ -266,19 +267,38 @@ class ManipulateWindow:
             to_return = False, 0
         return to_return
 
-    def _check_window_win32(self, window_class):
+    def _check_window_win32(self, window_name, with_class):
         'check and return window on win32'
-        hwnd = win32gui.FindWindow(window_class, None)
-        is_window = bool(win32gui.IsWindowVisible(hwnd))
+        # check with class
+        if with_class:
+            hwnd = win32gui.FindWindow(window_name, None)
+            is_window = bool(win32gui.IsWindowVisible(hwnd))
+        # check with title
+        else:
+            def win_enum_handler(hwnd, items):
+                '''print hwnds and respective class names with 'window_identifier' in title'''
+                full_title = win32gui.GetWindowText(hwnd)
+                if window_name in full_title:
+                    items.append(
+                        [str(hwnd).ljust(10) + win32gui.GetClassName(hwnd).ljust(30) + full_title, hwnd])
+            items = []
+            win32gui.EnumWindows(win_enum_handler, items)
+            if len(items):
+                is_window = True
+                hwnd = int(items[-1])
+            else:
+                is_window = False
+                hwnd = 0
 
         return is_window, hwnd
 
-    def _check_window_darwin(self, window_title, app_name):
+    def _check_window_darwin(self, window_name):
         'check and return window on darwin'
+        window_title, app_title = window_name
         applescript_code = f'''
         tell application "System Events"
-            if exists application process "{app_name}" then
-                tell application process "{app_name}"
+            if exists application process "{app_title}" then
+                tell application process "{app_title}"
                     if exists (window 1 whose title is "{window_title}") then
                         return 1
                     else
@@ -300,10 +320,7 @@ class ManipulateWindow:
         return is_window, window_title
 
     @decorator_window_handling_exception
-    def check_window(self,
-                     window_class,
-                     window_title,
-                     app_name=ZOOM_APPLICATION_NAME):
+    def check_window(self, window_name, with_class=True):
         '''
         check window presence\n
         returns is_window, hwnd on win32\n
@@ -312,45 +329,34 @@ class ManipulateWindow:
         because Zoom does not properly support AppleScript
         '''
         if platform == 'win32':
-            is_window, hwnd = self._check_window_win32(window_class)
+            is_window, hwnd = self._check_window_win32(window_name, with_class)
         else:
-            is_window, hwnd = self._check_window_darwin(window_title, app_name)
+            is_window, hwnd = self._check_window_darwin(window_name)
         return is_window, hwnd
 
-    @decorator_window_handling_exception
-    def check_window_title(self,
-                           window_title_win32,
-                           window_title_darwin,
-                           app_name=ZOOM_APPLICATION_NAME):
-        'check window presence with title'
-        if platform == 'win32':
-            is_window, hwnd = self.print_all_windows(window_title_win32)
-        else:
-            is_window, hwnd = self._check_window_darwin(window_title_darwin, app_name)
-        return is_window, hwnd
-
-    def _maximize_window_win32(self, hwnd):
+    def _maximize_window_win32(self, window_identifier):
         '''
         maximize window on win32
         '''
         # force normal size from possible out-of-size maximized window
-        win32gui.ShowWindow(hwnd, win32con.SW_NORMAL)
+        win32gui.ShowWindow(window_identifier, win32con.SW_NORMAL)
         # maximize window
-        win32gui.ShowWindow(hwnd, win32con.SW_MAXIMIZE)
+        win32gui.ShowWindow(window_identifier, win32con.SW_MAXIMIZE)
 
-        rect = list(win32gui.GetWindowRect(hwnd))
+        rect = list(win32gui.GetWindowRect(window_identifier))
 
         return rect
 
-    def _maximize_window_darwin(self, window_name, app_name=ZOOM_APPLICATION_NAME):
+    def _maximize_window_darwin(self, window_identifier):
         '''
         maximize window on darwin
         '''
+        window_title, app_title = window_identifier
         pos_x, pos_y = get_screen_resolution()
         applescript_code = f'''
         tell application "System Events"
-            tell application process "{app_name}"
-                tell (window 1 whose title is "{window_name}")
+            tell application process "{app_title}"
+                tell (window 1 whose title is "{window_title}")
                     set position to (0, 0)
                     set size to {pos_x, pos_y}
                     set rect to position & size
@@ -371,15 +377,15 @@ class ManipulateWindow:
         return rect
 
     @decorator_window_handling_exception
-    def maximize_window(self, hwnd:int|str):
+    def maximize_window(self, window_identifier:int|str):
         '''
         maximize window and returns rect\n
         hwnd is window_title on darwin
         '''
         if platform == 'win32':
-            rect =  self._maximize_window_win32(hwnd)
+            rect =  self._maximize_window_win32(window_identifier)
         else:
-            rect  = self._maximize_window_darwin(hwnd)
+            rect  = self._maximize_window_darwin(window_identifier)
         return rect
 
     # def maximize_window_darwin(self, hwnd, app_name=None):

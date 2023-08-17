@@ -67,7 +67,7 @@ class LaunchZoom(PrepareSendEmail, UseSelenium, ManipulateWindow):
         'connect to Zoom conference'
         # check presence of Zoom conference
         is_window, self.hwnd_zoom_classroom =\
-            self.check_window(ZOOM_CLASSROOM_CLASS, ZOOM_CLASSROOM_NAME)
+            self.check_window(ZOOM_CLASSROOM_IDENTIFIER)
         # if visible
         if is_window:
             self.set_foreground(self.hwnd_zoom_classroom)

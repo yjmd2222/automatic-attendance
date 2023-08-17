@@ -67,7 +67,7 @@ class AutoCheckIn(PrepareSendEmail, UseSelenium, ManipulateWindow):
 
     def reset_attributes(self):
         'reset attributes for next run'
-        self.is_window, self.hwnd = self.check_window(ZOOM_CLASSROOM_CLASS, ZOOM_CLASSROOM_NAME)
+        self.is_window, self.hwnd = self.check_window(ZOOM_CLASSROOM_IDENTIFIER)
         self.driver = None
         self.is_wait = False
         PrepareSendEmail.define_attributes(self)
@@ -156,7 +156,7 @@ class AutoCheckIn(PrepareSendEmail, UseSelenium, ManipulateWindow):
         time.sleep(2)
 
         # check image window
-        is_window, hwnd = self.check_window_title(IMAGEVIEWER_NAME, IMAGEVIEWER_NAME)
+        is_window, hwnd = self.check_window(IMAGE_VIEWER_IDENTIFIER, False)
         if is_window:
             print_with_time('스크린샷 이미지 실행 확인')
         else:
@@ -361,7 +361,7 @@ class AutoCheckIn(PrepareSendEmail, UseSelenium, ManipulateWindow):
     def run(self):
         'run whole check-in process'
         # get Zoom window
-        self.is_window, self.hwnd = self.check_window(ZOOM_CLASSROOM_CLASS, ZOOM_CLASSROOM_NAME)
+        self.is_window, self.hwnd = self.check_window(ZOOM_CLASS_IDENTIFIER)
         # if it is visible
         if self.is_window:
             # get max rect
