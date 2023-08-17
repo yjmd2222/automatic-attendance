@@ -154,6 +154,9 @@ class AutoCheckIn(PrepareSendEmail, UseSelenium, ManipulateWindow):
         except AttributeError:
             subprocess.call(['open', QR_SCREENSHOT_IMAGE])
 
+        # check image window
+        _, hwnd = self.check_window_title(IMAGEVIEWER_NAME, IMAGEVIEWER_NAME)
+
         # calculate new window size
         ratios = [i/10 for i in range(3, 11)]
         rect_resized = self.rect.copy()
@@ -161,7 +164,7 @@ class AutoCheckIn(PrepareSendEmail, UseSelenium, ManipulateWindow):
         # only horizontally
         for ratio in ratios:
             rect_resized[2] = int(self.rect[2] * ratio)
-            result = self.check_link(rect_resized)
+            result = self.check_link(hwnd, rect_resized)
             if result:
                 break
         # both horizontally and vertically
@@ -169,17 +172,16 @@ class AutoCheckIn(PrepareSendEmail, UseSelenium, ManipulateWindow):
             for ratio in ratios:
                 rect_resized[2] = int(self.rect[2] * ratio)
                 rect_resized[3] = int(self.rect[3] * ratio)
-                result = self.check_link(rect_resized)
+                result = self.check_link(hwnd, rect_resized)
                 if result:
                     break
 
         return result
 
-    def check_link(self, rect_resized):
+    def check_link(self, hwnd, rect_resized):
         'method to actually fire Screen QR Reader inside loop'
         # apply new window size
         time.sleep(1)
-        _, hwnd = self.check_window_title(IMAGEVIEWER_NAME, IMAGEVIEWER_NAME)
         self.resize_window(rect_resized, hwnd, IMAGEVIEWER_APPLICATION_NAME)
         # bring it to foreground so that Screen QR Reader recognizes 'qr_screenshot.png' as first
         self.set_foreground(hwnd)
@@ -187,7 +189,7 @@ class AutoCheckIn(PrepareSendEmail, UseSelenium, ManipulateWindow):
         # Screen QR Reader
         self.driver.get(SCREEN_QR_READER_POPUP_LINK)
         self.bring_chrome_to_front() # this will push 'qr_screenshot.png' to be second
-        time.sleep(1)
+        time.sleep(3)
         self.keyboard.tap(Key.tab)
         time.sleep(0.1)
         self.keyboard.tap(Key.tab)
@@ -195,6 +197,7 @@ class AutoCheckIn(PrepareSendEmail, UseSelenium, ManipulateWindow):
         self.keyboard.tap(Key.right)
         time.sleep(0.1)
         self.keyboard.tap(Key.enter)
+        time.sleep(1)
 
         # Selenium will automatically open the link in a new tab
         # if there is a QR image, so check tab count.
