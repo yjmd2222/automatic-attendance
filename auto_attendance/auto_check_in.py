@@ -43,6 +43,7 @@ from auto_attendance.notify import PrepareSendEmail
 
 if platform == 'win32':
     import win32gui
+    import win32con
 else:
     import subprocess
 
@@ -175,6 +176,21 @@ class AutoCheckIn(PrepareSendEmail, UseSelenium, ManipulateWindow):
                 result = self.check_link(hwnd, rect_resized)
                 if result:
                     break
+
+        if platform == 'win32':
+            win32gui.PostMessage(hwnd, win32con.WM_CLOSE,0,0)
+        else:
+            applescript_code = f'''
+            tell application "System Events"
+                set theID to (unix id of processes whose name is "{IMAGEVIEWER_APPLICATION_NAME}")
+                try
+                    do shell script "kill -9 " & theID
+                end try
+            end tell'''
+            with open(os.devnull, 'wb') as devnull:
+                subprocess.run(['osascript', 'e', applescript_code],
+                            stdout=devnull,
+                            check=True)
 
         return result
 
