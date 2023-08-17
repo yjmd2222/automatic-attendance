@@ -68,7 +68,6 @@ class AutoCheckIn(PrepareSendEmail, UseSelenium, ManipulateWindow):
     def reset_attributes(self):
         'reset attributes for next run'
         self.is_window, self.hwnd = self.check_window(ZOOM_CLASSROOM_CLASS, ZOOM_CLASSROOM_NAME)
-        self.rect = self.maximize_window(self.hwnd) if self.is_window else [100,100,100,100]
         self.driver = None
         self.is_wait = False
         PrepareSendEmail.define_attributes(self)
@@ -157,7 +156,12 @@ class AutoCheckIn(PrepareSendEmail, UseSelenium, ManipulateWindow):
         time.sleep(2)
 
         # check image window
-        _, hwnd = self.check_window_title(IMAGEVIEWER_NAME, IMAGEVIEWER_NAME)
+        is_window, hwnd = self.check_window_title(IMAGEVIEWER_NAME, IMAGEVIEWER_NAME)
+        if is_window:
+            print_with_time('스크린샷 이미지 실행 확인')
+        else:
+            print_with_time('스크린샷 이미지 실행 확인 못 함')
+            return False
 
         # calculate new window size
         ratios = [i/10 for i in range(3, 11)]
@@ -178,6 +182,7 @@ class AutoCheckIn(PrepareSendEmail, UseSelenium, ManipulateWindow):
                 if result:
                     break
 
+        # kill photos app after checking QR in it
         if platform == 'win32':
             win32gui.PostMessage(hwnd, win32con.WM_CLOSE,0,0)
         else:
