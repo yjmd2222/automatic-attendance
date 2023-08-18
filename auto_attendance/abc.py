@@ -2,8 +2,6 @@
 abstraction because why not
 '''
 
-import os
-
 from sys import platform
 
 import time
