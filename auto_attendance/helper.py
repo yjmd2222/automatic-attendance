@@ -13,11 +13,7 @@ import pyscreeze
 import PIL
 import pyautogui
 
-from auto_attendance._settings import _ZOOM_APPLICATION_NAME as ZOOM_APPLICATION_NAME
-if platform == 'win32':
-    from win32com.client import Dispatch
-    import win32gui
-else:
+if platform == 'darwin':
     import subprocess
 
 def get_file_path(filename, parent=None):
@@ -86,57 +82,6 @@ def bring_chrome_to_front(driver):
     time.sleep(1)
     driver.maximize_window()
     time.sleep(0.5)
-
-def _set_foreground_win32(hwnd):
-    '''
-    set window to foreground on win32
-    send alt key to shell before setting foreground with win32gui to workaround
-    error: (0, 'SetForegroundWindow', 'No error message is available')
-    '''
-    Dispatch('WScript.Shell').SendKeys('%')
-    win32gui.SetForegroundWindow(hwnd)
-
-def _set_foreground_darwin(window_name, app_name=ZOOM_APPLICATION_NAME):
-    'set window to foreground on darwin'
-    applescript_code = f'''
-    tell application "System Events"
-        tell application process "{app_name}"
-            set frontmost to true
-            set window_to_foreground to window 1 whose title is "{window_name}"
-            tell window_to_foreground
-                perform action "AXRaise" of window_to_foreground
-            end tell
-        end tell
-    end tell
-    '''
-    with open(os.devnull, 'wb') as devnull:
-        subprocess.run(['osascript', '-e', applescript_code],
-                        stdout=devnull,
-                        check=True)
-
-def set_foreground(hwnd:int|str):
-    '''
-    set window to foreground\n
-    hwnd is window id on win32 and window title on darwin
-    '''
-    if platform == 'win32':
-        _set_foreground_win32(hwnd)
-    else:
-        _set_foreground_darwin(hwnd)
-
-def print_all_windows(title='Zoom'):
-    '''wrapper for printing hwnds and respective class names with Zoom in title'''
-    def win_enum_handler(hwnd, items):
-        '''print hwnds and respective class names with 'Zoom' in title'''
-        full_title = win32gui.GetWindowText(hwnd)
-        if title in full_title:
-            items.append(str(hwnd).ljust(10) + win32gui.GetClassName(hwnd).ljust(30) + full_title)
-
-    items = []
-    win32gui.EnumWindows(win_enum_handler, items)
-
-    for i in items:
-        print(i)
 
 def get_screen_resolution():
     'get screen resolution'

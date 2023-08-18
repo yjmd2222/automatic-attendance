@@ -10,7 +10,6 @@ from auto_attendance.helper import (
     extrapolate_time_sets,
     unfoil_time_sets,
     map_dict)
-from auto_attendance._settings import _ZOOM_APPLICATION_NAME
 if platform == 'darwin':
     from auto_attendance.helper import check_appearance
 
@@ -82,7 +81,7 @@ ZOOM_UPDATE_DOWNLOAD_CLASS = 'CZPUpdateWndCls'
 ZOOM_UPDATE_ACTUAL_UPDATE_CLASS = 'zoom.us Installer Engine'
 ZOOM_CLASSROOM_CLASS = 'ZPContentViewWndClass'
 # darwin
-ZOOM_APPLICATION_NAME = _ZOOM_APPLICATION_NAME
+ZOOM_APPLICATION_NAME = 'zoom.us'
 ZOOM_AGREE_RECORDING_POPUP_NAME = '이 회의는 기록되고 있습니다'
 ZOOM_UPDATE_POPUP_NAME = 'UNKNOWN0'
 ZOOM_UPDATE_DOWNLOAD_NAME = 'UNKNOWN1'
