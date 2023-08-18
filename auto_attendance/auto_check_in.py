@@ -135,12 +135,21 @@ class AutoCheckIn(PrepareSendEmail, UseSelenium, ManipulateWindow):
 
     def check_link_loop(self):
         'Get link from QR'
+        # kill screenshot if open
+        is_window, hwnd = self.check_window_title(IMAGEVIEWER_NAME, IMAGEVIEWER_NAME)
+        if is_window:
+            print_with_time('스크린샷 이미지 실행 확인. 종료 필요')
+            self.kill_screenshot(hwnd)
+        else:
+            print_with_time('스크린샷 이미지 실행 확인 못 함. 계속 진행')
+
         # maximize Chrome window
         self.driver.maximize_window()
         time.sleep(1)
 
         # take screenshot of Zoom meeting and open
         self.set_foreground(self.hwnd)
+        time.sleep(1)
         image = pyautogui.screenshot()
         image_array = np.array(image)
         cv2.rectangle(img=image_array,
@@ -183,6 +192,12 @@ class AutoCheckIn(PrepareSendEmail, UseSelenium, ManipulateWindow):
                     break
 
         # kill photos app after checking QR in it
+        self.kill_screenshot(hwnd)
+
+        return result
+    
+    def kill_screenshot(self, hwnd):
+        'kill photos app'
         if platform == 'win32':
             win32gui.PostMessage(hwnd, win32con.WM_CLOSE,0,0)
         else:
@@ -197,8 +212,6 @@ class AutoCheckIn(PrepareSendEmail, UseSelenium, ManipulateWindow):
                 subprocess.run(['osascript', 'e', applescript_code],
                             stdout=devnull,
                             check=True)
-
-        return result
 
     def check_link(self, hwnd, rect_resized):
         'method to actually fire Screen QR Reader inside loop'
