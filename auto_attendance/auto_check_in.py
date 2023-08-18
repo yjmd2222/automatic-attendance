@@ -223,9 +223,10 @@ class AutoCheckIn(PrepareSendEmail, UseSelenium, ManipulateWindow):
         self.set_foreground(identifier, app_name)
 
         # Screen QR Reader
-        self.driver.get(SCREEN_QR_READER_POPUP_LINK)
         self.bring_chrome_to_front() # this will push 'qr_screenshot.png' to be second
-        time.sleep(3)
+        time.sleep(1)
+        self.driver.get(SCREEN_QR_READER_POPUP_LINK)
+        time.sleep(0.5)
         self.keyboard.tap(Key.tab)
         time.sleep(0.1)
         self.keyboard.tap(Key.tab)
