@@ -14,8 +14,7 @@ from auto_attendance.info import ZOOM_LINK
 from auto_attendance.helper import (
     bring_chrome_to_front,
     get_last_image_match,
-    print_with_time,
-    set_foreground)
+    print_with_time)
 from auto_attendance.quit_zoom import QuitZoom
 from auto_attendance.notify import PrepareSendEmail
 from auto_attendance.settings import (
@@ -31,10 +30,7 @@ from auto_attendance.settings import (
     ZOOM_CLASSROOM_NAME,
     LAUNCH_ZOOM_KEY_MAPPER,
     TAB_COUNT_MAPPER)
-if platform == 'win32':
-    from auto_attendance.helper import (
-        print_all_windows)
-else:
+if platform == 'darwin':
     from auto_attendance.settings import (
         WINDOW_CHECK_IMAGE_MAPPER,
         OK_BUTTON_IMAGE_MAPPER)
@@ -75,7 +71,7 @@ class LaunchZoom(PrepareSendEmail, UseSelenium, ManipulateWindow):
             self.check_window(ZOOM_CLASSROOM_CLASS, ZOOM_CLASSROOM_NAME)
         # if visible
         if is_window:
-            set_foreground(self.hwnd_zoom_classroom)
+            self.set_foreground(self.hwnd_zoom_classroom)
             print_with_time('줌 회의 입장 확인')
         # if not visible
         else:
@@ -182,11 +178,11 @@ class LaunchZoom(PrepareSendEmail, UseSelenium, ManipulateWindow):
                 # downloading updates
                 self.check_window_down(ZOOM_UPDATE_DOWNLOAD_CLASS,
                                         ZOOM_UPDATE_DOWNLOAD_NAME)
-                print_all_windows() # debug
+                self.print_all_windows() # debug
                 # updating Zoom
                 self.check_window_down(ZOOM_UPDATE_ACTUAL_UPDATE_CLASS,
                                         ZOOM_UPDATE_ACTUAL_UPDATE_NAME)
-                print_all_windows() # debug
+                self.print_all_windows() # debug
             self.launch_zoom()
             # check if now zoom window is visible
             is_classroom, self.hwnd_zoom_classroom =\
@@ -268,7 +264,7 @@ class LaunchZoom(PrepareSendEmail, UseSelenium, ManipulateWindow):
         if is_window:
             print_with_time(f'{popup_name} 창 확인')
             # set focus on it
-            set_foreground(hwnd)
+            self.set_foreground(hwnd)
             # press tab num times and hit space to enter
             self.press_tabs_and_space(tab_num, reverse, send_alt)
             # store result
