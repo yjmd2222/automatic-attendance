@@ -31,4 +31,4 @@ jobs:
           git commit -m 'allowempty' --allow-empty
       - name: Analysing the code with pylint
         run: |
-          pylint --extension-pkg-whitelist=win32gui auto_attendance
+          pylint --extension-pkg-whitelist=win32gui --generated-members=cv2.* auto_attendance

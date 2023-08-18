@@ -9,6 +9,11 @@ from sys import platform
 from datetime import datetime, timedelta
 import time
 
+import pyautogui
+import cv2
+import numpy as np
+from pynput.keyboard import Key, Controller
+
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
@@ -16,11 +21,15 @@ from selenium.webdriver.support.ui import WebDriverWait
 
 from auto_attendance.abc import UseSelenium, ManipulateWindow
 from auto_attendance.info import KAKAO_ID, KAKAO_PASSWORD
-from auto_attendance.helper import print_with_time
+from auto_attendance.helper import (
+    print_with_time,
+    execute_applescript)
 from auto_attendance.settings import (
-    ZOOM_APPLICATION_NAME,
-    ZOOM_CLASSROOM_CLASS,
+    QR_SCREENSHOT_IMAGE,
     ZOOM_CLASSROOM_NAME,
+    ZOOM_APP_NAME,
+    IMAGEVIEWER_WINDOW_NAME,
+    IMAGEVIEWER_APP_NAME,
     SCREEN_QR_READER_BLANK,
     SCREEN_QR_READER_POPUP_LINK,
     SCREEN_QR_READER_SOURCE,
@@ -36,6 +45,7 @@ from auto_attendance.notify import PrepareSendEmail
 
 if platform == 'win32':
     import win32gui
+    import win32con
 else:
     import subprocess
 
@@ -47,8 +57,8 @@ class AutoCheckIn(PrepareSendEmail, UseSelenium, ManipulateWindow):
     def __init__(self, sched_drop_runs_until=None):
         'initialize'
         self.sched_drop_runs_until = sched_drop_runs_until
-        self.is_window = False
-        self.hwnd = 0
+        self.is_window, self.identifier = False, 0
+        self.keyboard = Controller()
         self.rect = [100,100,100,100]
         self.extension_source = SCREEN_QR_READER_SOURCE
         self.is_wait = False
@@ -58,22 +68,21 @@ class AutoCheckIn(PrepareSendEmail, UseSelenium, ManipulateWindow):
 
     def reset_attributes(self):
         'reset attributes for next run'
-        self.is_window, self.hwnd = self.check_window(ZOOM_CLASSROOM_CLASS, ZOOM_CLASSROOM_NAME)
-        self.rect = self.maximize_window(self.hwnd) if self.is_window else [100,100,100,100]
+        self.is_window, self.identifier = self.check_window(ZOOM_CLASSROOM_NAME, ZOOM_APP_NAME)
         self.driver = None
         self.is_wait = False
         PrepareSendEmail.define_attributes(self)
 
-    def _resize_window_win32(self, rect, hwnd):
+    def _resize_window_win32(self, hwnd, rect):
         'resize window to given rect on win32'
         win32gui.MoveWindow(hwnd, *rect, True)
 
-    def _resize_window_darwin(self, rect, window_title, app_name=ZOOM_APPLICATION_NAME):
+    def _resize_window_darwin(self, window_name, app_name, rect):
         'resize window to given rect on darwin'
         applescript_code = f'''
         tell application "System Events"
             tell application process "{app_name}"
-                set zoom_conference to window 1 whose title is "{window_title}"
+                set zoom_conference to window 1 whose title is "{window_name}"
                 tell zoom_conference
                     set position to {rect[:2]}
                     set size to {rect[2:]}
@@ -82,18 +91,21 @@ class AutoCheckIn(PrepareSendEmail, UseSelenium, ManipulateWindow):
             end tell
         end tell
         '''
-        with open(os.devnull, 'wb') as devnull:
-            subprocess.run(['osascript', '-e', applescript_code],
-                            stdout=devnull,
-                            check=True)
+        execute_applescript(applescript_code, False)
 
     @ManipulateWindow.decorator_window_handling_exception
-    def resize_window(self, rect):
-        'resize window to given rect'
+    def resize_window(self, rect, identifier, app_name):
+        '''
+        resize window to given rect\n
+        identifier is hwnd on win32\n
+        and window_name on darwin\n
+        app_name is unused on win32
+        '''
+        self.set_foreground(identifier, app_name)
         if platform == 'win32':
-            self._resize_window_win32(rect, self.hwnd)
+            self._resize_window_win32(identifier, rect)
         else:
-            self._resize_window_darwin(rect, self.hwnd)
+            self._resize_window_darwin(identifier, app_name, rect)
 
     # def check_window(self):
     #     'check and return window'
@@ -107,8 +119,8 @@ class AutoCheckIn(PrepareSendEmail, UseSelenium, ManipulateWindow):
     #             set target_title to "{ZOOM_CLASSROOM_NAME}"
     #             set window_list to every window
     #             repeat with a_window in window_list
-    #                 set window_title to name of a_window
-    #                 if window_title is equal to target_title then
+    #                 set window_name to name of a_window
+    #                 if window_name is equal to target_title then
     #                     set window_id to id of a_window
     #                     return window_id
     #                 end if
@@ -126,9 +138,44 @@ class AutoCheckIn(PrepareSendEmail, UseSelenium, ManipulateWindow):
 
     def check_link_loop(self):
         'Get link from QR'
+        # kill screenshot if open
+        is_window, identifier =\
+            self.check_window(IMAGEVIEWER_WINDOW_NAME, IMAGEVIEWER_APP_NAME, False)
+        if is_window:
+            print_with_time('스크린샷 이미지 실행 확인. 종료 진행')
+            self.kill_screenshot(identifier, IMAGEVIEWER_APP_NAME)
+        else:
+            print_with_time('스크린샷 이미지 실행 안 함. 계속 진행')
+
         # maximize Chrome window
         self.driver.maximize_window()
         time.sleep(1)
+
+        # take screenshot of Zoom meeting and open
+        self.set_foreground(self.identifier, ZOOM_APP_NAME)
+        time.sleep(1)
+        image = pyautogui.screenshot()
+        image_array = np.array(image)
+        cv2.rectangle(img=image_array,
+                      pt1=(self.rect[2]//2, 0),
+                      pt2=(self.rect[2], self.rect[3]),
+                      color=(255, 255, 255),
+                      thickness=-1)
+        cv2.imwrite(QR_SCREENSHOT_IMAGE, image_array[:,:,[2,1,0]])
+        try:
+            os.startfile(QR_SCREENSHOT_IMAGE)
+        except AttributeError:
+            subprocess.call(['open', QR_SCREENSHOT_IMAGE])
+        time.sleep(2)
+
+        # check image window
+        is_window, identifier =\
+            self.check_window(IMAGEVIEWER_WINDOW_NAME, IMAGEVIEWER_APP_NAME, False)
+        if is_window:
+            print_with_time('스크린샷 이미지 실행 확인')
+        else:
+            print_with_time('스크린샷 이미지 실행 확인 못 함')
+            return False
 
         # calculate new window size
         ratios = [i/10 for i in range(3, 11)]
@@ -137,7 +184,7 @@ class AutoCheckIn(PrepareSendEmail, UseSelenium, ManipulateWindow):
         # only horizontally
         for ratio in ratios:
             rect_resized[2] = int(self.rect[2] * ratio)
-            result = self.check_link(rect_resized)
+            result = self.check_link(identifier, IMAGEVIEWER_APP_NAME, rect_resized)
             if result:
                 break
         # both horizontally and vertically
@@ -145,21 +192,49 @@ class AutoCheckIn(PrepareSendEmail, UseSelenium, ManipulateWindow):
             for ratio in ratios:
                 rect_resized[2] = int(self.rect[2] * ratio)
                 rect_resized[3] = int(self.rect[3] * ratio)
-                result = self.check_link(rect_resized)
+                result = self.check_link(identifier, IMAGEVIEWER_APP_NAME, rect_resized)
                 if result:
                     break
 
+        # kill photos app after checking QR in it
+        self.kill_screenshot(identifier, IMAGEVIEWER_APP_NAME)
+
         return result
 
-    def check_link(self, rect_resized):
+    def kill_screenshot(self, identifier, app_name):
+        'kill photos app'
+        if platform == 'win32':
+            win32gui.PostMessage(identifier, win32con.WM_CLOSE,0,0)
+        else:
+            applescript_code = f'''
+            tell application "System Events"
+                set theID to (unix id of processes whose name is "{app_name}")
+                try
+                    do shell script "kill -9 " & theID
+                end try
+            end tell'''
+            execute_applescript(applescript_code, False)
+
+    def check_link(self, identifier, app_name, rect_resized):
         'method to actually fire Screen QR Reader inside loop'
         # apply new window size
-        self.resize_window(rect_resized)
-        # bring it to foreground so that Screen QR Reader recognizes the first 'Zoom' match
-        self.set_foreground(self.hwnd)
+        self.resize_window(rect_resized, identifier, app_name)
+        # bring it to foreground so that Screen QR Reader recognizes 'qr_screenshot.png' as first
+        self.set_foreground(identifier, app_name)
 
-        self.driver.get(SCREEN_QR_READER_POPUP_LINK) # Screen QR Reader
-        time.sleep(2)
+        # Screen QR Reader
+        self.bring_chrome_to_front() # this will push 'qr_screenshot.png' to be second
+        time.sleep(1)
+        self.driver.get(SCREEN_QR_READER_POPUP_LINK)
+        time.sleep(0.5)
+        self.keyboard.tap(Key.tab)
+        time.sleep(0.1)
+        self.keyboard.tap(Key.tab)
+        time.sleep(0.1)
+        self.keyboard.tap(Key.right)
+        time.sleep(0.1)
+        self.keyboard.tap(Key.enter)
+        time.sleep(1)
 
         # Selenium will automatically open the link in a new tab
         # if there is a QR image, so check tab count.
@@ -180,7 +255,7 @@ class AutoCheckIn(PrepareSendEmail, UseSelenium, ManipulateWindow):
         # Screen QR Reader source required
         options.add_extension(self.extension_source)
         # automatically select Zoom meeting
-        options.add_argument('--auto-select-desktop-capture-source=Zoom')
+        # options.add_argument('--auto-select-desktop-capture-source=Zoom')
 
         return options
 
@@ -302,11 +377,11 @@ class AutoCheckIn(PrepareSendEmail, UseSelenium, ManipulateWindow):
     def run(self):
         'run whole check-in process'
         # get Zoom window
-        self.is_window, self.hwnd = self.check_window(ZOOM_CLASSROOM_CLASS, ZOOM_CLASSROOM_NAME)
+        self.is_window, self.identifier = self.check_window(ZOOM_CLASSROOM_NAME, ZOOM_APP_NAME)
         # if it is visible
         if self.is_window:
             # get max rect
-            self.rect = self.maximize_window(self.hwnd)
+            self.rect = self.maximize_window(self.identifier, ZOOM_APP_NAME)
             # init selenium
             self.driver = self.initialize_selenium()
         # if not

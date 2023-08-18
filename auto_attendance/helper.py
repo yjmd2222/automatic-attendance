@@ -7,7 +7,6 @@ import os
 from sys import platform
 
 from datetime import datetime, timedelta
-import time
 
 import pyscreeze
 import PIL
@@ -76,13 +75,6 @@ def print_with_time(*args, **kwargs):
     now = datetime.strftime(datetime.now(), '%H:%M:%S')
     print(now, *args, **kwargs)
 
-def bring_chrome_to_front(driver):
-    'bring Selenium Chrome browser to front with a hack'
-    driver.minimize_window()
-    time.sleep(1)
-    driver.maximize_window()
-    time.sleep(0.5)
-
 def get_screen_resolution():
     'get screen resolution'
     pos_x, pos_y = pyautogui.size()
@@ -90,13 +82,30 @@ def get_screen_resolution():
 
 def check_appearance():
     """
-    Checks DARK/LIGHT mode of macOS\n
+    checks DARK/LIGHT mode of macOS\n
     if DARK: True, elif LIGHT: False
     """
     cmd = 'defaults read -g AppleInterfaceStyle'
     with subprocess.Popen(cmd, stdout=subprocess.PIPE,
-                          stderr=subprocess.PIPE, shell=True) as popen:
+                        stderr=subprocess.PIPE, shell=True) as popen:
         return bool(popen.communicate()[0])
+
+def execute_applescript(applescript_code, get_output):
+    '''
+    executes AppleScript on darwin\n
+    returns output text if get_output == True
+    '''
+    if get_output:
+        to_return = subprocess.run(['osascript', '-e', applescript_code],
+                                   capture_output=True,
+                                   text=True,
+                                   check=True)
+    else:
+        with open(os.devnull, 'wb') as devnull:
+            to_return = subprocess.run(['osascript', '-e', applescript_code],
+                                       stdout=devnull,
+                                       check=True)
+    return to_return
 
 # pylint: disable=invalid-name
 def fix_pyautogui():
