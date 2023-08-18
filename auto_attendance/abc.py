@@ -2,8 +2,6 @@
 abstraction because why not
 '''
 
-import os
-
 from sys import platform
 
 import time
@@ -24,9 +22,9 @@ from auto_attendance.arg_parse import parsed_args
 from auto_attendance.helper import print_with_time
 from auto_attendance.settings import VERBOSITY__INFO
 if platform == 'darwin':
-    from auto_attendance.helper import get_screen_resolution
-
-    import subprocess
+    from auto_attendance.helper import (
+        get_screen_resolution,
+        execute_applescript)
 else:
     from win32com.client import Dispatch
     import win32con
@@ -75,7 +73,7 @@ class BaseClass(ABC):
             except SystemExit:
                 print_with_time('현재 실행중인 스크립트 종료')
             except Exception as error:
-                print_with_time(f'기타: {error.__module__} 모듈의 {type(error).__name__} exception 발생')
+                print_with_time(f'기타: {type(error).__name__} exception 발생')
                 traceback.print_exc()
             # pylint: enable=broad-exception-caught
             return None
@@ -122,7 +120,7 @@ class UseSelenium(BaseClass):
                 if self.driver:
                     self.driver.quit()
             except Exception as error:
-                print_with_time(f'기타: {error.__module__} 모듈의 {type(error).__name__} exception 발생')
+                print_with_time(f'기타: {type(error).__name__} exception 발생')
                 traceback.print_exc()
                 if self.driver:
                     self.driver.quit()
@@ -159,8 +157,7 @@ class UseSelenium(BaseClass):
 class ManipulateWindow:
     'base class for checking visibility of and manipulating windows'
 
-    @staticmethod
-    def _choose_error():
+    def _choose_error(self):
         'method for choosing error depending on OS'
         if platform == 'win32':
             error = pywintypes_error
@@ -168,15 +165,14 @@ class ManipulateWindow:
             error = Exception
         return error
 
-    @staticmethod
-    def decorator_window_handling_exception(func):
+    def decorator_window_handling_exception(self, func):
         '''
         decorator for catching exception in window handling\n
         currently no errors found for darwin
         '''
         def wrapper(*args, **kwargs):
             'wrapper'
-            error = ManipulateWindow._choose_error()
+            error = self._choose_error()
             for i in range(3+1):
                 # pylint: disable=broad-exception-caught
                 try:
@@ -220,10 +216,7 @@ class ManipulateWindow:
             end tell
         end tell
         '''
-        with open(os.devnull, 'wb') as devnull:
-            subprocess.run(['osascript', '-e', applescript_code],
-                            stdout=devnull,
-                            check=True)
+        execute_applescript(applescript_code, False)
 
     @decorator_window_handling_exception
     def set_foreground(self, identifier:int|str, app_name):
@@ -238,8 +231,7 @@ class ManipulateWindow:
         else:
             self._set_foreground_darwin(identifier, app_name)
 
-    @staticmethod
-    def _get_all_windows_win32(window_name)->list:
+    def _get_all_windows_win32(self, window_name)->list:
         '''
         get all window names matching window_name in format below\n
         [hwnd window_class window_name, hwnd]
@@ -303,10 +295,7 @@ class ManipulateWindow:
         end tell
         '''
 
-        result = subprocess.run(['osascript', '-e', applescript_code],
-                                capture_output=True,
-                                text=True,
-                                check=True)
+        result = execute_applescript(applescript_code, True)
         is_window = bool(int(result.stdout.strip()))
 
         return is_window, window_name
@@ -361,10 +350,7 @@ class ManipulateWindow:
         end tell
         '''
 
-        result = subprocess.run(['osascript', '-e', applescript_code],
-                                capture_output=True,
-                                text=True,
-                                check=True)
+        result = execute_applescript(applescript_code, True)
         rect = result.stdout.strip().split(', ')
         rect = [int(num) for num in rect]
 

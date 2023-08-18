@@ -68,8 +68,8 @@ class QuitZoom(PrepareSendEmail, BaseClass):
         with open(os.devnull, 'wb') as devnull:
             try:
                 subprocess.run(['osascript', '-e', applescript_code],
-                            stdout=devnull,
-                            check=True)
+                                stdout=devnull,
+                                check=True)
                 if kill_hidden:
                     print_with_time('숨겨진 Zoom 회의 포함 Zoom 애플리케이션 종료')
                 else:

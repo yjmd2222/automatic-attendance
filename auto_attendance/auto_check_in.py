@@ -21,7 +21,9 @@ from selenium.webdriver.support.ui import WebDriverWait
 
 from auto_attendance.abc import UseSelenium, ManipulateWindow
 from auto_attendance.info import KAKAO_ID, KAKAO_PASSWORD
-from auto_attendance.helper import print_with_time
+from auto_attendance.helper import (
+    print_with_time,
+    execute_applescript)
 from auto_attendance.settings import (
     QR_SCREENSHOT_IMAGE,
     ZOOM_CLASSROOM_NAME,
@@ -89,10 +91,7 @@ class AutoCheckIn(PrepareSendEmail, UseSelenium, ManipulateWindow):
             end tell
         end tell
         '''
-        with open(os.devnull, 'wb') as devnull:
-            subprocess.run(['osascript', '-e', applescript_code],
-                            stdout=devnull,
-                            check=True)
+        execute_applescript(applescript_code, False)
 
     @ManipulateWindow.decorator_window_handling_exception
     def resize_window(self, rect, identifier, app_name):
@@ -140,7 +139,8 @@ class AutoCheckIn(PrepareSendEmail, UseSelenium, ManipulateWindow):
     def check_link_loop(self):
         'Get link from QR'
         # kill screenshot if open
-        is_window, identifier = self.check_window_title(IMAGEVIEWER_WINDOW_NAME, IMAGEVIEWER_APP_NAME)
+        is_window, identifier =\
+            self.check_window(IMAGEVIEWER_WINDOW_NAME, IMAGEVIEWER_APP_NAME, False)
         if is_window:
             print_with_time('스크린샷 이미지 실행 확인. 종료 필요')
             self.kill_screenshot(identifier, IMAGEVIEWER_APP_NAME)
@@ -200,7 +200,7 @@ class AutoCheckIn(PrepareSendEmail, UseSelenium, ManipulateWindow):
         self.kill_screenshot(identifier, IMAGEVIEWER_APP_NAME)
 
         return result
-    
+
     def kill_screenshot(self, identifier, app_name):
         'kill photos app'
         if platform == 'win32':
@@ -213,10 +213,7 @@ class AutoCheckIn(PrepareSendEmail, UseSelenium, ManipulateWindow):
                     do shell script "kill -9 " & theID
                 end try
             end tell'''
-            with open(os.devnull, 'wb') as devnull:
-                subprocess.run(['osascript', 'e', applescript_code],
-                            stdout=devnull,
-                            check=True)
+            execute_applescript(applescript_code, False)
 
     def check_link(self, identifier, app_name, rect_resized):
         'method to actually fire Screen QR Reader inside loop'
