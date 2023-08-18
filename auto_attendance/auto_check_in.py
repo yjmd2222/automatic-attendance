@@ -139,12 +139,21 @@ class AutoCheckIn(PrepareSendEmail, UseSelenium, ManipulateWindow):
 
     def check_link_loop(self):
         'Get link from QR'
+        # kill screenshot if open
+        is_window, identifier = self.check_window_title(IMAGEVIEWER_WINDOW_NAME, IMAGEVIEWER_APP_NAME)
+        if is_window:
+            print_with_time('스크린샷 이미지 실행 확인. 종료 필요')
+            self.kill_screenshot(identifier, IMAGEVIEWER_APP_NAME)
+        else:
+            print_with_time('스크린샷 이미지 실행 확인 못 함. 계속 진행')
+
         # maximize Chrome window
         self.driver.maximize_window()
         time.sleep(1)
 
         # take screenshot of Zoom meeting and open
         self.set_foreground(self.identifier, ZOOM_APP_NAME)
+        time.sleep(1)
         image = pyautogui.screenshot()
         image_array = np.array(image)
         cv2.rectangle(img=image_array,
@@ -188,12 +197,18 @@ class AutoCheckIn(PrepareSendEmail, UseSelenium, ManipulateWindow):
                     break
 
         # kill photos app after checking QR in it
+        self.kill_screenshot(identifier, IMAGEVIEWER_APP_NAME)
+
+        return result
+    
+    def kill_screenshot(self, identifier, app_name):
+        'kill photos app'
         if platform == 'win32':
             win32gui.PostMessage(identifier, win32con.WM_CLOSE,0,0)
         else:
             applescript_code = f'''
             tell application "System Events"
-                set theID to (unix id of processes whose name is "{IMAGEVIEWER_APP_NAME}")
+                set theID to (unix id of processes whose name is "{app_name}")
                 try
                     do shell script "kill -9 " & theID
                 end try
@@ -202,8 +217,6 @@ class AutoCheckIn(PrepareSendEmail, UseSelenium, ManipulateWindow):
                 subprocess.run(['osascript', 'e', applescript_code],
                             stdout=devnull,
                             check=True)
-
-        return result
 
     def check_link(self, identifier, app_name, rect_resized):
         'method to actually fire Screen QR Reader inside loop'
