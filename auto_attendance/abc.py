@@ -157,7 +157,8 @@ class UseSelenium(BaseClass):
 class ManipulateWindow:
     'base class for checking visibility of and manipulating windows'
 
-    def _choose_error(self):
+    @staticmethod
+    def _choose_error():
         'method for choosing error depending on OS'
         if platform == 'win32':
             error = pywintypes_error
@@ -165,14 +166,15 @@ class ManipulateWindow:
             error = Exception
         return error
 
-    def decorator_window_handling_exception(self, func):
+    @staticmethod
+    def decorator_window_handling_exception(func):
         '''
         decorator for catching exception in window handling\n
         currently no errors found for darwin
         '''
         def wrapper(*args, **kwargs):
             'wrapper'
-            error = self._choose_error()
+            error = ManipulateWindow._choose_error()
             for i in range(3+1):
                 # pylint: disable=broad-exception-caught
                 try:
@@ -270,7 +272,7 @@ class ManipulateWindow:
             items = self._get_all_windows_win32(window_name)
             if items:
                 is_window = True
-                hwnd = int(items[-1])
+                hwnd = int(items[0][-1])
             else:
                 is_window = False
                 hwnd = 0
