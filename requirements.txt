@@ -5,4 +5,4 @@ pyautogui==0.9.54
 pynput==1.7.6
 pywinauto==0.6.8; platform_system == "Windows"
 selenium==4.11.2
-webdriver-manager==3.9.1
+webdriver-manager==4.0.0
