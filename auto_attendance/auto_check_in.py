@@ -142,10 +142,10 @@ class AutoCheckIn(PrepareSendEmail, UseSelenium, ManipulateWindow):
         is_window, identifier =\
             self.check_window(IMAGEVIEWER_WINDOW_NAME, IMAGEVIEWER_APP_NAME, False)
         if is_window:
-            print_with_time('스크린샷 이미지 실행 확인. 종료 필요')
+            print_with_time('스크린샷 이미지 실행 확인. 종료 진행')
             self.kill_screenshot(identifier, IMAGEVIEWER_APP_NAME)
         else:
-            print_with_time('스크린샷 이미지 실행 확인 못 함. 계속 진행')
+            print_with_time('스크린샷 이미지 실행 안 함. 계속 진행')
 
         # maximize Chrome window
         self.driver.maximize_window()

@@ -15,8 +15,8 @@ from selenium.common.exceptions import (
     NoSuchWindowException,
     WebDriverException)
 from selenium.webdriver.chrome.options import Options
-# from selenium.webdriver.chrome.service import Service
-# from webdriver_manager.chrome import ChromeDriverManager
+from selenium.webdriver.chrome.service import Service
+from webdriver_manager.chrome import ChromeDriverManager
 
 from auto_attendance.arg_parse import parsed_args
 from auto_attendance.helper import print_with_time
@@ -141,11 +141,10 @@ class UseSelenium(BaseClass):
 
     def initialize_selenium(self):
         'initialize Selenium and return driver'
-        # auto_driver = Service(ChromeDriverManager().install())
+        auto_driver = Service(ChromeDriverManager().install())
         options = self.create_selenium_options()
 
-        # return webdriver.Chrome(service=auto_driver, options=options)
-        return webdriver.Chrome(options=options)
+        return webdriver.Chrome(service=auto_driver, options=options)
 
     def bring_chrome_to_front(self):
         'bring Selenium Chrome browser to front with a hack'
