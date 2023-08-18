@@ -13,7 +13,6 @@ import pyautogui
 
 from auto_attendance.abc import UseSelenium
 from auto_attendance.helper import (
-    bring_chrome_to_front,
     get_file_path,
     get_last_image_match,
     print_with_time)
@@ -67,7 +66,7 @@ class DownloadExtensionSource(UseSelenium):
         time.sleep(1)
 
         # bring to front with hack
-        bring_chrome_to_front(self.driver)
+        self.bring_chrome_to_front()
 
         # Recent Chrome does not allow bypassing 'harmful download', so use pyautogui.
         pos = get_last_image_match(CONTINUE_DOWNLOAD_IMAGE)

@@ -8,10 +8,9 @@ from sys import platform
 from auto_attendance.abc import BaseClass
 from auto_attendance.helper import print_with_time
 from auto_attendance.notify import PrepareSendEmail
-if platform == 'win32':
-    from auto_attendance.settings import ZOOM_CLASSROOM_CLASS
-else:
-    from auto_attendance.settings import ZOOM_APPLICATION_NAME
+from auto_attendance.settings import (
+    ZOOM_CLASSROOM_NAME,
+    ZOOM_APP_NAME)
 
 if platform == 'win32':
     import pywinauto
@@ -37,7 +36,7 @@ class QuitZoom(PrepareSendEmail, BaseClass):
         'kill Zoom conference on win32'
         for _ in range(3):
             try:
-                pywinauto.Application().connect(class_name=ZOOM_CLASSROOM_CLASS, found_index=0)\
+                pywinauto.Application().connect(class_name=ZOOM_CLASSROOM_NAME, found_index=0)\
                     .kill(soft=True)
                 if kill_hidden:
                     print_with_time('숨겨진 Zoom 회의 종료')
@@ -60,7 +59,7 @@ class QuitZoom(PrepareSendEmail, BaseClass):
         'kill Zoom conference on darwin'
         applescript_code = f'''
         tell application "System Events"
-            set theID to (unix id of processes whose name is "{ZOOM_APPLICATION_NAME}")
+            set theID to (unix id of processes whose name is "{ZOOM_APP_NAME}")
             try
                 do shell script "kill -9 " & theID
             end try
@@ -69,8 +68,8 @@ class QuitZoom(PrepareSendEmail, BaseClass):
         with open(os.devnull, 'wb') as devnull:
             try:
                 subprocess.run(['osascript', '-e', applescript_code],
-                            stdout=devnull,
-                            check=True)
+                                stdout=devnull,
+                                check=True)
                 if kill_hidden:
                     print_with_time('숨겨진 Zoom 회의 포함 Zoom 애플리케이션 종료')
                 else:
