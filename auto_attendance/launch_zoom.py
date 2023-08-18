@@ -17,16 +17,12 @@ from auto_attendance.helper import (
 from auto_attendance.quit_zoom import QuitZoom
 from auto_attendance.notify import PrepareSendEmail
 from auto_attendance.settings import (
-    ZOOM_AGREE_RECORDING_POPUP_CLASS,
-    ZOOM_AGREE_RECORDING_POPUP_NAME, # they
-    ZOOM_UPDATE_POPUP_CLASS,
-    ZOOM_UPDATE_POPUP_NAME, # are
-    ZOOM_UPDATE_DOWNLOAD_CLASS,
-    ZOOM_UPDATE_DOWNLOAD_NAME, # missing
-    ZOOM_UPDATE_ACTUAL_UPDATE_CLASS,
-    ZOOM_UPDATE_ACTUAL_UPDATE_NAME, # values
-    ZOOM_CLASSROOM_CLASS,
+    ZOOM_AGREE_RECORDING_POPUP_NAME,
+    ZOOM_UPDATE_POPUP_NAME,
+    ZOOM_UPDATE_DOWNLOAD_NAME,
+    ZOOM_UPDATE_ACTUAL_UPDATE_NAME,
     ZOOM_CLASSROOM_NAME,
+    ZOOM_APP_NAME,
     LAUNCH_ZOOM_KEY_MAPPER,
     TAB_COUNT_MAPPER)
 if platform == 'darwin':
@@ -42,7 +38,7 @@ class LaunchZoom(PrepareSendEmail, UseSelenium, ManipulateWindow):
 
     def __init__(self):
         'initialize'
-        self.hwnd_zoom_classroom = 0
+        self.is_window, self.identifier = False, 0
         self.keyboard = Controller()
         PrepareSendEmail.define_attributes(self)
         PrepareSendEmail.decorate_run(self)
@@ -50,7 +46,7 @@ class LaunchZoom(PrepareSendEmail, UseSelenium, ManipulateWindow):
 
     def reset_attributes(self):
         'reset attributes for next run'
-        self.hwnd_zoom_classroom = 0
+        self.is_window, self.identifier = False, 0
         PrepareSendEmail.define_attributes(self)
 
     def quit_zoom(self):
@@ -66,11 +62,10 @@ class LaunchZoom(PrepareSendEmail, UseSelenium, ManipulateWindow):
     def connect(self):
         'connect to Zoom conference'
         # check presence of Zoom conference
-        is_window, self.hwnd_zoom_classroom =\
-            self.check_window(ZOOM_CLASSROOM_IDENTIFIER)
+        is_window, self.identifier = self.check_window(ZOOM_CLASSROOM_NAME, ZOOM_APP_NAME)
         # if visible
         if is_window:
-            self.set_foreground(self.hwnd_zoom_classroom)
+            self.set_foreground(self.identifier, ZOOM_APP_NAME)
             print_with_time('줌 회의 입장 확인')
         # if not visible
         else:
@@ -107,56 +102,54 @@ class LaunchZoom(PrepareSendEmail, UseSelenium, ManipulateWindow):
         self.driver.quit()
         self.driver = None
 
-    def _check_window_down_win32(self, window_class, window_title):
+    def _check_window_down_win32(self, window_name, app_name):
         '''
         wait until window is down\n
         This should replace self.check_window_down()\n
         once Zoom properly adds support for AppleScript'''
         # pick os-dependent window name
-        window = self.pick_os_dep_window_name(window_class, window_title)
-        popup_name = LAUNCH_ZOOM_KEY_MAPPER[window]
+        popup_name = LAUNCH_ZOOM_KEY_MAPPER[window_name]
 
         # wait while it is visible
-        while self.check_window(window_class, window_title)[0]:
+        while self.check_window(window_name, app_name)[0]:
             print_with_time(f'{popup_name} 진행중')
             time.sleep(5)
 
-    def _check_window_down_darwin(self, window_title):
+    def _check_window_down_darwin(self, window_name):
         '''
         wait until window is down\n
         will be deprecated once Zoom properly adds support for AppleScript
         '''
         # get relevant image path
-        window_check_image = WINDOW_CHECK_IMAGE_MAPPER[window_title]
+        window_check_image = WINDOW_CHECK_IMAGE_MAPPER[window_name]
 
         # will print this name
-        popup_name = LAUNCH_ZOOM_KEY_MAPPER[window_title]
+        popup_name = LAUNCH_ZOOM_KEY_MAPPER[window_name]
 
         # wait while it is visible
         while get_last_image_match(window_check_image) != (0.0, 0.0):
             print_with_time(f'{popup_name} 진행중')
             time.sleep(5)
 
-    def check_window_down(self, window_class, window_title):
+    def check_window_down(self, window_name, app_name):
         '''
         wait until window is down
         '''
         if platform == 'win32':
-            self._check_window_down_win32(window_class, window_title)
+            self._check_window_down_win32(window_name, app_name)
         else:
-            self._check_window_down_darwin(window_title)
+            self._check_window_down_darwin(window_name)
 
     def check_launch_result(self):
         'check the result'
         # check Zoom classroom
-        is_classroom, self.hwnd_zoom_classroom =\
-            self.check_window(ZOOM_CLASSROOM_CLASS, ZOOM_CLASSROOM_NAME)
+        self.is_window, self.identifier =\
+            self.check_window(ZOOM_CLASSROOM_NAME, ZOOM_APP_NAME)
 
         # pick os-dependent name and find key for self.result_dict
-        classroom = self.pick_os_dep_window_name(ZOOM_CLASSROOM_CLASS, ZOOM_CLASSROOM_NAME)
-        key = LAUNCH_ZOOM_KEY_MAPPER[classroom]
+        key = LAUNCH_ZOOM_KEY_MAPPER[ZOOM_CLASSROOM_NAME]
 
-        if is_classroom:
+        if self.is_window:
             # either is fine for now
             print_with_time('줌 회의 실행/발견 성공')
             self.result_dict[key]['content'] = True
@@ -165,30 +158,26 @@ class LaunchZoom(PrepareSendEmail, UseSelenium, ManipulateWindow):
         for _ in range(3):
             print_with_time('줌 회의 실행/발견 실패. 업데이트 중인지 확인 후 재실행')
             # check update
-            self.process_popup(ZOOM_UPDATE_POPUP_CLASS,
-                                ZOOM_UPDATE_POPUP_NAME,
-                                tab_num=TAB_COUNT_MAPPER[self.pick_os_dep_window_name(
-                                                            ZOOM_UPDATE_POPUP_CLASS,
-                                                            ZOOM_UPDATE_POPUP_NAME)],
+            self.process_popup(ZOOM_UPDATE_POPUP_NAME,
+                                ZOOM_APP_NAME,
+                                tab_num=TAB_COUNT_MAPPER[ZOOM_UPDATE_POPUP_NAME],
                                 reverse=True,
                                 send_alt=True)
             # if agreed to update
             if self.result_dict['줌 업데이트']['content']:
                 # downloading updates
-                self.check_window_down(ZOOM_UPDATE_DOWNLOAD_CLASS,
-                                        ZOOM_UPDATE_DOWNLOAD_NAME)
+                self.check_window_down(ZOOM_UPDATE_DOWNLOAD_NAME, ZOOM_APP_NAME)
                 self.print_all_windows() # debug
                 # updating Zoom
-                self.check_window_down(ZOOM_UPDATE_ACTUAL_UPDATE_CLASS,
-                                        ZOOM_UPDATE_ACTUAL_UPDATE_NAME)
+                self.check_window_down(ZOOM_UPDATE_ACTUAL_UPDATE_NAME, ZOOM_APP_NAME)
                 self.print_all_windows() # debug
             self.launch_zoom()
             # check if now zoom window is visible
-            is_classroom, self.hwnd_zoom_classroom =\
-                self.check_window(ZOOM_CLASSROOM_CLASS, ZOOM_CLASSROOM_NAME)
-            if is_classroom:
+            self.is_window, self.identifier =\
+                self.check_window(ZOOM_CLASSROOM_NAME, ZOOM_APP_NAME)
+            if self.is_window:
                 print_with_time('줌 회의 실행/발견 성공')
-                self.result_dict[classroom]['content'] = True
+                self.result_dict[ZOOM_CLASSROOM_NAME]['content'] = True
                 return True
 
         # no launch from all tries
@@ -232,38 +221,35 @@ class LaunchZoom(PrepareSendEmail, UseSelenium, ManipulateWindow):
         return window
 
     # pylint: disable=too-many-arguments
-    def process_popup(self, window_class, window_title,\
+    def process_popup(self, window_name, app_name,\
                         tab_num=2, reverse=False, send_alt=False):
         'hit OK on popup'
         if platform == 'win32':
-            is_agreed = self._process_popup_win32(window_class, window_title,\
+            is_agreed = self._process_popup_win32(window_name, app_name,\
                         tab_num, reverse, send_alt)
         else:
-            is_agreed = self._process_popup_darwin(window_title)
+            is_agreed = self._process_popup_darwin(window_name)
 
         return is_agreed
 
-    def _process_popup_win32(self, window_class, window_title,\
+    def _process_popup_win32(self, window_name, app_name,\
                       tab_num=2, reverse=False, send_alt=False):
         '''
         hit OK on popup with keyboard on win32\n
         This should replace self.process_popup()\n
         once Zoom properly adds support for AppleScript
         '''
-        # get os-dependent window name
-        window = self.pick_os_dep_window_name(window_class, window_title)
-
-        # get hwnd
-        is_window, hwnd = self.check_window(window_class, window_title)
+        # get identifier
+        is_window, identifier = self.check_window(window_name, app_name)
 
         # will print this name
-        popup_name = LAUNCH_ZOOM_KEY_MAPPER[window]
+        popup_name = LAUNCH_ZOOM_KEY_MAPPER[identifier]
 
         # window/popup visible
         if is_window:
             print_with_time(f'{popup_name} 창 확인')
             # set focus on it
-            self.set_foreground(hwnd)
+            self.set_foreground(identifier, app_name)
             # press tab num times and hit space to enter
             self.press_tabs_and_space(tab_num, reverse, send_alt)
             # store result
@@ -280,17 +266,17 @@ class LaunchZoom(PrepareSendEmail, UseSelenium, ManipulateWindow):
         return self.result_dict[popup_name]['content']
     # pylint: enable=too-many-arguments
 
-    def _process_popup_darwin(self, window_title):
+    def _process_popup_darwin(self, window_name):
         '''
         click OK on popup on darwin\n
         will be deprecated once Zoom properly adds support for AppleScript
         '''
         # get relevant image paths
-        window_check_image = WINDOW_CHECK_IMAGE_MAPPER[window_title]
-        ok_button_image = OK_BUTTON_IMAGE_MAPPER[window_title]
+        window_check_image = WINDOW_CHECK_IMAGE_MAPPER[window_name]
+        ok_button_image = OK_BUTTON_IMAGE_MAPPER[window_name]
 
         # will print this name
-        popup_name = LAUNCH_ZOOM_KEY_MAPPER[window_title]
+        popup_name = LAUNCH_ZOOM_KEY_MAPPER[window_name]
 
         # window/popup visible
         try:
@@ -327,25 +313,21 @@ class LaunchZoom(PrepareSendEmail, UseSelenium, ManipulateWindow):
         # if launch successful
         if self.check_launch_result():
             # double check recording consent
-            self.process_popup(ZOOM_AGREE_RECORDING_POPUP_CLASS,
-                                ZOOM_AGREE_RECORDING_POPUP_NAME,
-                                tab_num=TAB_COUNT_MAPPER[self.pick_os_dep_window_name(
-                                                         ZOOM_AGREE_RECORDING_POPUP_CLASS,
-                                                         ZOOM_AGREE_RECORDING_POPUP_NAME)],
+            self.process_popup(ZOOM_AGREE_RECORDING_POPUP_NAME,
+                                ZOOM_APP_NAME,
+                                tab_num=TAB_COUNT_MAPPER[ZOOM_AGREE_RECORDING_POPUP_NAME],
                                 reverse=True,
                                 send_alt=True)
             print_with_time('동의 재확인')
             # pyautogui confidence is low, so second time on mac may match '회의' in the menu bar
-            self.process_popup(ZOOM_AGREE_RECORDING_POPUP_CLASS,
-                                ZOOM_AGREE_RECORDING_POPUP_NAME,
-                                tab_num=TAB_COUNT_MAPPER[self.pick_os_dep_window_name(
-                                                         ZOOM_AGREE_RECORDING_POPUP_CLASS,
-                                                         ZOOM_AGREE_RECORDING_POPUP_NAME)],
+            self.process_popup(ZOOM_AGREE_RECORDING_POPUP_NAME,
+                                ZOOM_APP_NAME,
+                                tab_num=TAB_COUNT_MAPPER[ZOOM_AGREE_RECORDING_POPUP_NAME],
                                 reverse=True,
                                 send_alt=True)
         # maximize if everything done correctly
         if self.result_dict['줌 녹화 동의']['content']:
-            self.maximize_window(self.hwnd_zoom_classroom)
+            self.maximize_window(self.identifier, ZOOM_APP_NAME)
         # checker bool to send email. See PrepareSendEmail.decorator_send_email_reset()
         self.is_send = True
     # pylint: enable=attribute-defined-outside-init

@@ -7,7 +7,6 @@ import os
 from sys import platform
 
 from datetime import datetime, timedelta
-import time
 
 import pyscreeze
 import PIL

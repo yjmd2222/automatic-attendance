@@ -74,22 +74,23 @@ ZOOM_QUIT_TIMES = [convert_to_datetime(TIME_) for TIME_ in ['12:05', '18:05']]
 SCHED_QUIT_TIMES = [convert_to_datetime('18:10')] # conform to the format of other 'times'
 
 # Zoom props
-# win32
-ZOOM_AGREE_RECORDING_POPUP_CLASS = 'ZPRecordingConsentClass' # '이 회의는 호스트 또는 참가자가 기록 중입니다'
-ZOOM_UPDATE_POPUP_CLASS = 'ZPForceUpdateWnd' # update popup when launching Zoom
-ZOOM_UPDATE_DOWNLOAD_CLASS = 'CZPUpdateWndCls'
-ZOOM_UPDATE_ACTUAL_UPDATE_CLASS = 'zoom.us Installer Engine'
-ZOOM_CLASSROOM_CLASS = 'ZPContentViewWndClass'
-# darwin
-ZOOM_APPLICATION_NAME = 'zoom.us'
-ZOOM_AGREE_RECORDING_POPUP_NAME = '이 회의는 기록되고 있습니다'
-ZOOM_UPDATE_POPUP_NAME = 'UNKNOWN0'
-ZOOM_UPDATE_DOWNLOAD_NAME = 'UNKNOWN1'
-ZOOM_UPDATE_ACTUAL_UPDATE_NAME = 'UNKNOWN2'
-ZOOM_CLASSROOM_NAME = 'Zoom 회의'
+if platform == 'win32':
+    ZOOM_AGREE_RECORDING_POPUP_NAME = 'ZPRecordingConsentClass' # '이 회의는 호스트 또는 참가자가 기록 중입니다'
+    ZOOM_UPDATE_POPUP_NAME = 'ZPForceUpdateWnd' # update popup when launching Zoom
+    ZOOM_UPDATE_DOWNLOAD_NAME = 'CZPUpdateWndCls'
+    ZOOM_UPDATE_ACTUAL_UPDATE_NAME = 'zoom.us Installer Engine'
+    ZOOM_CLASSROOM_NAME = 'ZPContentViewWndClass'
+    ZOOM_APP_NAME = 'none'
+else:
+    ZOOM_AGREE_RECORDING_POPUP_NAME = '이 회의는 기록되고 있습니다'
+    ZOOM_UPDATE_POPUP_NAME = 'UNKNOWN0'
+    ZOOM_UPDATE_DOWNLOAD_NAME = 'UNKNOWN1'
+    ZOOM_UPDATE_ACTUAL_UPDATE_NAME = 'UNKNOWN2'
+    ZOOM_CLASSROOM_NAME = 'Zoom 회의'
+    ZOOM_APP_NAME = 'zoom.us'
 # screenshot
-IMAGEVIEWER_NAME = 'qr_screenshot.png'
-IMAGEVIEWER_APPLICATION_NAME = 'Preview'
+IMAGEVIEWER_WINDOW_NAME = 'qr_screenshot.png'
+IMAGEVIEWER_APP_NAME = 'Preview'
 
 # PyAutoGUI
 if platform == 'win32':
@@ -161,14 +162,10 @@ LAUNCH_ZOOM_DEFAULT_RESULT_DICT = {
         'name': '줌 녹화 동의',
         'content': False}
 }
-LAUNCH_ZOOM_KEY_MAPPER = {
-    ZOOM_UPDATE_POPUP_CLASS: '줌 업데이트',
-    ZOOM_UPDATE_POPUP_NAME: '줌 업데이트',
-    ZOOM_CLASSROOM_CLASS: '줌 회의 입장',
-    ZOOM_CLASSROOM_NAME: '줌 회의 입장',
-    ZOOM_AGREE_RECORDING_POPUP_CLASS: '줌 녹화 동의',
-    ZOOM_AGREE_RECORDING_POPUP_NAME: '줌 녹화 동의'
-}
+LAUNCH_ZOOM_KEY_MAPPER = dict(
+    zip([ZOOM_UPDATE_POPUP_NAME, ZOOM_CLASSROOM_NAME, ZOOM_AGREE_RECORDING_POPUP_NAME],
+        [LAUNCH_ZOOM_DEFAULT_RESULT_DICT.keys()])
+)
 QUIT_ZOOM_DEFAULT_RESULT_DICT = {
     'quit': {
         'name': '줌 종료',
@@ -193,13 +190,10 @@ for name, key in zip(['줌 실행', 'QR 체크인', '줌 종료', '스케줄러 
 
 # misc
 VERBOSITY__INFO = 3
-TAB_COUNT_MAPPER = {
-    ZOOM_UPDATE_POPUP_CLASS: 2,
-    ZOOM_UPDATE_POPUP_NAME: -1,
-    ZOOM_AGREE_RECORDING_POPUP_CLASS: 2,
-    ZOOM_AGREE_RECORDING_POPUP_NAME: 2
-}
 if platform == 'win32':
-    TAB_COUNT_MAPPER['open_in_zoom'] = 2
+    TAB_COUNT_VALUES = [2, 2, 2]
 else:
-    TAB_COUNT_MAPPER['open_in_zoom'] = 1
+    TAB_COUNT_VALUES = [-1, 2, 1]
+TAB_COUNT_MAPPER = dict(
+    zip([ZOOM_UPDATE_POPUP_NAME, ZOOM_AGREE_RECORDING_POPUP_NAME, 'open_in_zoom'],
+        TAB_COUNT_VALUES))
