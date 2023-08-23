@@ -243,7 +243,7 @@ class LaunchZoom(PrepareSendEmail, UseSelenium, ManipulateWindow):
         is_window, identifier = self.check_window(window_name, app_name)
 
         # will print this name
-        popup_name = LAUNCH_ZOOM_KEY_MAPPER[identifier]
+        popup_name = LAUNCH_ZOOM_KEY_MAPPER[window_name]
 
         # window/popup visible
         if is_window:

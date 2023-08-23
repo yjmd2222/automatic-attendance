@@ -1,5 +1,5 @@
 '''
-Script to automatically send link information in QR image on a Zoom meeting every five minutes
+Script to automatically check in with QR
 '''
 
 import os
