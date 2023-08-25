@@ -309,11 +309,11 @@ class AutoCheckIn(PrepareSendEmail, UseSelenium, ManipulateWindow):
                 if i == 3:
                     print_with_time(search_fail_message)
                     break
-                # iframe may not load at all, so refresh
-                if kwargs['how'] == 'get_iframe':
+                # page may not load at all, so refresh
+                if kwargs['refresh'] == True:
                     print_with_time(f'{search_fail_message}. 찾는 요소: {kwargs["element"]}. 페이지 다시 로드')
                     self.driver.refresh()
-                # other than iframe
+                # if not refresh
                 else:
                     print_with_time(f'{search_fail_message}. {sleep}초 후 재시도')
                 time.sleep(sleep)
@@ -338,7 +338,7 @@ class AutoCheckIn(PrepareSendEmail, UseSelenium, ManipulateWindow):
 
         # login type
         is_continue = self.selenium_action(is_continue, By.CLASS_NAME, 10,\
-                        how='click', element=LOGIN_WITH_KAKAO_BUTTON)
+                        how='click', element=LOGIN_WITH_KAKAO_BUTTON, refresh=True)
 
         # insert Kakao id
         is_continue = self.selenium_action(is_continue, By.ID, 1,\
@@ -357,7 +357,7 @@ class AutoCheckIn(PrepareSendEmail, UseSelenium, ManipulateWindow):
 
         # get inner document link
         is_continue = self.selenium_action(is_continue, By.TAG_NAME, 10,\
-                        how='get_iframe', element=IFRAME)
+                        how='get_iframe', element=IFRAME, refresh=True)
 
         # agree to check in
         is_continue = self.selenium_action(is_continue, By.XPATH, 3,\
