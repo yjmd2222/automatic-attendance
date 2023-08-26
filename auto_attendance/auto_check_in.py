@@ -310,7 +310,7 @@ class AutoCheckIn(PrepareSendEmail, UseSelenium, ManipulateWindow):
                     print_with_time(search_fail_message)
                     break
                 # page may not load at all, so refresh
-                if kwargs['refresh'] == True:
+                if kwargs.get('refresh'):
                     print_with_time(f'{search_fail_message}. 찾는 요소: {kwargs["element"]}. 페이지 다시 로드')
                     self.driver.refresh()
                 # if not refresh
