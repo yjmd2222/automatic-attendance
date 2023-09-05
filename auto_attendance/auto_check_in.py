@@ -14,7 +14,9 @@ import cv2
 import numpy as np
 from pynput.keyboard import Key, Controller
 
-from selenium.common.exceptions import NoSuchElementException
+from selenium.common.exceptions import (
+    NoSuchElementException,
+    TimeoutException)
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
@@ -303,7 +305,7 @@ class AutoCheckIn(PrepareSendEmail, UseSelenium, ManipulateWindow):
                 print_with_time(f'{kwargs["element"]} 찾기 성공. {sleep}초 후 다음 단계로 진행')
                 time.sleep(sleep)
                 return True
-            except NoSuchElementException:
+            except (NoSuchElementException, TimeoutException):
                 search_fail_message = f'{kwargs["element"]} 찾기 실패'
                 # break after three tries
                 if i == 3:
