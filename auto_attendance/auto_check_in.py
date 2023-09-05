@@ -221,22 +221,40 @@ class AutoCheckIn(PrepareSendEmail, UseSelenium, ManipulateWindow):
         'method to actually fire Screen QR Reader inside loop'
         # apply new window size
         self.resize_window(rect_resized, identifier, app_name)
-        # bring it to foreground so that Screen QR Reader recognizes 'qr_screenshot.png' as first
-        self.set_foreground(identifier, app_name)
 
-        # Screen QR Reader
-        self.bring_chrome_to_front() # this will push 'qr_screenshot.png' to be second
-        time.sleep(1)
-        self.driver.get(SCREEN_QR_READER_POPUP_LINK)
-        time.sleep(0.5)
-        self.keyboard.tap(Key.tab)
-        time.sleep(0.1)
-        self.keyboard.tap(Key.tab)
-        time.sleep(0.1)
-        self.keyboard.tap(Key.right)
-        time.sleep(0.1)
-        self.keyboard.tap(Key.enter)
-        time.sleep(1)
+        # refresh on page load timeout
+        for i in range(3):
+            # try to load from QR code
+            try:
+                # bring it to foreground so that
+                # Screen QR Reader recognizes 'qr_screenshot.png' as first
+                self.set_foreground(identifier, app_name)
+
+                # Screen QR Reader
+                self.bring_chrome_to_front() # this will push 'qr_screenshot.png' to be second
+                time.sleep(1)
+                self.driver.get(SCREEN_QR_READER_POPUP_LINK)
+                time.sleep(0.5)
+                self.keyboard.tap(Key.tab)
+                time.sleep(0.1)
+                self.keyboard.tap(Key.tab)
+                time.sleep(0.1)
+                self.keyboard.tap(Key.right)
+                time.sleep(0.1)
+                self.keyboard.tap(Key.enter)
+                time.sleep(1)
+            # loading took longer than expected
+            except TimeoutException:
+                print_with_time('크롬 페이지 로딩 너무 오래 걸림. refresh')
+                self.driver.refresh()
+            # successfully loaded
+            else:
+                break
+
+        # could not load after three tries
+        if i == 2:
+            print_with_time('크롬 페이지 로딩 실패. 체크인 종료')
+            return False
 
         # Selenium will automatically open the link in a new tab
         # if there is a QR image, so check tab count.
@@ -305,7 +323,7 @@ class AutoCheckIn(PrepareSendEmail, UseSelenium, ManipulateWindow):
                 print_with_time(f'{kwargs["element"]} 찾기 성공. {sleep}초 후 다음 단계로 진행')
                 time.sleep(sleep)
                 return True
-            except (NoSuchElementException, TimeoutException):
+            except NoSuchElementException:
                 search_fail_message = f'{kwargs["element"]} 찾기 실패'
                 # break after three tries
                 if i == 3:

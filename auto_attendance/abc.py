@@ -103,7 +103,7 @@ class UseSelenium(BaseClass):
             try:
                 func(*args, **kwargs)
             except TimeoutException as error:
-                print_with_time('로딩 너무 오래 걸림')
+                print_with_time('크롬 페이지 로딩 너무 오래 걸림')
                 # raise error to exit current script
                 raise SystemExit from error
             except (NoSuchWindowException, WebDriverException) as error:
@@ -149,7 +149,7 @@ class UseSelenium(BaseClass):
         auto_driver = Service(ChromeDriverManager().install())
         options = self.create_selenium_options()
         driver = webdriver.Chrome(service=auto_driver, options=options)
-        driver.set_page_load_timeout(10)
+        driver.set_page_load_timeout(20)
 
         return driver
 
