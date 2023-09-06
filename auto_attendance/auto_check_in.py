@@ -70,7 +70,7 @@ class AutoCheckIn(PrepareSendEmail, UseSelenium, ManipulateWindow):
         UseSelenium.__init__(self)
 
     def reset_attributes(self):
-        'reset attributes for next run'
+        'reset attributes then start current job'
         self.is_window, self.identifier = self.check_window(ZOOM_CLASSROOM_NAME, ZOOM_APP_NAME)
         self.driver = None
         self.is_wait = False
@@ -248,6 +248,7 @@ class AutoCheckIn(PrepareSendEmail, UseSelenium, ManipulateWindow):
                 time.sleep(0.1)
                 self.keyboard.tap(Key.enter)
                 time.sleep(1)
+                break
             # loading took longer than expected
             except TimeoutException:
                 print_with_time('크롬 페이지 로딩 너무 오래 걸림. refresh')
@@ -419,7 +420,6 @@ class AutoCheckIn(PrepareSendEmail, UseSelenium, ManipulateWindow):
         else:
             # quit
             print_with_time('줌 실행중인지 확인 필요')
-            self.reset_attributes()
             return
 
         # check QR code in Zoom

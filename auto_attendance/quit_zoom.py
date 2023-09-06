@@ -29,7 +29,7 @@ class QuitZoom(PrepareSendEmail, BaseClass):
         BaseClass.__init__(self)
 
     def reset_attributes(self):
-        'reset attributes for next run'
+        'reset attributes then start current job'
         PrepareSendEmail.define_attributes(self)
 
     def _kill_zoom_win32(self, kill_hidden):
