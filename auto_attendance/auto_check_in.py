@@ -64,6 +64,7 @@ class AutoCheckIn(PrepareSendEmail, UseSelenium, ManipulateWindow):
         self.rect = [100,100,100,100]
         self.extension_source = SCREEN_QR_READER_SOURCE
         self.is_wait = False
+        self.is_continue = False
         PrepareSendEmail.define_attributes(self)
         PrepareSendEmail.decorate_run(self)
         UseSelenium.__init__(self)
@@ -73,6 +74,7 @@ class AutoCheckIn(PrepareSendEmail, UseSelenium, ManipulateWindow):
         self.is_window, self.identifier = self.check_window(ZOOM_CLASSROOM_NAME, ZOOM_APP_NAME)
         self.driver = None
         self.is_wait = False
+        self.is_continue = False
         PrepareSendEmail.define_attributes(self)
 
     def _resize_window_win32(self, hwnd, rect):
@@ -223,7 +225,10 @@ class AutoCheckIn(PrepareSendEmail, UseSelenium, ManipulateWindow):
         self.resize_window(rect_resized, identifier, app_name)
 
         # refresh on page load timeout
-        for i in range(3):
+        is_loaded = False
+        for i in range(1, 3+1):
+            if is_loaded:
+                break
             # try to load from QR code
             try:
                 # bring it to foreground so that
@@ -247,14 +252,10 @@ class AutoCheckIn(PrepareSendEmail, UseSelenium, ManipulateWindow):
             except TimeoutException:
                 print_with_time('크롬 페이지 로딩 너무 오래 걸림. refresh')
                 self.driver.refresh()
-            # successfully loaded
-            else:
-                break
-
-        # could not load after three tries
-        if i == 2:
-            print_with_time('크롬 페이지 로딩 실패. 체크인 종료')
-            return False
+            # could not load after three tries
+            if i == 3:
+                print_with_time('크롬 페이지 로딩 실패. QR 다시 인식 시작')
+                return False
 
         # Selenium will automatically open the link in a new tab
         # if there is a QR image, so check tab count.
@@ -280,7 +281,7 @@ class AutoCheckIn(PrepareSendEmail, UseSelenium, ManipulateWindow):
         return options
 
     # pylint: disable=too-many-branches
-    def selenium_action(self, is_continue, by_which, sleep, **kwargs):
+    def selenium_action(self, by_which, sleep, **kwargs):
         '''
         selenium action method\n
         Must specify kwargs\n
@@ -288,9 +289,6 @@ class AutoCheckIn(PrepareSendEmail, UseSelenium, ManipulateWindow):
         'element' is the element to be inspected\n
         'input_text' must be given if 'how' is 'input'
         '''
-        # run if is_continue
-        if not is_continue:
-            return False
         # check three times
         for i in range(1, 3+1):
             try:
@@ -322,7 +320,9 @@ class AutoCheckIn(PrepareSendEmail, UseSelenium, ManipulateWindow):
                         assert kwargs['how'] in ['click', 'input', 'get_iframe', 'submit']
                 print_with_time(f'{kwargs["element"]} 찾기 성공. {sleep}초 후 다음 단계로 진행')
                 time.sleep(sleep)
-                return True
+                # success
+                self.is_continue = True
+                return
             except NoSuchElementException:
                 search_fail_message = f'{kwargs["element"]} 찾기 실패'
                 # break after three tries
@@ -344,8 +344,10 @@ class AutoCheckIn(PrepareSendEmail, UseSelenium, ManipulateWindow):
                 print_with_time(f'how kwarg의 인자값 알맞게 입력했는지 확인 필요. 입력: {kwargs["how"]}')
                 break
 
+        # all has failed
         print_with_time('출석 체크 실패. 현 상태에서 이메일 발송')
-        return False
+        self.is_continue = False
+        return
     # pylint: enable=too-many-branches
 
     def check_in(self):
@@ -354,44 +356,53 @@ class AutoCheckIn(PrepareSendEmail, UseSelenium, ManipulateWindow):
         time.sleep(10)
 
         # bool flag
-        is_continue = True
+        self.is_continue = True
 
         # login type
-        is_continue = self.selenium_action(is_continue, By.CLASS_NAME, 10,\
-                        how='click', element=LOGIN_WITH_KAKAO_BUTTON, refresh=True)
+        if self.is_continue:
+            self.selenium_action(By.CLASS_NAME, 10,\
+                how='click', element=LOGIN_WITH_KAKAO_BUTTON, refresh=True)
 
         # insert Kakao id
-        is_continue = self.selenium_action(is_continue, By.ID, 1,\
-                        how='input', element=ID_INPUT_BOX, input_text=KAKAO_ID)
+        if self.is_continue:
+            self.selenium_action(By.ID, 1,\
+                how='input', element=ID_INPUT_BOX, input_text=KAKAO_ID)
 
         # insert Kakao password
-        is_continue = self.selenium_action(is_continue, By.ID, 1,\
-                        how='input', element=PASSWORD_INPUT_BOX, input_text=KAKAO_PASSWORD)
+        if self.is_continue:
+            self.selenium_action(By.ID, 1,\
+                how='input', element=PASSWORD_INPUT_BOX, input_text=KAKAO_PASSWORD)
 
         # log in
-        is_continue = self.selenium_action(is_continue, By.CLASS_NAME, 10,\
-                        how='click', element=LOGIN_BUTTON)
+        if self.is_continue:
+            self.selenium_action(By.CLASS_NAME, 10,\
+                how='click', element=LOGIN_BUTTON)
 
         # Should have successfully logged in. Now pass set link to pass to Notify
-        self.result_dict['link']['content'] = self.driver.current_url if is_continue else '발견 실패'
+        self.result_dict['link']['content'] =\
+            self.driver.current_url if self.is_continue else '발견 실패'
 
         # get inner document link
-        is_continue = self.selenium_action(is_continue, By.TAG_NAME, 10,\
-                        how='get_iframe', element=IFRAME, refresh=True)
+        if self.is_continue:
+            self.selenium_action(By.TAG_NAME, 10,\
+                how='get_iframe', element=IFRAME, refresh=True)
 
         # agree to check in
-        is_continue = self.selenium_action(is_continue, By.XPATH, 3,\
-                        how='click', element=AGREE)
+        if self.is_continue:
+            self.selenium_action(By.XPATH, 3,\
+                how='click', element=AGREE)
 
         # select check-in
-        is_continue = self.selenium_action(is_continue, By.XPATH, 3,\
-                        how='click', element=CHECK_IN)
+        if self.is_continue:
+            self.selenium_action(By.XPATH, 3,\
+                how='click', element=CHECK_IN)
 
         # submit
-        is_continue = self.selenium_action(is_continue, By.XPATH, 3,\
-                        how='submit', element=SUBMIT)
+        if self.is_continue:
+            self.selenium_action(By.XPATH, 3,\
+                how='submit', element=SUBMIT)
 
-        return is_continue
+        return self.is_continue
 
     # pylint: disable=attribute-defined-outside-init
     def run(self):
