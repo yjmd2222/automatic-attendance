@@ -185,20 +185,23 @@ class AutoCheckIn(PrepareSendEmail, UseSelenium, ManipulateWindow):
         ratios = [i/10 for i in range(3, 11)]
         rect_resized = self.rect.copy()
         result = None
-        # only horizontally
         for ratio in ratios:
-            rect_resized[2] = int(self.rect[2] * ratio)
-            result = self.check_link(identifier, IMAGEVIEWER_APP_NAME, rect_resized)
-            if result:
-                break
-        # both horizontally and vertically
-        if not result:
-            for ratio in ratios:
+            i = 0
+            while i < 2:
                 rect_resized[2] = int(self.rect[2] * ratio)
-                rect_resized[3] = int(self.rect[3] * ratio)
-                result = self.check_link(identifier, IMAGEVIEWER_APP_NAME, rect_resized)
+                # horizontally
+                if i == 0:
+                    rect_resized[3] = int(self.rect[3] * ratio)
+                # both horizontally and vertically
+                elif i == 1:
+                    rect_resized[3] = int(self.rect[3])
+                try:
+                    result = self.check_link(identifier, IMAGEVIEWER_APP_NAME, rect_resized)
+                except TimeoutException:
+                    print_with_time('크롬 로딩 너무 길어짐. 다음 인식으로 넘어감')
                 if result:
                     break
+                i += 1
 
         # kill photos app after checking QR in it
         self.kill_screenshot(identifier, IMAGEVIEWER_APP_NAME)
@@ -223,40 +226,22 @@ class AutoCheckIn(PrepareSendEmail, UseSelenium, ManipulateWindow):
         'method to actually fire Screen QR Reader inside loop'
         # apply new window size
         self.resize_window(rect_resized, identifier, app_name)
+        # bring it to foreground so that Screen QR Reader recognizes 'qr_screenshot.png' as first
+        self.set_foreground(identifier, app_name)
 
-        # refresh on page load timeout
-        is_loaded = False
-        for i in range(1, 3+1):
-            if is_loaded:
-                break
-            # try to load from QR code
-            try:
-                # bring it to foreground so that
-                # Screen QR Reader recognizes 'qr_screenshot.png' as first
-                self.set_foreground(identifier, app_name)
-
-                # Screen QR Reader
-                self.bring_chrome_to_front() # this will push 'qr_screenshot.png' to be second
-                time.sleep(1)
-                self.driver.get(SCREEN_QR_READER_POPUP_LINK)
-                time.sleep(0.5)
-                self.keyboard.tap(Key.tab)
-                time.sleep(0.1)
-                self.keyboard.tap(Key.tab)
-                time.sleep(0.1)
-                self.keyboard.tap(Key.right)
-                time.sleep(0.1)
-                self.keyboard.tap(Key.enter)
-                time.sleep(1)
-                break
-            # loading took longer than expected
-            except TimeoutException:
-                print_with_time('크롬 페이지 로딩 너무 오래 걸림. refresh')
-                self.driver.refresh()
-            # could not load after three tries
-            if i == 3:
-                print_with_time('크롬 페이지 로딩 실패. QR 다시 인식 시작')
-                return False
+        # Screen QR Reader
+        self.bring_chrome_to_front() # this will push 'qr_screenshot.png' to be second
+        time.sleep(1)
+        self.driver.get(SCREEN_QR_READER_POPUP_LINK)
+        time.sleep(0.5)
+        self.keyboard.tap(Key.tab)
+        time.sleep(0.1)
+        self.keyboard.tap(Key.tab)
+        time.sleep(0.1)
+        self.keyboard.tap(Key.right)
+        time.sleep(0.1)
+        self.keyboard.tap(Key.enter)
+        time.sleep(1)
 
         # Selenium will automatically open the link in a new tab
         # if there is a QR image, so check tab count.
