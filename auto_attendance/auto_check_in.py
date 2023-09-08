@@ -202,6 +202,8 @@ class AutoCheckIn(PrepareSendEmail, UseSelenium, ManipulateWindow):
                 if result:
                     break
                 i += 1
+            if result:
+                break
 
         # kill photos app after checking QR in it
         self.kill_screenshot(identifier, IMAGEVIEWER_APP_NAME)
@@ -226,22 +228,9 @@ class AutoCheckIn(PrepareSendEmail, UseSelenium, ManipulateWindow):
         'method to actually fire Screen QR Reader inside loop'
         # apply new window size
         self.resize_window(rect_resized, identifier, app_name)
-        # bring it to foreground so that Screen QR Reader recognizes 'qr_screenshot.png' as first
-        self.set_foreground(identifier, app_name)
 
         # Screen QR Reader
-        self.bring_chrome_to_front() # this will push 'qr_screenshot.png' to be second
-        time.sleep(1)
         self.driver.get(SCREEN_QR_READER_POPUP_LINK)
-        time.sleep(0.5)
-        self.keyboard.tap(Key.tab)
-        time.sleep(0.1)
-        self.keyboard.tap(Key.tab)
-        time.sleep(0.1)
-        self.keyboard.tap(Key.right)
-        time.sleep(0.1)
-        self.keyboard.tap(Key.enter)
-        time.sleep(1)
 
         # Selenium will automatically open the link in a new tab
         # if there is a QR image, so check tab count.
@@ -262,7 +251,7 @@ class AutoCheckIn(PrepareSendEmail, UseSelenium, ManipulateWindow):
         # Screen QR Reader source required
         options.add_extension(self.extension_source)
         # automatically select Zoom meeting
-        # options.add_argument('--auto-select-desktop-capture-source=Zoom')
+        options.add_argument('--auto-select-desktop-capture-source=qr_screenshot.png')
 
         return options
 

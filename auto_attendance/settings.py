@@ -70,7 +70,7 @@ ARGUMENT_MAP = {
     'project section': PROJECT_TIMES
 }
 ZOOM_ON_TIMES = [convert_to_datetime(TIME_) for TIME_ in ['8:59', '12:59']]
-ZOOM_QUIT_TIMES = [convert_to_datetime(TIME_) for TIME_ in ['12:05', '18:05']]
+ZOOM_QUIT_TIMES = [convert_to_datetime(TIME_) for TIME_ in ['12:02', '18:02']]
 SCHED_QUIT_TIMES = [convert_to_datetime('18:10')] # conform to the format of other 'times'
 
 # Zoom props
