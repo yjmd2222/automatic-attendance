@@ -31,7 +31,8 @@ SCREEN_QR_READER_SOURCE = get_file_path('extension_0_1_2_0.crx')
 # 10:50, 13:00, 15:25 section review Day 1
 # 10:30, 13:00, 14:50 section review Day 2
 # 11:50, 13:00, 16:50 project section
-DIFF_MINUTE = 5
+# 9:50, 12:00, 13:00, 16:50 career section
+DIFF_MINUTE = 2
 REGULAR_CHECK_IN_TIMES = unfoil_time_sets(
     [extrapolate_time_sets(TIME_, diff_minute=DIFF_MINUTE)
      for TIME_ in ['11:20', '13:01', '15:20']]
@@ -57,8 +58,12 @@ SR_D2_CHECK_IN_TIMES = unfoil_time_sets(
      for TIME_ in ['10:30', '13:01', '14:50']]
 )
 PROJECT_TIMES = unfoil_time_sets(
-    [extrapolate_time_sets(TIME_, diff_minute=3, extend_num=1)
+    [extrapolate_time_sets(TIME_, diff_minute=DIFF_MINUTE, extend_num=1)
      for TIME_ in ['12:00', '13:01', '16:50']]
+)
+C_CHECK_IN_TIMES = unfoil_time_sets(
+    [extrapolate_time_sets(TIME_, diff_minute=DIFF_MINUTE)
+     for TIME_ in ['9:00', '13:01', '16:50']]
 )
 ARGUMENT_MAP = {
     'regular': REGULAR_CHECK_IN_TIMES,
@@ -67,11 +72,12 @@ ARGUMENT_MAP = {
     'project days 2-5': P_D2_5_CHECK_IN_TIMES,
     'section review day 1': SR_D1_CHECK_IN_TIMES,
     'section review day 2': SR_D2_CHECK_IN_TIMES,
-    'project section': PROJECT_TIMES
+    'project section': PROJECT_TIMES,
+    'career section': C_CHECK_IN_TIMES
 }
 ZOOM_ON_TIMES = [convert_to_datetime(TIME_) for TIME_ in ['8:59', '12:59']]
-ZOOM_QUIT_TIMES = [convert_to_datetime(TIME_) for TIME_ in ['12:05', '18:05']]
-SCHED_QUIT_TIMES = [convert_to_datetime('18:10')] # conform to the format of other 'times'
+ZOOM_QUIT_TIMES = [convert_to_datetime(TIME_) for TIME_ in ['12:02', '18:02']]
+SCHED_QUIT_TIMES = [convert_to_datetime('18:05')] # conform to the format of other 'times'
 
 # Zoom props
 if platform == 'win32':

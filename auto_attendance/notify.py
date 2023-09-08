@@ -84,7 +84,7 @@ class Notify(BaseClass):
         # send email
         self.send_email(body)
 
-class PrepareSendEmail:
+class PrepareSendEmail: # abc
     'A class for instantiating Notify class'
 
     # pylint: disable=attribute-defined-outside-init,no-member
@@ -99,20 +99,20 @@ class PrepareSendEmail:
         self.result_dict: dict = RESULT_DICTS[self.print_name]
         self.is_send = False
 
-    def decorator_send_email_reset(self, func):
-        'decorator for sending email and resetting attributes'
+    def decorator_reset_send_email(self, func):
+        'decorator for resetting attributes and sending email'
         def wrapper(*args, **kwargs):
+            self.reset_attributes()
             func(*args, **kwargs)
             if self.is_send:
                 self.notify.run(self.result_dict)
-            self.reset_attributes()
         return wrapper
     # pylint: enable=no-member
 
     def decorate_run(self):
         '''PrepareSendEmail.decorate_run() that decorates self.run()\n
         to send email and reset attributes'''
-        self.run = self.decorator_send_email_reset(self.run)
+        self.run = self.decorator_reset_send_email(self.run)
     # pylint: enable=attribute-defined-outside-init
 
     def reset_attributes(self):

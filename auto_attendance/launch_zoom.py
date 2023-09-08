@@ -45,7 +45,7 @@ class LaunchZoom(PrepareSendEmail, UseSelenium, ManipulateWindow):
         UseSelenium.__init__(self)
 
     def reset_attributes(self):
-        'reset attributes for next run'
+        'reset attributes then start current job'
         self.is_window, self.identifier = False, 0
         PrepareSendEmail.define_attributes(self)
 

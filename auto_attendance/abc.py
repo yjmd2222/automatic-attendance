@@ -13,6 +13,7 @@ import traceback
 from selenium import webdriver
 from selenium.common.exceptions import (
     NoSuchWindowException,
+    TimeoutException,
     WebDriverException)
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.service import Service
@@ -101,6 +102,10 @@ class UseSelenium(BaseClass):
             'wrapper'
             try:
                 func(*args, **kwargs)
+            except TimeoutException as error:
+                print_with_time('크롬 페이지 로딩 너무 오래 걸림')
+                # raise error to exit current script
+                raise SystemExit from error
             except (NoSuchWindowException, WebDriverException) as error:
                 print_with_time('크롬 창 수동 종료 확인')
                 # raise error to exit current script
@@ -143,8 +148,10 @@ class UseSelenium(BaseClass):
         'initialize Selenium and return driver'
         auto_driver = Service(ChromeDriverManager().install())
         options = self.create_selenium_options()
+        driver = webdriver.Chrome(service=auto_driver, options=options)
+        driver.set_page_load_timeout(20)
 
-        return webdriver.Chrome(service=auto_driver, options=options)
+        return driver
 
     def bring_chrome_to_front(self):
         'bring Selenium Chrome browser to front with a hack'

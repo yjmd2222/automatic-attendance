@@ -12,9 +12,11 @@ import time
 import pyautogui
 import cv2
 import numpy as np
-from pynput.keyboard import Key, Controller
+from pynput.keyboard import Controller
 
-from selenium.common.exceptions import NoSuchElementException
+from selenium.common.exceptions import (
+    NoSuchElementException,
+    TimeoutException)
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
@@ -62,15 +64,17 @@ class AutoCheckIn(PrepareSendEmail, UseSelenium, ManipulateWindow):
         self.rect = [100,100,100,100]
         self.extension_source = SCREEN_QR_READER_SOURCE
         self.is_wait = False
+        self.is_continue = False
         PrepareSendEmail.define_attributes(self)
         PrepareSendEmail.decorate_run(self)
         UseSelenium.__init__(self)
 
     def reset_attributes(self):
-        'reset attributes for next run'
+        'reset attributes then start current job'
         self.is_window, self.identifier = self.check_window(ZOOM_CLASSROOM_NAME, ZOOM_APP_NAME)
         self.driver = None
         self.is_wait = False
+        self.is_continue = False
         PrepareSendEmail.define_attributes(self)
 
     def _resize_window_win32(self, hwnd, rect):
@@ -181,20 +185,25 @@ class AutoCheckIn(PrepareSendEmail, UseSelenium, ManipulateWindow):
         ratios = [i/10 for i in range(3, 11)]
         rect_resized = self.rect.copy()
         result = None
-        # only horizontally
         for ratio in ratios:
-            rect_resized[2] = int(self.rect[2] * ratio)
-            result = self.check_link(identifier, IMAGEVIEWER_APP_NAME, rect_resized)
-            if result:
-                break
-        # both horizontally and vertically
-        if not result:
-            for ratio in ratios:
+            i = 0
+            while i < 2:
                 rect_resized[2] = int(self.rect[2] * ratio)
-                rect_resized[3] = int(self.rect[3] * ratio)
-                result = self.check_link(identifier, IMAGEVIEWER_APP_NAME, rect_resized)
+                # horizontally
+                if i == 0:
+                    rect_resized[3] = int(self.rect[3] * ratio)
+                # both horizontally and vertically
+                elif i == 1:
+                    rect_resized[3] = int(self.rect[3])
+                try:
+                    result = self.check_link(identifier, IMAGEVIEWER_APP_NAME, rect_resized)
+                except TimeoutException:
+                    print_with_time('크롬 로딩 너무 길어짐. 다음 인식으로 넘어감')
                 if result:
                     break
+                i += 1
+            if result:
+                break
 
         # kill photos app after checking QR in it
         self.kill_screenshot(identifier, IMAGEVIEWER_APP_NAME)
@@ -219,22 +228,9 @@ class AutoCheckIn(PrepareSendEmail, UseSelenium, ManipulateWindow):
         'method to actually fire Screen QR Reader inside loop'
         # apply new window size
         self.resize_window(rect_resized, identifier, app_name)
-        # bring it to foreground so that Screen QR Reader recognizes 'qr_screenshot.png' as first
-        self.set_foreground(identifier, app_name)
 
         # Screen QR Reader
-        self.bring_chrome_to_front() # this will push 'qr_screenshot.png' to be second
-        time.sleep(1)
         self.driver.get(SCREEN_QR_READER_POPUP_LINK)
-        time.sleep(0.5)
-        self.keyboard.tap(Key.tab)
-        time.sleep(0.1)
-        self.keyboard.tap(Key.tab)
-        time.sleep(0.1)
-        self.keyboard.tap(Key.right)
-        time.sleep(0.1)
-        self.keyboard.tap(Key.enter)
-        time.sleep(1)
 
         # Selenium will automatically open the link in a new tab
         # if there is a QR image, so check tab count.
@@ -255,12 +251,12 @@ class AutoCheckIn(PrepareSendEmail, UseSelenium, ManipulateWindow):
         # Screen QR Reader source required
         options.add_extension(self.extension_source)
         # automatically select Zoom meeting
-        # options.add_argument('--auto-select-desktop-capture-source=Zoom')
+        options.add_argument('--auto-select-desktop-capture-source=qr_screenshot.png')
 
         return options
 
     # pylint: disable=too-many-branches
-    def selenium_action(self, is_continue, by_which, sleep, **kwargs):
+    def selenium_action(self, by_which, sleep, **kwargs):
         '''
         selenium action method\n
         Must specify kwargs\n
@@ -268,9 +264,6 @@ class AutoCheckIn(PrepareSendEmail, UseSelenium, ManipulateWindow):
         'element' is the element to be inspected\n
         'input_text' must be given if 'how' is 'input'
         '''
-        # run if is_continue
-        if not is_continue:
-            return False
         # check three times
         for i in range(1, 3+1):
             try:
@@ -302,18 +295,20 @@ class AutoCheckIn(PrepareSendEmail, UseSelenium, ManipulateWindow):
                         assert kwargs['how'] in ['click', 'input', 'get_iframe', 'submit']
                 print_with_time(f'{kwargs["element"]} 찾기 성공. {sleep}초 후 다음 단계로 진행')
                 time.sleep(sleep)
-                return True
+                # success
+                self.is_continue = True
+                return
             except NoSuchElementException:
                 search_fail_message = f'{kwargs["element"]} 찾기 실패'
                 # break after three tries
                 if i == 3:
                     print_with_time(search_fail_message)
                     break
-                # iframe may not load at all, so refresh
-                if kwargs['how'] == 'get_iframe':
+                # page may not load at all, so refresh
+                if kwargs.get('refresh'):
                     print_with_time(f'{search_fail_message}. 찾는 요소: {kwargs["element"]}. 페이지 다시 로드')
                     self.driver.refresh()
-                # other than iframe
+                # if not refresh
                 else:
                     print_with_time(f'{search_fail_message}. {sleep}초 후 재시도')
                 time.sleep(sleep)
@@ -324,8 +319,10 @@ class AutoCheckIn(PrepareSendEmail, UseSelenium, ManipulateWindow):
                 print_with_time(f'how kwarg의 인자값 알맞게 입력했는지 확인 필요. 입력: {kwargs["how"]}')
                 break
 
+        # all has failed
         print_with_time('출석 체크 실패. 현 상태에서 이메일 발송')
-        return False
+        self.is_continue = False
+        return
     # pylint: enable=too-many-branches
 
     def check_in(self):
@@ -334,44 +331,53 @@ class AutoCheckIn(PrepareSendEmail, UseSelenium, ManipulateWindow):
         time.sleep(10)
 
         # bool flag
-        is_continue = True
+        self.is_continue = True
 
         # login type
-        is_continue = self.selenium_action(is_continue, By.CLASS_NAME, 10,\
-                        how='click', element=LOGIN_WITH_KAKAO_BUTTON)
+        if self.is_continue:
+            self.selenium_action(By.CLASS_NAME, 10,\
+                how='click', element=LOGIN_WITH_KAKAO_BUTTON, refresh=True)
 
         # insert Kakao id
-        is_continue = self.selenium_action(is_continue, By.ID, 1,\
-                        how='input', element=ID_INPUT_BOX, input_text=KAKAO_ID)
+        if self.is_continue:
+            self.selenium_action(By.ID, 1,\
+                how='input', element=ID_INPUT_BOX, input_text=KAKAO_ID)
 
         # insert Kakao password
-        is_continue = self.selenium_action(is_continue, By.ID, 1,\
-                        how='input', element=PASSWORD_INPUT_BOX, input_text=KAKAO_PASSWORD)
+        if self.is_continue:
+            self.selenium_action(By.ID, 1,\
+                how='input', element=PASSWORD_INPUT_BOX, input_text=KAKAO_PASSWORD)
 
         # log in
-        is_continue = self.selenium_action(is_continue, By.CLASS_NAME, 10,\
-                        how='click', element=LOGIN_BUTTON)
+        if self.is_continue:
+            self.selenium_action(By.CLASS_NAME, 10,\
+                how='click', element=LOGIN_BUTTON)
 
         # Should have successfully logged in. Now pass set link to pass to Notify
-        self.result_dict['link']['content'] = self.driver.current_url if is_continue else '발견 실패'
+        self.result_dict['link']['content'] =\
+            self.driver.current_url if self.is_continue else '발견 실패'
 
         # get inner document link
-        is_continue = self.selenium_action(is_continue, By.TAG_NAME, 10,\
-                        how='get_iframe', element=IFRAME)
+        if self.is_continue:
+            self.selenium_action(By.TAG_NAME, 10,\
+                how='get_iframe', element=IFRAME, refresh=True)
 
         # agree to check in
-        is_continue = self.selenium_action(is_continue, By.XPATH, 3,\
-                        how='click', element=AGREE)
+        if self.is_continue:
+            self.selenium_action(By.XPATH, 3,\
+                how='click', element=AGREE)
 
         # select check-in
-        is_continue = self.selenium_action(is_continue, By.XPATH, 3,\
-                        how='click', element=CHECK_IN)
+        if self.is_continue:
+            self.selenium_action(By.XPATH, 3,\
+                how='click', element=CHECK_IN)
 
         # submit
-        is_continue = self.selenium_action(is_continue, By.XPATH, 3,\
-                        how='submit', element=SUBMIT)
+        if self.is_continue:
+            self.selenium_action(By.XPATH, 3,\
+                how='submit', element=SUBMIT)
 
-        return is_continue
+        return self.is_continue
 
     # pylint: disable=attribute-defined-outside-init
     def run(self):
@@ -388,7 +394,6 @@ class AutoCheckIn(PrepareSendEmail, UseSelenium, ManipulateWindow):
         else:
             # quit
             print_with_time('줌 실행중인지 확인 필요')
-            self.reset_attributes()
             return
 
         # check QR code in Zoom
