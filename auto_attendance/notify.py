@@ -102,8 +102,8 @@ class PrepareSendEmail: # abc
     def decorator_reset_send_email(self, func):
         'decorator for resetting attributes and sending email'
         def wrapper(*args, **kwargs):
-            func(*args, **kwargs)
             self.reset_attributes()
+            func(*args, **kwargs)
             if self.is_send:
                 self.notify.run(self.result_dict)
         return wrapper
