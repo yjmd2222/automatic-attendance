@@ -12,7 +12,7 @@ import time
 import pyautogui
 import cv2
 import numpy as np
-from pynput.keyboard import Key, Controller
+from pynput.keyboard import Controller
 
 from selenium.common.exceptions import (
     NoSuchElementException,
