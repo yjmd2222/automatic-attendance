@@ -35,35 +35,35 @@ SCREEN_QR_READER_SOURCE = get_file_path('extension_0_1_2_0.crx')
 DIFF_MINUTE = 2
 REGULAR_CHECK_IN_TIMES = unfoil_time_sets(
     [extrapolate_time_sets(TIME_, diff_minute=DIFF_MINUTE)
-     for TIME_ in ['11:20', '13:01', '15:20']]
+     for TIME_ in ['11:20', '13:03', '15:20']]
 )
 SC_CHECK_IN_TIMES = unfoil_time_sets(
     [extrapolate_time_sets(TIME_, diff_minute=DIFF_MINUTE)
-     for TIME_ in ['11:50', '13:01', '15:50']]
+     for TIME_ in ['11:50', '13:03', '15:50']]
 )
 P_D1_CHECK_IN_TIMES = unfoil_time_sets(
     [extrapolate_time_sets(TIME_, diff_minute=DIFF_MINUTE)
-     for TIME_ in ['11:00', '13:01', '15:20']]
+     for TIME_ in ['11:00', '13:03', '15:20']]
 )
 P_D2_5_CHECK_IN_TIMES = unfoil_time_sets(
     [extrapolate_time_sets(TIME_, diff_minute=DIFF_MINUTE)
-     for TIME_ in ['10:30', '13:01', '15:20']]
+     for TIME_ in ['10:30', '13:03', '15:20']]
 )
 SR_D1_CHECK_IN_TIMES = unfoil_time_sets(
     [extrapolate_time_sets(TIME_, diff_minute=DIFF_MINUTE)
-     for TIME_ in ['10:50', '13:01', '15:25']]
+     for TIME_ in ['10:50', '13:03', '15:25']]
 )
 SR_D2_CHECK_IN_TIMES = unfoil_time_sets(
     [extrapolate_time_sets(TIME_, diff_minute=DIFF_MINUTE)
-     for TIME_ in ['10:30', '13:01', '14:50']]
+     for TIME_ in ['10:30', '13:03', '14:50']]
 )
 PROJECT_TIMES = unfoil_time_sets(
     [extrapolate_time_sets(TIME_, diff_minute=DIFF_MINUTE, extend_num=1)
-     for TIME_ in ['12:00', '13:01', '16:50']]
+     for TIME_ in ['12:00', '13:03', '16:50']]
 )
 C_CHECK_IN_TIMES = unfoil_time_sets(
     [extrapolate_time_sets(TIME_, diff_minute=DIFF_MINUTE)
-     for TIME_ in ['9:00', '13:01', '16:50']]
+     for TIME_ in ['12:00', '13:03', '16:50']]
 )
 ARGUMENT_MAP = {
     'regular': REGULAR_CHECK_IN_TIMES,
